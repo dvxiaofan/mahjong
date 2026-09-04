@@ -37,7 +37,7 @@ export function OnlineMode() {
   if (online.session === null || online.lobby === null) {
     return (
       <section className="online-lobby-shell">
-        <div className="online-status-row">
+        <div className="online-status-row" aria-live="polite">
           <span className={`connection-dot connection-dot--${online.status}`} />
           {online.status === 'connected'
             ? '已连接联网服务'
@@ -230,6 +230,7 @@ export function OnlineMode() {
           isReplaying={false}
           onAction={online.dispatch}
           onReset={online.startNextRound}
+          resetDisabled={online.snapshot?.match.phase === 'finished'}
           resetLabel={online.snapshot?.match.phase === 'finished' ? '比赛已结束' : '开始下一局'}
         />
       )}

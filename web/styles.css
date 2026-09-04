@@ -24,6 +24,7 @@
   --coral: #ed8d76;
   --tile: #f7f0da;
   --tile-ink: #183b33;
+  color-scheme: dark;
 }
 
 * {
@@ -41,6 +42,32 @@ body {
 
 button {
   font: inherit;
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible {
+  outline: 2px solid var(--gold-soft);
+  outline-offset: 3px;
+}
+
+.skip-link {
+  position: fixed;
+  top: 8px;
+  left: 8px;
+  z-index: 500;
+  border-radius: 8px;
+  padding: 9px 12px;
+  color: #17382f;
+  background: var(--gold-soft);
+  font-size: 0.75rem;
+  font-weight: 800;
+  transform: translateY(-150%);
+}
+
+.skip-link:focus {
+  transform: translateY(0);
 }
 
 .app-shell {
@@ -372,6 +399,22 @@ h1 {
 .online-game-shell {
   display: grid;
   gap: 16px;
+}
+
+.fatal-error {
+  width: min(520px, calc(100% - 32px));
+  margin: 15vh auto;
+  border: 1px solid rgba(237, 141, 118, 0.35);
+  border-radius: 20px;
+  padding: 28px;
+  color: var(--ink);
+  background: var(--panel);
+  box-shadow: 0 25px 70px rgba(0, 0, 0, 0.3);
+}
+
+.fatal-error p:not(.panel-eyebrow) {
+  color: var(--muted);
+  line-height: 1.6;
 }
 
 .online-status-row {
@@ -1619,6 +1662,12 @@ h1 {
   transform: translateY(-1px);
 }
 
+.result-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+  transform: none;
+}
+
 .event-tag {
   border-radius: 5px;
   padding: 4px 5px;
@@ -1836,5 +1885,35 @@ h1 {
 
   .replay-buttons button {
     padding: 7px;
+  }
+
+  .ghost-button,
+  .mode-switch button,
+  .action-button,
+  .online-primary-button,
+  .result-button,
+  .drawer-close,
+  .replay-buttons button {
+    min-height: 44px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+@media (forced-colors: active) {
+  .mahjong-tile,
+  .player-seat,
+  .panel,
+  .online-card {
+    border: 1px solid CanvasText;
   }
 }

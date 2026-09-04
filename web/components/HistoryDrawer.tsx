@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { GameView } from '../../src/types.ts';
 import type { ActionSource, RecordedAction } from '../localSession';
 import {
@@ -45,6 +45,7 @@ export function HistoryDrawer({
 }: HistoryDrawerProps) {
   const [mode, setMode] = useState<HistoryMode>('events');
   const [filter, setFilter] = useState<EventFilter>('all');
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
   const currentStep = replayStep ?? records.length;
   const visibleEvents = useMemo(
     () => view.events.filter((event) => matchesEventFilter(event, filter)),
@@ -53,11 +54,17 @@ export function HistoryDrawer({
 
   useEffect(() => {
     if (!open) return undefined;
+    const previousFocus =
+      document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    closeButtonRef.current?.focus();
     const closeOnEscape = (event: KeyboardEvent) => {
       if (event.key === 'Escape') onClose();
     };
     document.addEventListener('keydown', closeOnEscape);
-    return () => document.removeEventListener('keydown', closeOnEscape);
+    return () => {
+      document.removeEventListener('keydown', closeOnEscape);
+      previousFocus?.focus();
+    };
   }, [onClose, open]);
 
   if (!open) return null;
@@ -65,7 +72,7 @@ export function HistoryDrawer({
   return (
     <div className="drawer-backdrop" onClick={onClose} role="presentation">
       <aside
-        aria-label="牌局记录与回放"
+        aria-labelledby="history-drawer-title"
         aria-modal="true"
         className="history-drawer"
         onClick={(event) => event.stopPropagation()}
@@ -74,13 +81,14 @@ export function HistoryDrawer({
         <header className="drawer-header">
           <div>
             <p className="panel-eyebrow">ROUND ARCHIVE</p>
-            <h2>牌局记录</h2>
+            <h2 id="history-drawer-title">牌局记录</h2>
             <p>从动作轨迹重建任意一步，不会修改实时牌局。</p>
           </div>
           <button
             aria-label="关闭牌局记录"
             className="drawer-close"
             onClick={onClose}
+            ref={closeButtonRef}
             type="button"
           >
             ×

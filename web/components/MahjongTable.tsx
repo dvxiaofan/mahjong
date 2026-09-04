@@ -13,6 +13,7 @@ interface MahjongTableProps {
   onAction: (action: GameAction) => void;
   onReset: () => void;
   resetLabel?: string;
+  resetDisabled?: boolean;
 }
 
 type TablePosition = 'north' | 'west' | 'east' | 'south';
@@ -44,6 +45,7 @@ export function MahjongTable({
   onAction,
   onReset,
   resetLabel,
+  resetDisabled,
 }: MahjongTableProps) {
   const prompt = isReplaying
     ? '正在查看历史局面，返回实时牌局后才能操作'
@@ -120,6 +122,7 @@ export function MahjongTable({
         view={view}
         onReset={onReset}
         {...(resetLabel === undefined ? {} : { resetLabel })}
+        {...(resetDisabled === undefined ? {} : { resetDisabled })}
       />
 
       <section className="table-lower-grid">

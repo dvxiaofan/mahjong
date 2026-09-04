@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { isSuitedTile, tileRank, type NormalTile, type Rank } from '../../src/tiles.ts';
 
 interface MahjongTileFaceProps {
@@ -215,7 +216,7 @@ function HonorFace({ tile }: { tile: 'red' | 'white' }) {
   );
 }
 
-export function MahjongTileFace({ tile }: MahjongTileFaceProps) {
+export const MahjongTileFace = memo(function MahjongTileFace({ tile }: MahjongTileFaceProps) {
   let content;
   if (tile === 'red' || tile === 'white') {
     content = <HonorFace tile={tile} />;
@@ -236,4 +237,4 @@ export function MahjongTileFace({ tile }: MahjongTileFaceProps) {
       {content}
     </svg>
   );
-}
+});

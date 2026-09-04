@@ -6,6 +6,7 @@ interface ResultPanelProps {
   view: GameAudienceView;
   onReset: () => void;
   resetLabel?: string;
+  resetDisabled?: boolean;
 }
 
 const paymentLabels: Record<Payment['reason'], string> = {
@@ -15,7 +16,12 @@ const paymentLabels: Record<Payment['reason'], string> = {
   'exposed-kong': '明杠',
 };
 
-export function ResultPanel({ view, onReset, resetLabel = '再来一局' }: ResultPanelProps) {
+export function ResultPanel({
+  view,
+  onReset,
+  resetLabel = '再来一局',
+  resetDisabled = false,
+}: ResultPanelProps) {
   const result = view.result;
   if (result === null) return null;
 
@@ -88,7 +94,7 @@ export function ResultPanel({ view, onReset, resetLabel = '再来一局' }: Resu
         </div>
       )}
 
-      <button className="result-button" onClick={onReset} type="button">
+      <button className="result-button" disabled={resetDisabled} onClick={onReset} type="button">
         {resetLabel}
       </button>
     </section>
