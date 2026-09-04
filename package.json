@@ -6,16 +6,29 @@
   "scripts": {
     "test": "vitest run",
     "test:watch": "vitest",
-    "build": "tsc -p tsconfig.json",
-    "check": "tsc -p tsconfig.json --noEmit"
+    "dev": "vite --config vite.config.ts",
+    "build:engine": "tsc -p tsconfig.json",
+    "build:web": "vite build --config vite.config.ts",
+    "build": "npm run build:engine && npm run build:web",
+    "check:engine": "tsc -p tsconfig.json --noEmit",
+    "check:web": "tsc -p tsconfig.web.json --noEmit",
+    "check": "npm run check:engine && npm run check:web"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "devDependencies": {
     "@types/node": "^26.4.1",
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.7",
+    "@vitejs/plugin-react": "^6.1.1",
     "typescript": "^7.0.2",
+    "vite": "^8.2.2",
     "vitest": "^5.0.0"
   },
-  "type": "module"
+  "type": "module",
+  "dependencies": {
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8"
+  }
 }
