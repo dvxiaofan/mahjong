@@ -107,9 +107,19 @@ export interface CreateRoomOptions extends CreateMatchOptions {
   idempotencyLimit?: number;
 }
 
-interface CachedCommand {
+export interface CachedCommand {
   fingerprint: string;
   result: RoomActionResult;
+}
+
+export interface AuthoritativeRoomPersistence {
+  version: 1;
+  roomId: string;
+  revision: number;
+  idempotencyLimit: number;
+  match: MatchState;
+  cachedCommands: readonly [requestId: string, command: CachedCommand][];
+  auditLog: readonly RoomAuditEntry[];
 }
 
 function cloneJson<T>(value: T): T {
@@ -167,6 +177,43 @@ export class AuthoritativeRoom {
     this.roomId = options.roomId;
     this.idempotencyLimit = options.idempotencyLimit ?? 1000;
     this.match = createMatch(options);
+  }
+
+  static restore(persistence: AuthoritativeRoomPersistence): AuthoritativeRoom {
+    if (persistence.version !== 1 || persistence.roomId.trim().length === 0 ||
+        !Number.isInteger(persistence.revision) || persistence.revision < 0) {
+      throw new Error('权威房间持久化数据无效');
+    }
+    const room = new AuthoritativeRoom({
+      roomId: persistence.roomId,
+      seed: persistence.match.seed,
+      maxRounds: persistence.match.maxRounds,
+      dealerSeat: persistence.match.dealerSeat,
+      idempotencyLimit: persistence.idempotencyLimit,
+    });
+    room.match = cloneJson(persistence.match);
+    room.revision = persistence.revision;
+    room.cachedCommands.clear();
+    for (const [requestId, command] of persistence.cachedCommands) {
+      room.cachedCommands.set(requestId, cloneJson(command));
+    }
+    room.auditLog.splice(0, room.auditLog.length, ...persistence.auditLog.map((entry) => ({ ...entry })));
+    return room;
+  }
+
+  exportState(): AuthoritativeRoomPersistence {
+    return {
+      version: 1,
+      roomId: this.roomId,
+      revision: this.revision,
+      idempotencyLimit: this.idempotencyLimit,
+      match: cloneJson(this.match),
+      cachedCommands: [...this.cachedCommands.entries()].map(([requestId, command]) => [
+        requestId,
+        cloneJson(command),
+      ]),
+      auditLog: this.getAuditLog(),
+    };
   }
 
   getRevision(): number {

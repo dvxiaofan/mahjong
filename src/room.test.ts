@@ -83,4 +83,18 @@ describe('服务端权威房间', () => {
     });
     expect(conflict).toMatchObject({ accepted: false, code: 'request-id-conflict' });
   });
+
+  it('服务端快照恢复修订号、状态、幂等缓存和审计', () => {
+    const original = createRoom();
+    const action = original.getSnapshot(0).match.game.legalActions[0]!;
+    const command = { requestId: 'persisted-action', expectedRevision: 0, seat: 0 as const, action };
+    const accepted = original.submitAction(command);
+    const restored = AuthoritativeRoom.restore(original.exportState());
+
+    expect(restored.getRevision()).toBe(1);
+    expect(restored.getSnapshot(0)).toEqual(original.getSnapshot(0));
+    expect(restored.getAuditLog()).toEqual(original.getAuditLog());
+    expect(restored.submitAction(command)).toEqual(accepted);
+    expect(restored.getRevision()).toBe(1);
+  });
 });

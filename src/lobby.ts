@@ -1,4 +1,10 @@
-import { AuthoritativeRoom, type CreateRoomOptions, type RoomSnapshot, type SpectatorRoomSnapshot } from './room.js';
+import {
+  AuthoritativeRoom,
+  type AuthoritativeRoomPersistence,
+  type CreateRoomOptions,
+  type RoomSnapshot,
+  type SpectatorRoomSnapshot,
+} from './room.js';
 import { SEATS, type Seat } from './types.js';
 
 export type ParticipantRole = 'player' | 'spectator';
@@ -109,6 +115,38 @@ export interface TrusteeTickResult {
   revision: number;
 }
 
+export interface PersistedParticipant {
+  participantId: string;
+  displayName: string;
+  role: ParticipantRole;
+  seat: Seat | null;
+  trustee: boolean;
+  resumeToken: string;
+  joinOrder: number;
+}
+
+export interface PersistedLobbyRoom {
+  roomId: string;
+  engine: AuthoritativeRoomPersistence;
+  passwordSalt: string | null;
+  passwordDigest: string | null;
+  participants: readonly PersistedParticipant[];
+  hostParticipantId: string | null;
+  emptySince: number | null;
+}
+
+/** Sensitive server-side persistence; never send this structure to clients. */
+export interface RoomRegistryPersistence {
+  version: 1;
+  emptyRoomTtlMs: number;
+  spectatorLimit: number;
+  disconnectedGraceMs: number;
+  turnTimeoutMs: number;
+  responseTimeoutMs: number;
+  joinSequence: number;
+  rooms: readonly PersistedLobbyRoom[];
+}
+
 interface ManagedParticipant {
   participantId: string;
   displayName: string;
@@ -185,6 +223,76 @@ export class RoomRegistry {
     this.disconnectedGraceMs = options.disconnectedGraceMs ?? 2 * 60_000;
     this.turnTimeoutMs = options.turnTimeoutMs ?? 30_000;
     this.responseTimeoutMs = options.responseTimeoutMs ?? 12_000;
+  }
+
+  static restore(
+    persistence: RoomRegistryPersistence,
+    options: Pick<RoomRegistryOptions, 'tokenSource' | 'now'> = {},
+  ): RoomRegistry {
+    if (persistence.version !== 1 || !Array.isArray(persistence.rooms)) {
+      throw new Error('房间注册表持久化数据无效');
+    }
+    const registry = new RoomRegistry({
+      emptyRoomTtlMs: persistence.emptyRoomTtlMs,
+      spectatorLimit: persistence.spectatorLimit,
+      disconnectedGraceMs: persistence.disconnectedGraceMs,
+      turnTimeoutMs: persistence.turnTimeoutMs,
+      responseTimeoutMs: persistence.responseTimeoutMs,
+      ...options,
+    });
+    const restoredAt = registry.now();
+    registry.joinSequence = persistence.joinSequence;
+    for (const persisted of persistence.rooms) {
+      const participants = new Map<string, ManagedParticipant>();
+      for (const participant of persisted.participants) {
+        participants.set(participant.participantId, {
+          ...participant,
+          connected: false,
+          trustee: participant.role === 'player' ? true : participant.trustee,
+          connectionId: null,
+          disconnectedAt: restoredAt,
+        });
+      }
+      registry.rooms.set(persisted.roomId, {
+        engine: AuthoritativeRoom.restore(persisted.engine),
+        passwordSalt: persisted.passwordSalt,
+        passwordDigest: persisted.passwordDigest,
+        participants,
+        hostParticipantId: persisted.hostParticipantId,
+        emptySince: participants.size === 0 ? persisted.emptySince ?? restoredAt : null,
+        actionDeadlineAt: restoredAt + registry.turnTimeoutMs,
+      });
+    }
+    return registry;
+  }
+
+  exportState(): RoomRegistryPersistence {
+    return {
+      version: 1,
+      emptyRoomTtlMs: this.emptyRoomTtlMs,
+      spectatorLimit: this.spectatorLimit,
+      disconnectedGraceMs: this.disconnectedGraceMs,
+      turnTimeoutMs: this.turnTimeoutMs,
+      responseTimeoutMs: this.responseTimeoutMs,
+      joinSequence: this.joinSequence,
+      rooms: [...this.rooms.entries()].map(([roomId, room]) => ({
+        roomId,
+        engine: room.engine.exportState(),
+        passwordSalt: room.passwordSalt,
+        passwordDigest: room.passwordDigest,
+        participants: [...room.participants.values()].map((participant) => ({
+          participantId: participant.participantId,
+          displayName: participant.displayName,
+          role: participant.role,
+          seat: participant.seat,
+          trustee: participant.trustee,
+          resumeToken: participant.resumeToken,
+          joinOrder: participant.joinOrder,
+        })),
+        hostParticipantId: room.hostParticipantId,
+        emptySince: room.emptySince,
+      })),
+    };
   }
 
   private uniqueToken(prefix: string): string {

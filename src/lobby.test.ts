@@ -191,4 +191,34 @@ describe('房间注册表与生命周期', () => {
     disconnectedRooms.disconnectRoom('c0');
     expect(disconnectedRooms.processTimeouts()[0]).toMatchObject({ seat: 0, reason: 'disconnected', accepted: true });
   }, 10_000);
+
+  it('服务重启后保留房间、修订号、座位和恢复令牌', async () => {
+    let token = 0;
+    const source = () => `${++token}`;
+    const rooms = new RoomRegistry({ tokenSource: source, now: () => 100 });
+    const created = await rooms.createRoom({
+      roomId: 'persist-room', connectionId: 'old', displayName: '玩家', password: '1234',
+      matchOptions: { dealerSeat: 0, seed: 30 },
+    });
+    if (!created.ok) throw new Error('创建失败');
+    const action = rooms.getRoom('persist-room')!.getSnapshot(0).match.game.legalActions[0]!;
+    rooms.getRoom('persist-room')!.submitAction({
+      requestId: 'before-restart', expectedRevision: 0, seat: 0, action,
+    });
+    const persistence = JSON.parse(JSON.stringify(rooms.exportState()));
+    const restored = RoomRegistry.restore(persistence, { tokenSource: source, now: () => 200 });
+
+    expect(restored.getRoomView('persist-room')).toMatchObject({
+      revision: 1,
+      passwordProtected: true,
+      participants: [expect.objectContaining({ seat: 0, connected: false, trustee: true })],
+    });
+    const resumed = restored.resumeRoom({
+      roomId: 'persist-room', connectionId: 'new', resumeToken: created.session.resumeToken,
+    });
+    expect(resumed.ok).toBe(true);
+    if (!resumed.ok) return;
+    expect(resumed.snapshot.revision).toBe(1);
+    expect(resumed.snapshot.match.game.viewerSeat).toBe(0);
+  });
 });
