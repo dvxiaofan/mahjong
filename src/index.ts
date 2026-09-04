@@ -5,3 +5,4 @@ export * from './types.js';
 export * from './rules.js';
 export * from './game.js';
 export * from './view.js';
+export * from './ai.js';
