@@ -1,0 +1,16 @@
+services:
+  mahjong:
+    build: .
+    restart: unless-stopped
+    ports:
+      - "8787:8787"
+    volumes:
+      - mahjong-data:/app/data
+    environment:
+      NODE_ENV: production
+      PORT: 8787
+      HOST: 0.0.0.0
+      MAHJONG_STATE_FILE: /app/data/rooms.json
+
+volumes:
+  mahjong-data:

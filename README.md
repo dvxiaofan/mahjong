@@ -30,6 +30,7 @@
 ```
 
 详细实施步骤和当前进度见 [local-docs/开发实施计划.md](./local-docs/开发实施计划.md)。
+生产运行、Docker、备份和回滚见 [DEPLOYMENT.md](./DEPLOYMENT.md)。
 
 ## 开发
 

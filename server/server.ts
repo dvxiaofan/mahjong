@@ -87,12 +87,33 @@ export async function createMahjongServer(
       ? await loadRoomRegistry(options.stateFile)
       : null;
   const gateway = options.gateway ?? new MultiplayerGateway(restoredRegistry ?? new RoomRegistry());
+  const startedAt = Date.now();
   let shuttingDown = false;
   let persistenceQueue = Promise.resolve();
 
   const httpServer = createServer(async (request, response) => {
     if (request.method !== 'GET' && request.method !== 'HEAD') {
       response.writeHead(405).end();
+      return;
+    }
+    const requestPath = request.url?.split('?')[0] ?? '/';
+    if (requestPath === '/healthz' || requestPath === '/readyz') {
+      const body = Buffer.from(
+        JSON.stringify({
+          status: 'ok',
+          protocolVersion: PROTOCOL_VERSION,
+          uptimeSeconds: Math.floor((Date.now() - startedAt) / 1000),
+          rooms: gateway.registry.listRooms().length,
+        }),
+      );
+      response
+        .writeHead(200, {
+          'content-type': 'application/json; charset=utf-8',
+          'content-length': body.byteLength,
+          'cache-control': 'no-store',
+          'x-content-type-options': 'nosniff',
+        })
+        .end(request.method === 'HEAD' ? undefined : body);
       return;
     }
     const asset = await staticResponse(staticDir, request.url ?? '/');
@@ -104,7 +125,15 @@ export async function createMahjongServer(
       'content-type': asset.type,
       'content-length': asset.body.byteLength,
       'x-content-type-options': 'nosniff',
-      'cache-control': extname(request.url ?? '') === '.html' ? 'no-cache' : 'public, max-age=3600',
+      'x-frame-options': 'DENY',
+      'referrer-policy': 'no-referrer',
+      'content-security-policy':
+        "default-src 'self'; connect-src 'self' ws: wss:; img-src 'self' data:; style-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'",
+      'cross-origin-opener-policy': 'same-origin',
+      'cache-control':
+        requestPath === '/' || extname(requestPath) === '' || extname(requestPath) === '.html'
+          ? 'no-cache'
+          : 'public, max-age=3600',
     });
     response.end(request.method === 'HEAD' ? undefined : asset.body);
   });

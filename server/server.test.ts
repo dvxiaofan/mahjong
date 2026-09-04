@@ -67,6 +67,11 @@ describe('HTTP + WebSocket 服务', () => {
     const page = await fetch(address.httpUrl);
     expect(page.status).toBe(200);
     expect(await page.text()).toContain('嗨！搓麻呀！');
+    expect(page.headers.get('content-security-policy')).toContain("default-src 'self'");
+    expect(page.headers.get('cache-control')).toBe('no-cache');
+    const health = await fetch(`${address.httpUrl}/healthz`);
+    expect(health.status).toBe(200);
+    expect(await health.json()).toMatchObject({ status: 'ok', protocolVersion: 1, rooms: 0 });
 
     const firstPlayer = await connect(address.webSocketUrl);
     const created = await request(firstPlayer, {
