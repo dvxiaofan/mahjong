@@ -24,6 +24,7 @@
 │   ├── game.ts         # 回合状态机与结算
 │   └── ...
 ├── src/*.test.ts       # vitest 单元测试
+├── web/                # React + Vite 牌桌 UI
 └── local-docs/         # 需求分析、实施计划和进度台账
 ```
 
@@ -33,14 +34,15 @@
 
 ```bash
 npm install        # 安装依赖
+npm run dev        # 启动本地牌桌页面
 npm run check      # TypeScript 类型检查
 npm test           # 运行全部测试
-npm run build      # 编译到 dist/
+npm run build      # 编译引擎到 dist/、页面到 dist-web/
 ```
 
 ## 状态
 
 - [x] M1 规则引擎 + 单元测试
-- [ ] M2 本地对战 UI（1 真人 + 3 AI）
+- [~] M2 本地对战 UI（UI 壳完成，动作接入进行中）
 - [ ] M3 AI 对手
 - [ ] M4 联网对战
