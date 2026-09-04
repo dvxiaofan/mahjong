@@ -16,6 +16,7 @@ dist/
 dist-web/
 dist-server/
 data/
+coverage/
 build/
 
 # Env & secrets

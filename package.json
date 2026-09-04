@@ -5,7 +5,10 @@
   "main": "index.js",
   "scripts": {
     "test": "vitest run",
+    "test:fast": "vitest run --exclude src/ai-simulation.test.ts --exclude src/multiplayer.acceptance.test.ts --exclude server/server.test.ts",
+    "test:integration": "vitest run src/ai-simulation.test.ts src/multiplayer.acceptance.test.ts server/server.test.ts",
     "test:acceptance": "vitest run web/acceptance/m2.acceptance.test.ts",
+    "coverage": "vitest run --coverage",
     "simulate:ai": "npm run build:engine && node scripts/ai-report.mjs",
     "test:watch": "vitest",
     "dev": "vite --config vite.config.ts",
@@ -17,7 +20,11 @@
     "check:engine": "tsc -p tsconfig.json --noEmit",
     "check:web": "tsc -p tsconfig.web.json --noEmit",
     "check:server": "tsc -p tsconfig.server.json --noEmit",
-    "check": "npm run check:engine && npm run check:web && npm run check:server"
+    "check": "npm run check:engine && npm run check:web && npm run check:server",
+    "format": "prettier --write \"src/**/*.ts\" \"web/**/*.{ts,tsx,css}\" \"server/**/*.ts\" \"scripts/**/*.mjs\" \"*.{json,ts}\" \".github/**/*.yml\"",
+    "format:check": "prettier --check \"src/**/*.ts\" \"web/**/*.{ts,tsx,css}\" \"server/**/*.ts\" \"scripts/**/*.mjs\" \"*.{json,ts}\" \".github/**/*.yml\"",
+    "lint": "npm run format:check && node scripts/check-repo.mjs",
+    "quality": "npm run lint && npm run check && npm run coverage && npm run test:acceptance && npm run build"
   },
   "keywords": [],
   "author": "",
@@ -28,6 +35,8 @@
     "@types/react-dom": "^19.2.7",
     "@types/ws": "^8.18.1",
     "@vitejs/plugin-react": "^6.1.1",
+    "@vitest/coverage-v8": "^5.0.0",
+    "prettier": "^3.9.6",
     "typescript": "^7.0.2",
     "vite": "^8.2.2",
     "vitest": "^5.0.0"

@@ -1,0 +1,8 @@
+node_modules/
+dist/
+dist-web/
+dist-server/
+coverage/
+data/
+package-lock.json
+local-docs/问题记录.md
