@@ -3,6 +3,7 @@ import type { GameAction } from '../../src/types.ts';
 
 interface ActionBarProps {
   actions: readonly GameAction[];
+  onAction: (action: GameAction) => void;
 }
 
 const actionNames: Record<GameAction['type'], string> = {
@@ -31,7 +32,7 @@ function actionClass(action: GameAction): string {
   return 'action-button';
 }
 
-export function ActionBar({ actions }: ActionBarProps) {
+export function ActionBar({ actions, onAction }: ActionBarProps) {
   return (
     <section className="panel action-panel">
       <div className="panel-heading">
@@ -46,9 +47,9 @@ export function ActionBar({ actions }: ActionBarProps) {
           ? actions.map((action, index) => (
               <button
                 className={actionClass(action)}
-                disabled
                 key={`${action.type}-${'tile' in action ? action.tile : 'none'}-${index}`}
-                title="动作交互将在 M2.4 接入"
+                onClick={() => onAction(action)}
+                title={actionText(action)}
                 type="button"
               >
                 {actionText(action)}
@@ -56,7 +57,7 @@ export function ActionBar({ actions }: ActionBarProps) {
             ))
           : <span className="empty-panel-note">当前没有可用动作</span>}
       </div>
-      <p className="panel-hint">当前为 M2.3 静态演示，动作接入将在下一步开启。</p>
+      <p className="panel-hint">动作由同一套规则引擎校验，对手会自动完成合法响应。</p>
     </section>
   );
 }

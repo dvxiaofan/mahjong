@@ -1,5 +1,6 @@
 import { tileLabel } from '../../src/tiles.ts';
 import type {
+  GameAction,
   GameView,
   PlayerViewEntry,
   Seat,
@@ -10,6 +11,8 @@ import { PlayerSeat } from './PlayerSeat';
 
 interface MahjongTableProps {
   view: GameView;
+  botThinking: boolean;
+  onAction: (action: GameAction) => void;
 }
 
 type TablePosition = 'north' | 'west' | 'east' | 'south';
@@ -34,7 +37,7 @@ function playerFor(view: GameView, seat: Seat): PlayerViewEntry {
   return player;
 }
 
-export function MahjongTable({ view }: MahjongTableProps) {
+export function MahjongTable({ view, botThinking, onAction }: MahjongTableProps) {
   return (
     <div className="table-layout">
       <section className="felt-table" aria-label="麻将牌桌">
@@ -59,7 +62,7 @@ export function MahjongTable({ view }: MahjongTableProps) {
           <div className="phase-pill">{phaseLabels[view.phase]}</div>
           <div className="turn-line">
             <span className="turn-dot" />
-            当前行动：{view.currentSeat + 1} 号玩家
+            {botThinking ? '对手响应中…' : `当前行动：${view.currentSeat + 1} 号玩家`}
           </div>
           {view.pendingDiscard !== null && (
             <div className="pending-card">
@@ -75,7 +78,7 @@ export function MahjongTable({ view }: MahjongTableProps) {
       </section>
 
       <section className="table-lower-grid">
-        <ActionBar actions={view.legalActions} />
+        <ActionBar actions={view.legalActions} onAction={onAction} />
         <EventFeed events={view.events} />
       </section>
     </div>
