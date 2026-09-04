@@ -7,6 +7,13 @@ export type AiDecisionSource = 'policy' | 'fallback';
 export interface AiPolicyChoice {
   action: GameAction;
   reason: string;
+  candidates?: readonly AiDecisionCandidate[];
+}
+
+export interface AiDecisionCandidate {
+  action: GameAction;
+  score: number;
+  reasons: readonly string[];
 }
 
 export interface AiPolicyInput {
@@ -28,6 +35,7 @@ export interface AiDecision {
   source: AiDecisionSource;
   turnKind: AiTurnKind;
   legalActionCount: number;
+  candidates: AiDecisionCandidate[];
 }
 
 const basicPriority: Record<GamePhase, readonly GameAction['type'][]> = {
@@ -123,6 +131,11 @@ export function decideAiAction(
       source: 'policy',
       turnKind,
       legalActionCount: legalActions.length,
+      candidates: (choice.candidates ?? []).map((candidate) => ({
+        action: { ...candidate.action } as GameAction,
+        score: candidate.score,
+        reasons: [...candidate.reasons],
+      })),
     };
   }
 
@@ -136,5 +149,6 @@ export function decideAiAction(
     source: 'fallback',
     turnKind,
     legalActionCount: legalActions.length,
+    candidates: [],
   };
 }

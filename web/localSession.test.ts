@@ -45,12 +45,16 @@ describe('本地牌局会话', () => {
     let session = createLocalGameSession(17);
     const action = getLegalActions(session.state, 0)[0];
     if (action === undefined) throw new Error('开局没有动作');
-    session = appendRecordedAction(session, action, 'human');
+    session = appendRecordedAction(session, action, 'human', {
+      reason: '测试选择原因',
+      candidates: [{ action, score: 42, reasons: ['测试备选评分'] }],
+    });
 
     expect(saveLocalGameSession(storage, session)).toBe(true);
     const loaded = loadLocalGameSession(storage, 17);
     expect(loaded.restored).toBe(true);
     expect(loaded.session).toEqual(session);
+    expect(loaded.session.records[0]?.reason).toBe('测试选择原因');
   });
 
   it('损坏或不同种子的本地数据会安全回退到新局', () => {

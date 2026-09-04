@@ -5,7 +5,7 @@ import {
   type GameState,
   type GameView,
 } from '../src/index.ts';
-import { findNextBotAction } from './basicBot';
+import { findNextBotDecision } from './basicBot';
 import {
   appendRecordedAction,
   clearLocalGameSession,
@@ -63,8 +63,8 @@ export function useLocalGame(seed: number): LocalGameController {
   const [restored, setRestored] = useState(loaded.restored);
   const [replayStep, setReplayStep] = useState<number | null>(null);
   const isReplaying = replayStep !== null;
-  const botAction = useMemo(
-    () => isReplaying ? null : findNextBotAction(session.state),
+  const botDecision = useMemo(
+    () => isReplaying ? null : findNextBotDecision(session.state),
     [isReplaying, session.state],
   );
   const autoPassAction = useMemo(
@@ -86,7 +86,9 @@ export function useLocalGame(seed: number): LocalGameController {
 
   const dispatch = useCallback((action: GameAction) => {
     if (action.seat !== LOCAL_VIEWER_SEAT || isReplaying) return;
-    setSession((previous) => appendRecordedAction(previous, action, 'human'));
+    setSession((previous) => appendRecordedAction(previous, action, 'human', {
+      reason: '玩家手动选择',
+    }));
   }, [isReplaying]);
 
   const reset = useCallback(() => {
@@ -109,29 +111,34 @@ export function useLocalGame(seed: number): LocalGameController {
   }, [session]);
 
   useEffect(() => {
-    const automaticAction = autoPassAction ?? botAction;
+    const automaticAction = autoPassAction ?? botDecision?.action ?? null;
     if (automaticAction === null || isReplaying) return undefined;
 
     const timer = window.setTimeout(() => {
       setSession((previous) => {
         const nextAutoPass = getOnlyPassAction(previous.state, LOCAL_VIEWER_SEAT);
         if (nextAutoPass !== null) {
-          return appendRecordedAction(previous, nextAutoPass, 'auto-pass');
+          return appendRecordedAction(previous, nextAutoPass, 'auto-pass', {
+            reason: '唯一合法响应，自动过牌',
+          });
         }
-        const nextBotAction = findNextBotAction(previous.state);
-        return nextBotAction === null
+        const nextBotDecision = findNextBotDecision(previous.state);
+        return nextBotDecision === null
           ? previous
-          : appendRecordedAction(previous, nextBotAction, 'bot');
+          : appendRecordedAction(previous, nextBotDecision.action, 'bot', {
+              reason: nextBotDecision.reason,
+              candidates: nextBotDecision.candidates,
+            });
       });
     }, autoPassAction === null ? BOT_TURN_DELAY_MS : AUTO_PASS_DELAY_MS);
 
     return () => window.clearTimeout(timer);
-  }, [autoPassAction, botAction, isReplaying]);
+  }, [autoPassAction, botDecision, isReplaying]);
 
   return {
     state: session.state,
     view,
-    botThinking: botAction !== null,
+    botThinking: botDecision !== null,
     restored,
     records: session.records,
     replayStep,

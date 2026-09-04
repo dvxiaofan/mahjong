@@ -173,7 +173,17 @@ export function HistoryDrawer({
                   type="button"
                 >
                   <span className="history-index">{step}</span>
-                  <span>{formatActionForViewer(record.action, view.viewerSeat)}</span>
+                  <span className="action-history-copy">
+                    <span>{formatActionForViewer(record.action, view.viewerSeat)}</span>
+                    <small>{record.reason ?? sourceLabels[record.source]}</small>
+                    {(record.candidates?.length ?? 0) > 1 && (
+                      <small className="candidate-summary">
+                        备选：{record.candidates!.slice(1, 4).map((candidate) =>
+                          `${formatActionForViewer(candidate.action, view.viewerSeat)} ${candidate.score}`,
+                        ).join(' · ')}
+                      </small>
+                    )}
+                  </span>
                   <small>{sourceLabels[record.source]}</small>
                 </button>
               );

@@ -511,6 +511,24 @@ h1 {
   font-size: 0.58rem;
 }
 
+.action-history-copy {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+
+.action-history-copy > span,
+.action-history-copy small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.action-history-copy .candidate-summary {
+  color: #78998d;
+  font-size: 0.55rem;
+}
+
 .action-history-entry:hover,
 .action-history-entry:focus-visible,
 .action-history-entry.is-current {

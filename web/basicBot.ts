@@ -1,4 +1,5 @@
-import { decideAiAction } from '../src/ai.ts';
+import { decideAiAction, type AiDecision } from '../src/ai.ts';
+import { strategicDiscardPolicy } from '../src/ai-strategy.ts';
 import type { GameAction, GameState, Seat } from '../src/types.ts';
 
 export const BOT_SEATS = [1, 2, 3] as const;
@@ -8,14 +9,18 @@ export const BOT_SEATS = [1, 2, 3] as const;
  * It never invents an action: every returned action comes from getLegalActions().
  */
 export function chooseBasicBotAction(state: GameState, seat: Seat): GameAction | null {
-  return decideAiAction(state, seat)?.action ?? null;
+  return decideAiAction(state, seat, strategicDiscardPolicy)?.action ?? null;
+}
+
+export function findNextBotDecision(state: GameState): AiDecision | null {
+  for (const seat of BOT_SEATS) {
+    const decision = decideAiAction(state, seat, strategicDiscardPolicy);
+    if (decision !== null) return decision;
+  }
+  return null;
 }
 
 /** Find the next bot action that can be applied to the current state. */
 export function findNextBotAction(state: GameState): GameAction | null {
-  for (const seat of BOT_SEATS) {
-    const action = chooseBasicBotAction(state, seat);
-    if (action !== null) return action;
-  }
-  return null;
+  return findNextBotDecision(state)?.action ?? null;
 }

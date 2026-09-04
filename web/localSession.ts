@@ -4,6 +4,7 @@ import {
   getLegalActions,
 } from '../src/game.ts';
 import { isNormalTile } from '../src/rules.ts';
+import type { AiDecisionCandidate } from '../src/ai.ts';
 import { SEATS, type GameAction, type GameState, type Seat } from '../src/types.ts';
 
 export const LOCAL_SESSION_STORAGE_KEY = 'play-mahjong.local-session.v1';
@@ -14,6 +15,13 @@ export type ActionSource = 'human' | 'bot' | 'auto-pass';
 export interface RecordedAction {
   action: GameAction;
   source: ActionSource;
+  reason?: string;
+  candidates?: AiDecisionCandidate[];
+}
+
+export interface RecordedActionMetadata {
+  reason?: string;
+  candidates?: readonly AiDecisionCandidate[];
 }
 
 export interface LocalGameSession {
@@ -68,8 +76,17 @@ function isGameAction(value: unknown): value is GameAction {
 function isRecordedAction(value: unknown): value is RecordedAction {
   if (value === null || typeof value !== 'object') return false;
   const candidate = value as Record<string, unknown>;
-  return (candidate.source === 'human' || candidate.source === 'bot' || candidate.source === 'auto-pass') &&
-    isGameAction(candidate.action);
+  const sourceValid = candidate.source === 'human' || candidate.source === 'bot' || candidate.source === 'auto-pass';
+  const reasonValid = candidate.reason === undefined || typeof candidate.reason === 'string';
+  const candidatesValid = candidate.candidates === undefined || (
+    Array.isArray(candidate.candidates) && candidate.candidates.every((item) => {
+      if (item === null || typeof item !== 'object') return false;
+      const decision = item as Record<string, unknown>;
+      return isGameAction(decision.action) && typeof decision.score === 'number' &&
+        Array.isArray(decision.reasons) && decision.reasons.every((reason) => typeof reason === 'string');
+    })
+  );
+  return sourceValid && reasonValid && candidatesValid && isGameAction(candidate.action);
 }
 
 function parseStoredSession(value: string, expectedSeed: number): StoredSession | null {
@@ -110,6 +127,7 @@ export function appendRecordedAction(
   session: LocalGameSession,
   action: GameAction,
   source: ActionSource,
+  metadata: RecordedActionMetadata = {},
 ): LocalGameSession {
   const legal = getLegalActions(session.state, action.seat)
     .some((candidate) => sameAction(candidate, action));
@@ -118,7 +136,18 @@ export function appendRecordedAction(
   return {
     ...session,
     state: applyAction(session.state, action),
-    records: [...session.records, { action: { ...action } as GameAction, source }],
+    records: [...session.records, {
+      action: { ...action } as GameAction,
+      source,
+      ...(metadata.reason === undefined ? {} : { reason: metadata.reason }),
+      ...(metadata.candidates === undefined ? {} : {
+        candidates: metadata.candidates.map((candidate) => ({
+          action: { ...candidate.action } as GameAction,
+          score: candidate.score,
+          reasons: [...candidate.reasons],
+        })),
+      }),
+    }],
   };
 }
 
