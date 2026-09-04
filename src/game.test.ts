@@ -19,6 +19,7 @@ function blankState(): GameState {
   for (const player of state.players) {
     player.concealedTiles = [];
     player.melds = [];
+    player.discards = [];
     player.fortuneCount = 0;
     player.mouthDeclared = false;
     player.lockedWaits = [];

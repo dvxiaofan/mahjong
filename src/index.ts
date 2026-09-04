@@ -4,3 +4,4 @@ export * from './wall.js';
 export * from './types.js';
 export * from './rules.js';
 export * from './game.js';
+export * from './view.js';

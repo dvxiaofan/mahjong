@@ -41,6 +41,8 @@ export interface PlayerState {
   seat: Seat;
   concealedTiles: NormalTile[];
   melds: Meld[];
+  /** 当前仍留在桌面上的弃牌；被碰、杠或胡的牌会从此处移除。 */
+  discards: NormalTile[];
   fortuneCount: number;
   mouthDeclared: boolean;
   lockedWaits: NormalTile[];
@@ -160,4 +162,63 @@ export interface CreateGameOptions {
   dealerSeat?: Seat;
   seed?: number;
   wallTiles?: readonly Tile[];
+}
+
+interface CommonPlayerView {
+  seat: Seat;
+  concealedTileCount: number;
+  melds: readonly Meld[];
+  discards: readonly NormalTile[];
+  fortuneCount: number;
+  mouthDeclared: boolean;
+  score: number;
+  gangs: readonly GangRecord[];
+}
+
+/** Public information for a player other than the viewer. */
+export interface PublicPlayerView extends CommonPlayerView {
+  visibility: 'public';
+}
+
+/** Full information for the viewer's own player. */
+export interface PlayerView extends CommonPlayerView {
+  visibility: 'self';
+  concealedTiles: readonly NormalTile[];
+  lockedWaits: readonly NormalTile[];
+  mouthRequired: boolean;
+}
+
+export type PlayerViewEntry = PlayerView | PublicPlayerView;
+
+/** Safe representation of a pending discard; individual response choices stay private. */
+export interface PendingDiscardView {
+  tile: NormalTile;
+  discarder: Seat;
+  respondedSeats: readonly Seat[];
+}
+
+/** Event shape reserved for projected UI data; messages/tiles may be redacted. */
+export interface GameEventView {
+  type: GameEvent['type'];
+  seat: Seat | null;
+  tile: NormalTile | null;
+  message: string;
+}
+
+/** UI-facing contract. It contains one full player entry and public entries for everyone else. */
+export interface GameView {
+  viewerSeat: Seat;
+  players: readonly PlayerViewEntry[];
+  wallRemaining: number;
+  currentSeat: Seat;
+  phase: GamePhase;
+  drawMode: DrawMode | null;
+  /** Only the viewer's own most recent draw; null for other players. */
+  lastDrawnTile: NormalTile | null;
+  pendingDiscard: PendingDiscardView | null;
+  result: RoundResult | null;
+  events: readonly GameEventView[];
+  payments: readonly Payment[];
+  /** Actions for viewerSeat only. */
+  legalActions: readonly GameAction[];
 }

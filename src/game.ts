@@ -74,6 +74,7 @@ function createPlayer(seat: Seat): PlayerState {
     seat,
     concealedTiles: [],
     melds: [],
+    discards: [],
     fortuneCount: 0,
     mouthDeclared: false,
     lockedWaits: [],
@@ -92,6 +93,7 @@ function clonePlayer(player: PlayerState): PlayerState {
     ...player,
     concealedTiles: [...player.concealedTiles],
     melds: player.melds.map(cloneMeld),
+    discards: [...player.discards],
     lockedWaits: [...player.lockedWaits],
     gangs: player.gangs.map((gang) => ({ ...gang })),
   };
@@ -157,6 +159,12 @@ function removeTile(tiles: NormalTile[], tile: NormalTile): void {
 
 function removeTiles(tiles: NormalTile[], tile: NormalTile, amount: number): void {
   for (let index = 0; index < amount; index += 1) removeTile(tiles, tile);
+}
+
+function removeDiscard(state: GameState, discarder: Seat, tile: NormalTile): void {
+  const discards = playerAt(state, discarder).discards;
+  const index = discards.lastIndexOf(tile);
+  if (index >= 0) discards.splice(index, 1);
 }
 
 function playerHasPong(player: PlayerState, tile: NormalTile): boolean {
@@ -592,6 +600,7 @@ function finishWin(
 
   // 点炮胡的牌正式并入胡牌者暗手，保持终局状态与结算牌型一致。
   if (winType === 'discard') {
+    if (discarder !== null) removeDiscard(state, discarder, winningTile);
     player.concealedTiles.push(winningTile);
     player.concealedTiles = sortTiles(player.concealedTiles);
   }
@@ -659,6 +668,7 @@ function resolvePendingDiscard(state: GameState): void {
 
   const claimant = playerAt(state, claim.seat);
   if (claim.response.type === 'pong') {
+    removeDiscard(state, pending.discarder, pending.tile);
     removeTiles(claimant.concealedTiles, pending.tile, 2);
     claimant.melds.push({ kind: 'pong', tile: pending.tile, fromSeat: pending.discarder });
     updateMouthRequirement(claimant);
@@ -669,6 +679,7 @@ function resolvePendingDiscard(state: GameState): void {
     return;
   }
 
+  removeDiscard(state, pending.discarder, pending.tile);
   removeTiles(claimant.concealedTiles, pending.tile, 3);
   claimant.melds.push({ kind: 'exposed-kong', tile: pending.tile, fromSeat: pending.discarder });
   recordGang(claimant, 'exposed', pending.discarder, 'end', false);
@@ -722,6 +733,7 @@ export function applyAction(state: GameState, action: GameAction): GameState {
 
   if (action.type === 'discard') {
     removeTile(player.concealedTiles, action.tile);
+    player.discards.push(action.tile);
     next.lastDrawnTile = null;
     next.drawAfterGang = false;
     updateMouthRequirement(player);
