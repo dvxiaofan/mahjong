@@ -38,6 +38,8 @@ npm install        # 安装依赖
 npm run dev        # 启动本地牌桌页面
 npm run check      # TypeScript 类型检查
 npm test           # 运行全部测试
+npm run coverage   # 测试并生成覆盖率报告
+npm run quality    # 运行提交/CI 前全部质量门禁
 npm run build      # 编译引擎、页面和 WebSocket 服务
 npm start          # 启动页面和 WebSocket 服务（默认 8787）
 ```
@@ -48,4 +50,4 @@ npm start          # 启动页面和 WebSocket 服务（默认 8787）
 - [x] M2 本地对战 UI（可玩、可存档、可回放）
 - [x] M3 AI 对手（三档可解释策略）
 - [x] M4 多局与联网（权威房间、重连、观战、WebSocket）
-- [~] M5 发布质量（自动化质量进行中）
+- [~] M5 发布质量（自动化完成，体验兼容性进行中）
