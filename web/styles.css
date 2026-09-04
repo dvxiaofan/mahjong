@@ -704,6 +704,39 @@ h1 {
   padding: 0;
 }
 
+.tile-art {
+  display: block;
+  width: 88%;
+  height: 88%;
+  overflow: visible;
+}
+
+.tile-character-number,
+.tile-character-wan,
+.tile-honor-red {
+  font-family: "Kaiti SC", "STKaiti", "Songti SC", serif;
+  font-weight: 900;
+  paint-order: stroke;
+  stroke: rgba(255, 255, 255, 0.22);
+  stroke-width: 0.35px;
+  text-anchor: middle;
+}
+
+.tile-character-number {
+  fill: #235d73;
+  font-size: 18px;
+}
+
+.tile-character-wan {
+  fill: #a73f34;
+  font-size: 19px;
+}
+
+.tile-honor-red {
+  fill: #ae3f35;
+  font-size: 29px;
+}
+
 .mahjong-tile--interactive {
   cursor: pointer;
   transition: box-shadow 150ms ease, filter 150ms ease, transform 150ms ease;
@@ -768,6 +801,11 @@ h1 {
   border-radius: 4px;
   box-shadow: 0 2px 0 #c5bd9f, 0 3px 6px rgba(0, 0, 0, 0.16);
   font-size: 0.62rem;
+}
+
+.mahjong-tile--compact .tile-art {
+  width: 94%;
+  height: 94%;
 }
 
 .mahjong-tile--back {

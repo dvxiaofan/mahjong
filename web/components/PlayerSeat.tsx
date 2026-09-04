@@ -7,6 +7,7 @@ import type {
   PublicPlayerView,
 } from '../../src/types.ts';
 import { findDiscardAction, type SeatActivity } from '../uiModel';
+import { MahjongTileFace } from './MahjongTileFace';
 
 type SeatPosition = 'north' | 'west' | 'east' | 'south';
 
@@ -73,11 +74,15 @@ function TileFace({ tile, compact = false, drawn = false, onClick }: TileFacePro
         title={`打出 ${label}`}
         type="button"
       >
-        {label}
+        <MahjongTileFace tile={tile} />
       </button>
     );
   }
-  return <span className={tileClassName(compact, false, drawn)} data-tile={tile}>{label}</span>;
+  return (
+    <span aria-label={label} className={tileClassName(compact, false, drawn)} data-tile={tile}>
+      <MahjongTileFace tile={tile} />
+    </span>
+  );
 }
 
 function TileBack() {
