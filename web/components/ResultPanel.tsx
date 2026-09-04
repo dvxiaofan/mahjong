@@ -1,5 +1,6 @@
 import { tileLabel } from '../../src/tiles.ts';
 import type { GameView, Payment } from '../../src/types.ts';
+import { seatLabel } from '../uiModel';
 
 interface ResultPanelProps {
   view: GameView;
@@ -13,17 +14,13 @@ const paymentLabels: Record<Payment['reason'], string> = {
   'exposed-kong': '明杠',
 };
 
-function playerLabel(seat: number, viewerSeat: number): string {
-  return seat === viewerSeat ? '你' : `${seat + 1}号玩家`;
-}
-
 export function ResultPanel({ view, onReset }: ResultPanelProps) {
   const result = view.result;
   if (result === null) return null;
 
   const winnerLabel = result.winner === null
     ? null
-    : playerLabel(result.winner, view.viewerSeat);
+    : seatLabel(result.winner, view.viewerSeat);
   const title = result.outcome === 'draw'
     ? '本局荒庄'
     : result.winner === view.viewerSeat
@@ -60,7 +57,7 @@ export function ResultPanel({ view, onReset }: ResultPanelProps) {
         <div className="score-grid">
           {view.players.map((player) => (
             <span key={player.seat}>
-              <small>{playerLabel(player.seat, view.viewerSeat)}</small>
+              <small>{seatLabel(player.seat, view.viewerSeat)}</small>
               <strong className={player.score > 0 ? 'score-positive' : player.score < 0 ? 'score-negative' : ''}>
                 {player.score > 0 ? '+' : ''}{player.score}
               </strong>
@@ -74,7 +71,7 @@ export function ResultPanel({ view, onReset }: ResultPanelProps) {
           <span className="result-label">支付流水</span>
           {result.payments.map((payment, index) => (
             <span key={`${payment.from}-${payment.to}-${payment.reason}-${index}`}>
-              {playerLabel(payment.from, view.viewerSeat)} → {playerLabel(payment.to, view.viewerSeat)} · {paymentLabels[payment.reason]} {payment.amount} 分
+              {seatLabel(payment.from, view.viewerSeat)} → {seatLabel(payment.to, view.viewerSeat)} · {paymentLabels[payment.reason]} {payment.amount} 分
             </span>
           ))}
         </div>

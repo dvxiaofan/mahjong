@@ -1,26 +1,13 @@
 import type { GameEventView } from '../../src/types.ts';
+import type { Seat } from '../../src/types.ts';
+import { eventTypeLabel, formatEventForViewer } from '../uiModel';
 
 interface EventFeedProps {
   events: readonly GameEventView[];
+  viewerSeat: Seat;
 }
 
-const eventLabels: Record<GameEventView['type'], string> = {
-  deal: '起牌',
-  draw: '摸牌',
-  fortune: '发财',
-  'replacement-draw': '补牌',
-  discard: '出牌',
-  pong: '碰',
-  'exposed-kong': '明杠',
-  'concealed-kong': '暗杠',
-  'supplement-kong': '补杠',
-  'mouth-declared': '报嘴',
-  win: '胡牌',
-  'gang-payment': '杠分',
-  'round-draw': '荒庄',
-};
-
-export function EventFeed({ events }: EventFeedProps) {
+export function EventFeed({ events, viewerSeat }: EventFeedProps) {
   const recentEvents = events.slice(-8).reverse();
   return (
     <section className="panel event-panel">
@@ -38,8 +25,8 @@ export function EventFeed({ events }: EventFeedProps) {
                 className={`event-item ${index === 0 ? 'event-item--latest' : ''}`}
                 key={`${event.type}-${event.seat}-${index}`}
               >
-                <span className="event-tag">{eventLabels[event.type]}</span>
-                <span className="event-message">{event.message}</span>
+                <span className="event-tag">{eventTypeLabel(event.type)}</span>
+                <span className="event-message">{formatEventForViewer(event, viewerSeat)}</span>
               </div>
             ))
           : <span className="empty-panel-note">等待牌局事件</span>}

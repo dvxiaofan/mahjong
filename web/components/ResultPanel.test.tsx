@@ -38,7 +38,7 @@ describe('结算面板', () => {
     expect(html).toContain('自摸');
     expect(html).toContain('3 番');
     expect(html).toContain('碰碰胡 +1');
-    expect(html).toContain('2号玩家 → 你 · 胡牌 4 分');
+    expect(html).toContain('下家 → 你 · 胡牌 4 分');
     expect(html).toContain('再来一局');
   });
 

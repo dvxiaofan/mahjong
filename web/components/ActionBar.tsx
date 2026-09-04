@@ -5,6 +5,7 @@ import { nonDiscardActions } from '../uiModel';
 interface ActionBarProps {
   actions: readonly GameAction[];
   botThinking: boolean;
+  isReplaying: boolean;
   prompt: string;
   onAction: (action: GameAction) => void;
 }
@@ -37,7 +38,7 @@ function actionClass(action: GameAction): string {
   return 'action-button';
 }
 
-export function ActionBar({ actions, botThinking, prompt, onAction }: ActionBarProps) {
+export function ActionBar({ actions, botThinking, isReplaying, prompt, onAction }: ActionBarProps) {
   const controlActions = nonDiscardActions(actions);
   const canDiscard = actions.some((action) => action.type === 'discard');
 
@@ -71,7 +72,7 @@ export function ActionBar({ actions, botThinking, prompt, onAction }: ActionBarP
         )}
         {actions.length === 0 && (
           <span className="empty-panel-note">
-            {botThinking ? '对手正在完成当前动作' : '当前没有可用动作'}
+            {isReplaying ? '回放模式不能提交动作' : botThinking ? '对手正在完成当前动作' : '当前没有可用动作'}
           </span>
         )}
       </div>

@@ -21,8 +21,8 @@ interface PlayerSeatProps {
 }
 
 const positionLabels: Record<SeatPosition, string> = {
-  north: '上家',
-  west: '对家',
+  north: '对家',
+  west: '上家',
   east: '下家',
   south: '我方',
 };

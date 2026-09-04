@@ -9,11 +9,17 @@ import { ActionBar } from './ActionBar';
 import { EventFeed } from './EventFeed';
 import { PlayerSeat } from './PlayerSeat';
 import { ResultPanel } from './ResultPanel';
-import { getInteractionPrompt, getSeatActivity } from '../uiModel';
+import {
+  formatEventForViewer,
+  getInteractionPrompt,
+  getSeatActivity,
+  seatLabel,
+} from '../uiModel';
 
 interface MahjongTableProps {
   view: GameView;
   botThinking: boolean;
+  isReplaying: boolean;
   onAction: (action: GameAction) => void;
   onReset: () => void;
 }
@@ -40,8 +46,10 @@ function playerFor(view: GameView, seat: Seat): PlayerViewEntry {
   return player;
 }
 
-export function MahjongTable({ view, botThinking, onAction, onReset }: MahjongTableProps) {
-  const prompt = getInteractionPrompt(view, botThinking);
+export function MahjongTable({ view, botThinking, isReplaying, onAction, onReset }: MahjongTableProps) {
+  const prompt = isReplaying
+    ? '正在查看历史局面，返回实时牌局后才能操作'
+    : getInteractionPrompt(view, botThinking);
   const latestEvent = view.events.at(-1);
 
   return (
@@ -75,7 +83,7 @@ export function MahjongTable({ view, botThinking, onAction, onReset }: MahjongTa
             <span className="turn-dot" />
             {botThinking && view.legalActions.length === 0
               ? '对手行动中…'
-              : `当前行动：${view.currentSeat + 1} 号玩家`}
+              : `当前行动：${seatLabel(view.currentSeat, view.viewerSeat)}`}
           </div>
           {view.pendingDiscard !== null && (
             <div className="pending-card">
@@ -87,14 +95,16 @@ export function MahjongTable({ view, botThinking, onAction, onReset }: MahjongTa
         </div>
 
         <div className="table-mark table-mark--top">逆时针</div>
-        <div className="table-mark table-mark--bottom">庄家 · {view.dealerSeat + 1}号</div>
+        <div className="table-mark table-mark--bottom">庄家 · {seatLabel(view.dealerSeat, view.viewerSeat)}</div>
       </section>
 
       <div className="table-status-strip" aria-live="polite">
         <span className="status-icon">{view.phase === 'finished' ? '胡' : view.phase === 'drawn' ? '荒' : '局'}</span>
         <span className="status-copy">
           <strong>{prompt}</strong>
-          <small>{latestEvent?.message ?? '牌局准备就绪'}</small>
+          <small>{latestEvent === undefined
+            ? '牌局准备就绪'
+            : formatEventForViewer(latestEvent, view.viewerSeat)}</small>
         </span>
       </div>
 
@@ -104,10 +114,11 @@ export function MahjongTable({ view, botThinking, onAction, onReset }: MahjongTa
         <ActionBar
           actions={view.legalActions}
           botThinking={botThinking}
+          isReplaying={isReplaying}
           onAction={onAction}
           prompt={prompt}
         />
-        <EventFeed events={view.events} />
+        <EventFeed events={view.events} viewerSeat={view.viewerSeat} />
       </section>
     </div>
   );
