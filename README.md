@@ -25,6 +25,7 @@
 │   └── ...
 ├── src/*.test.ts       # vitest 单元测试
 ├── web/                # React + Vite 牌桌 UI
+├── server/             # HTTP + WebSocket 权威服务
 └── local-docs/         # 需求分析、实施计划和进度台账
 ```
 
@@ -37,7 +38,8 @@ npm install        # 安装依赖
 npm run dev        # 启动本地牌桌页面
 npm run check      # TypeScript 类型检查
 npm test           # 运行全部测试
-npm run build      # 编译引擎到 dist/、页面到 dist-web/
+npm run build      # 编译引擎、页面和 WebSocket 服务
+npm start          # 启动页面和 WebSocket 服务（默认 8787）
 ```
 
 ## 状态
@@ -45,4 +47,5 @@ npm run build      # 编译引擎到 dist/、页面到 dist-web/
 - [x] M1 规则引擎 + 单元测试
 - [x] M2 本地对战 UI（可玩、可存档、可回放）
 - [x] M3 AI 对手（三档可解释策略）
-- [~] M4 多局与联网（多局会话层进行中）
+- [x] M4 多局与联网（权威房间、重连、观战、WebSocket）
+- [~] M5 发布质量（自动化质量进行中）
