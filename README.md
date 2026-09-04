@@ -24,7 +24,7 @@
 │   ├── game.ts         # 回合状态机与结算
 │   └── ...
 ├── src/*.test.ts       # vitest 单元测试
-└── docs_gpt/           # 需求分析存档
+└── local-docs/         # 需求分析存档
 ```
 
 ## 开发
