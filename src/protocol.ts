@@ -56,6 +56,7 @@ export type ClientMessage =
   | (ClientEnvelope & { type: 'get-snapshot' })
   | (ClientEnvelope & { type: 'list-rooms' })
   | (ClientEnvelope & { type: 'leave-room' })
+  | (ClientEnvelope & { type: 'set-trustee'; enabled: boolean })
   | (ClientEnvelope & {
       type: 'submit-action';
       expectedRevision: number;
@@ -96,6 +97,7 @@ export type ServerMessage =
     })
   | (ServerEnvelope & { type: 'room-left'; roomId: string })
   | (ServerEnvelope & { type: 'room-list'; rooms: readonly LobbyRoomView[] })
+  | (ServerEnvelope & { type: 'trustee-updated'; enabled: boolean; lobby: LobbyRoomView })
   | (ServerEnvelope & { type: 'action-result'; result: RoomActionResult })
   | (ServerEnvelope & {
       type: 'event-batch';
@@ -187,6 +189,11 @@ export function parseClientMessage(payload: string | unknown): ClientMessagePars
   }
   if (value.type === 'list-rooms' || value.type === 'leave-room') {
     return { success: true, message: { ...base, type: value.type } };
+  }
+  if (value.type === 'set-trustee') {
+    return typeof value.enabled === 'boolean'
+      ? { success: true, message: { ...base, type: 'set-trustee', enabled: value.enabled } }
+      : invalid('invalid-message', '托管开关无效', requestId);
   }
   if (value.type === 'submit-action') {
     const action = parseActionIntent(value.action);
@@ -289,7 +296,7 @@ export function handleRoomProtocolMessage(
     return [{ protocolVersion: PROTOCOL_VERSION, requestId: message.requestId, type: 'pong', nonce: message.nonce }];
   }
   if (message.type === 'join-room' || message.type === 'create-room' ||
-      message.type === 'list-rooms' || message.type === 'leave-room') {
+      message.type === 'list-rooms' || message.type === 'leave-room' || message.type === 'set-trustee') {
     return [createServerErrorMessage(message.requestId, 'room-lifecycle-required', '房间生命周期消息由网关处理', true)];
   }
   if (message.type === 'get-snapshot') {

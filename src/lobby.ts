@@ -9,6 +9,7 @@ export interface PublicParticipant {
   role: ParticipantRole;
   seat: Seat | null;
   connected: boolean;
+  trustee: boolean;
   isHost: boolean;
 }
 
@@ -30,6 +31,7 @@ export interface ParticipantSession {
   seat: Seat | null;
   isHost: boolean;
   resumeToken: string;
+  resumed: boolean;
 }
 
 export interface RoomConnectionIdentity {
@@ -38,6 +40,7 @@ export interface RoomConnectionIdentity {
   role: ParticipantRole;
   seat: Seat | null;
   isHost: boolean;
+  trustee: boolean;
 }
 
 export type AudienceSnapshot = RoomSnapshot | SpectatorRoomSnapshot;
@@ -52,7 +55,8 @@ export type LifecycleErrorCode =
   | 'connection-in-use'
   | 'seat-unavailable'
   | 'room-full'
-  | 'spectator-limit';
+  | 'spectator-limit'
+  | 'invalid-resume-token';
 
 export type LifecycleResult =
   | {
@@ -85,6 +89,24 @@ export interface RoomRegistryOptions {
   spectatorLimit?: number;
   tokenSource?: () => string;
   now?: () => number;
+  disconnectedGraceMs?: number;
+  turnTimeoutMs?: number;
+  responseTimeoutMs?: number;
+}
+
+export interface ResumeRoomInput {
+  roomId: string;
+  connectionId: string;
+  resumeToken: string;
+}
+
+export interface TrusteeTickResult {
+  roomId: string;
+  participantId: string;
+  seat: Seat;
+  reason: 'disconnected' | 'trustee' | 'timeout';
+  accepted: boolean;
+  revision: number;
 }
 
 interface ManagedParticipant {
@@ -93,7 +115,9 @@ interface ManagedParticipant {
   role: ParticipantRole;
   seat: Seat | null;
   connected: boolean;
-  connectionId: string;
+  trustee: boolean;
+  connectionId: string | null;
+  disconnectedAt: number | null;
   resumeToken: string;
   joinOrder: number;
 }
@@ -105,6 +129,7 @@ interface ManagedRoom {
   participants: Map<string, ManagedParticipant>;
   hostParticipantId: string | null;
   emptySince: number | null;
+  actionDeadlineAt: number;
 }
 
 function secureToken(): string {
@@ -147,6 +172,9 @@ export class RoomRegistry {
   private readonly spectatorLimit: number;
   private readonly tokenSource: () => string;
   private readonly now: () => number;
+  private readonly disconnectedGraceMs: number;
+  private readonly turnTimeoutMs: number;
+  private readonly responseTimeoutMs: number;
   private joinSequence = 0;
 
   constructor(options: RoomRegistryOptions = {}) {
@@ -154,6 +182,9 @@ export class RoomRegistry {
     this.spectatorLimit = options.spectatorLimit ?? 32;
     this.tokenSource = options.tokenSource ?? secureToken;
     this.now = options.now ?? Date.now;
+    this.disconnectedGraceMs = options.disconnectedGraceMs ?? 2 * 60_000;
+    this.turnTimeoutMs = options.turnTimeoutMs ?? 30_000;
+    this.responseTimeoutMs = options.responseTimeoutMs ?? 12_000;
   }
 
   private uniqueToken(prefix: string): string {
@@ -176,6 +207,7 @@ export class RoomRegistry {
       role: participant.role,
       seat: participant.seat,
       connected: participant.connected,
+      trustee: participant.trustee,
       isHost: participant.participantId === room.hostParticipantId,
     };
   }
@@ -196,7 +228,12 @@ export class RoomRegistry {
     };
   }
 
-  private session(roomId: string, room: ManagedRoom, participant: ManagedParticipant): ParticipantSession {
+  private session(
+    roomId: string,
+    room: ManagedRoom,
+    participant: ManagedParticipant,
+    resumed = false,
+  ): ParticipantSession {
     return {
       roomId,
       participantId: participant.participantId,
@@ -205,6 +242,7 @@ export class RoomRegistry {
       seat: participant.seat,
       isHost: participant.participantId === room.hostParticipantId,
       resumeToken: participant.resumeToken,
+      resumed,
     };
   }
 
@@ -226,7 +264,9 @@ export class RoomRegistry {
       role: input.role,
       seat,
       connected: true,
+      trustee: false,
       connectionId: input.connectionId,
+      disconnectedAt: null,
       resumeToken: this.uniqueToken('resume'),
       joinOrder: this.joinSequence,
     };
@@ -258,6 +298,7 @@ export class RoomRegistry {
       participants: new Map(),
       hostParticipantId: null,
       emptySince: null,
+      actionDeadlineAt: this.now() + this.turnTimeoutMs,
     };
     this.rooms.set(input.roomId, room);
     return this.addParticipant(input.roomId, room, {
@@ -302,6 +343,71 @@ export class RoomRegistry {
     return this.addParticipant(input.roomId, room, input, seat);
   }
 
+  resumeRoom(input: ResumeRoomInput): LifecycleResult {
+    const room = this.rooms.get(input.roomId);
+    if (room === undefined) return { ok: false, code: 'room-not-found', message: '房间不存在' };
+    if (this.connections.has(input.connectionId)) {
+      return { ok: false, code: 'connection-in-use', message: '连接已经加入房间' };
+    }
+    const participant = [...room.participants.values()].find((candidate) =>
+      constantTimeEqual(candidate.resumeToken, input.resumeToken),
+    );
+    if (participant === undefined || participant.connected) {
+      return { ok: false, code: 'invalid-resume-token', message: '恢复令牌无效或已使用' };
+    }
+
+    participant.connected = true;
+    participant.trustee = false;
+    participant.connectionId = input.connectionId;
+    participant.disconnectedAt = null;
+    participant.resumeToken = this.uniqueToken('resume');
+    this.connections.set(input.connectionId, {
+      roomId: input.roomId,
+      participantId: participant.participantId,
+    });
+    room.emptySince = null;
+    return {
+      ok: true,
+      session: this.session(input.roomId, room, participant, true),
+      lobby: this.roomView(input.roomId, room),
+      snapshot: this.snapshot(room, participant),
+    };
+  }
+
+  disconnectRoom(connectionId: string): LobbyRoomView | null {
+    const connection = this.connections.get(connectionId);
+    if (connection === undefined) return null;
+    const room = this.rooms.get(connection.roomId);
+    const participant = room?.participants.get(connection.participantId);
+    if (room === undefined || participant === undefined) return null;
+    this.connections.delete(connectionId);
+    participant.connected = false;
+    participant.connectionId = null;
+    participant.disconnectedAt = this.now();
+    participant.trustee = participant.role === 'player';
+    return this.roomView(connection.roomId, room);
+  }
+
+  setTrustee(connectionId: string, enabled: boolean): LobbyRoomView | null {
+    const connection = this.connections.get(connectionId);
+    if (connection === undefined) return null;
+    const room = this.rooms.get(connection.roomId);
+    const participant = room?.participants.get(connection.participantId);
+    if (room === undefined || participant === undefined || participant.role !== 'player') return null;
+    participant.trustee = enabled;
+    return this.roomView(connection.roomId, room);
+  }
+
+  private removeParticipant(room: ManagedRoom, participant: ManagedParticipant): void {
+    room.participants.delete(participant.participantId);
+    if (participant.connectionId !== null) this.connections.delete(participant.connectionId);
+    if (room.hostParticipantId === participant.participantId) {
+      room.hostParticipantId = [...room.participants.values()]
+        .sort((left, right) => left.joinOrder - right.joinOrder)[0]?.participantId ?? null;
+    }
+    if (room.participants.size === 0) room.emptySince = this.now();
+  }
+
   leaveRoom(connectionId: string): LobbyRoomView | null {
     const connection = this.connections.get(connectionId);
     if (connection === undefined) return null;
@@ -309,15 +415,87 @@ export class RoomRegistry {
     if (room === undefined) return null;
     const participant = room.participants.get(connection.participantId);
     if (participant === undefined) return null;
-    room.participants.delete(participant.participantId);
-    this.connections.delete(connectionId);
-
-    if (room.hostParticipantId === participant.participantId) {
-      room.hostParticipantId = [...room.participants.values()]
-        .sort((left, right) => left.joinOrder - right.joinOrder)[0]?.participantId ?? null;
-    }
-    if (room.participants.size === 0) room.emptySince = this.now();
+    this.removeParticipant(room, participant);
     return this.roomView(connection.roomId, room);
+  }
+
+  noteRoomActivity(roomId: string, now = this.now()): void {
+    const room = this.rooms.get(roomId);
+    if (room === undefined) return;
+    const phase = room.engine.getSpectatorSnapshot().match.game.phase;
+    room.actionDeadlineAt = now + (phase === 'claiming' ? this.responseTimeoutMs : this.turnTimeoutMs);
+  }
+
+  processTimeouts(now = this.now()): TrusteeTickResult[] {
+    const processed: TrusteeTickResult[] = [];
+    for (const [roomId, room] of this.rooms) {
+      for (let attempt = 0; attempt < 16; attempt += 1) {
+        const publicSnapshot = room.engine.getSpectatorSnapshot();
+        if (publicSnapshot.match.phase !== 'playing') break;
+        const candidates = [...room.participants.values()]
+          .filter((participant): participant is ManagedParticipant & { seat: Seat } =>
+            participant.role === 'player' && participant.seat !== null &&
+            room.engine.getSnapshot(participant.seat).match.game.legalActions.length > 0,
+          )
+          .sort((left, right) => left.seat - right.seat);
+        const participant = candidates.find((candidate) =>
+          !candidate.connected || candidate.trustee || now >= room.actionDeadlineAt,
+        );
+        if (participant === undefined) break;
+        const reason: TrusteeTickResult['reason'] = !participant.connected
+          ? 'disconnected'
+          : participant.trustee
+            ? 'trustee'
+            : 'timeout';
+        const requestId = `server-${reason}-${room.engine.getRevision()}-${participant.seat}`;
+        let accepted = false;
+        let revision = room.engine.getRevision();
+
+        if (reason === 'timeout' && publicSnapshot.match.game.phase === 'claiming') {
+          const pass = room.engine.getSnapshot(participant.seat).match.game.legalActions
+            .find((action) => action.type === 'pass');
+          if (pass !== undefined) {
+            const result = room.engine.submitAction({
+              requestId,
+              expectedRevision: room.engine.getRevision(),
+              seat: participant.seat,
+              action: pass,
+            });
+            accepted = result.accepted;
+            revision = result.revision;
+          }
+        } else {
+          const trustee = room.engine.submitTrusteeAction(participant.seat, requestId);
+          accepted = trustee?.result.accepted ?? false;
+          revision = trustee?.result.revision ?? revision;
+        }
+        processed.push({
+          roomId,
+          participantId: participant.participantId,
+          seat: participant.seat,
+          reason,
+          accepted,
+          revision,
+        });
+        if (!accepted) break;
+        this.noteRoomActivity(roomId, now);
+      }
+    }
+    return processed;
+  }
+
+  sweepDisconnectedParticipants(now = this.now()): string[] {
+    const removed: string[] = [];
+    for (const [roomId, room] of this.rooms) {
+      for (const participant of [...room.participants.values()]) {
+        if (!participant.connected && participant.disconnectedAt !== null &&
+            now - participant.disconnectedAt >= this.disconnectedGraceMs) {
+          this.removeParticipant(room, participant);
+          removed.push(participant.participantId);
+        }
+      }
+    }
+    return removed;
   }
 
   getConnectionIdentity(connectionId: string): RoomConnectionIdentity | null {
@@ -332,6 +510,7 @@ export class RoomRegistry {
       role: participant.role,
       seat: participant.seat,
       isHost: participant.participantId === room.hostParticipantId,
+      trustee: participant.trustee,
     };
   }
 

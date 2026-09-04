@@ -69,6 +69,14 @@ export class MultiplayerGateway {
     }
 
     if (message.type === 'join-room') {
+      if (message.resumeToken !== undefined) {
+        const result = this.registry.resumeRoom({
+          roomId: message.roomId,
+          connectionId,
+          resumeToken: message.resumeToken,
+        });
+        return lifecycleMessages(message.requestId, result);
+      }
       const input: JoinLobbyRoomInput = {
         roomId: message.roomId,
         connectionId,
@@ -94,6 +102,23 @@ export class MultiplayerGateway {
       }];
     }
 
+    if (message.type === 'set-trustee') {
+      if (identity === null || identity.role !== 'player') {
+        return [createServerErrorMessage(message.requestId, 'not-joined', '玩家连接尚未加入房间', false)];
+      }
+      const lobby = this.registry.setTrustee(connectionId, message.enabled);
+      if (lobby === null) {
+        return [createServerErrorMessage(message.requestId, 'not-joined', '无法更新托管状态', false)];
+      }
+      return [{
+        protocolVersion: PROTOCOL_VERSION,
+        requestId: message.requestId,
+        type: 'trustee-updated',
+        enabled: message.enabled,
+        lobby,
+      }];
+    }
+
     if (identity === null) {
       return [createServerErrorMessage(message.requestId, 'not-joined', '连接尚未加入房间', true)];
     }
@@ -101,10 +126,24 @@ export class MultiplayerGateway {
     if (room === null) {
       return [createServerErrorMessage(message.requestId, 'room-not-found', '房间不存在', false)];
     }
-    return handleRoomProtocolMessage(room, {
+    const messages = handleRoomProtocolMessage(room, {
       connectionId,
       seat: identity.seat,
       role: identity.role,
     }, message);
+    if (messages.some((candidate) =>
+      candidate.type === 'action-result' && candidate.result.accepted,
+    )) {
+      this.registry.noteRoomActivity(identity.roomId);
+    }
+    return messages;
+  }
+
+  disconnect(connectionId: string): void {
+    this.registry.disconnectRoom(connectionId);
+  }
+
+  tick(now?: number) {
+    return this.registry.processTimeouts(now);
   }
 }

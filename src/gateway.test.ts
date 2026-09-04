@@ -73,4 +73,41 @@ describe('多人连接网关', () => {
       ...base, requestId: 'snapshot', type: 'get-snapshot',
     })).toEqual([expect.objectContaining({ type: 'error', code: 'not-joined' })]);
   });
+
+  it('断线后可用一次性恢复令牌绑定新连接', async () => {
+    const target = gateway();
+    const created = await target.handle('old', {
+      ...base, requestId: 'create', type: 'create-room', roomId: 'resume-gateway', displayName: '玩家',
+    });
+    if (created[0]?.type !== 'room-joined') throw new Error('创建失败');
+    const token = created[0].session.resumeToken;
+    target.disconnect('old');
+    const resumed = await target.handle('new', {
+      ...base,
+      requestId: 'resume',
+      type: 'join-room',
+      roomId: 'resume-gateway',
+      displayName: '玩家',
+      resumeToken: token,
+    });
+    expect(resumed[0]).toMatchObject({
+      type: 'room-joined',
+      session: { resumed: true, seat: 0 },
+    });
+    if (resumed[0]?.type !== 'room-joined') return;
+    expect(resumed[0].session.resumeToken).not.toBe(token);
+  });
+
+  it('玩家可以通过协议开启托管', async () => {
+    const target = gateway();
+    await target.registry.createRoom({
+      roomId: 'trustee-gateway', connectionId: 'player', displayName: '玩家',
+      matchOptions: { dealerSeat: 0, seed: 20 },
+    });
+    const updated = await target.handle('player', {
+      ...base, requestId: 'trustee', type: 'set-trustee', enabled: true,
+    });
+    expect(updated[0]).toMatchObject({ type: 'trustee-updated', enabled: true });
+    expect(target.tick()[0]).toMatchObject({ seat: 0, reason: 'trustee', accepted: true });
+  }, 10_000);
 });

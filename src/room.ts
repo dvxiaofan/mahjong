@@ -9,6 +9,8 @@ import {
   type WallOpening,
 } from './match.js';
 import { projectStateForSeat, projectStateForSpectator } from './view.js';
+import { decideAiAction, type AiDecision, type AiPolicy } from './ai.js';
+import { strategicAiPolicy } from './ai-strategy.js';
 import type { GameAction, GameView, RoundResult, Seat, SpectatorGameView } from './types.js';
 
 export interface MatchRoundView {
@@ -93,6 +95,11 @@ export interface RoomAuditEntry {
   revisionAfter: number;
   accepted: boolean;
   rejectCode: RoomRejectCode | null;
+}
+
+export interface TrusteeActionResult {
+  decision: AiDecision;
+  result: RoomActionResult;
 }
 
 export interface CreateRoomOptions extends CreateMatchOptions {
@@ -338,5 +345,22 @@ export class AuthoritativeRoom {
     });
     this.cache(command.requestId, fingerprint, result);
     return cloneJson(result);
+  }
+
+  submitTrusteeAction(
+    seat: Seat,
+    requestId: string,
+    policy: AiPolicy = strategicAiPolicy,
+  ): TrusteeActionResult | null {
+    if (this.match.phase !== 'playing') return null;
+    const decision = decideAiAction(this.match.game, seat, policy);
+    if (decision === null) return null;
+    const result = this.submitAction({
+      requestId,
+      expectedRevision: this.revision,
+      seat,
+      action: decision.action,
+    });
+    return { decision, result };
   }
 }
