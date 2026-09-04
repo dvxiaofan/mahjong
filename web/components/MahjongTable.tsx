@@ -1,7 +1,7 @@
 import { tileLabel } from '../../src/tiles.ts';
 import type {
   GameAction,
-  GameView,
+  GameAudienceView,
   PlayerViewEntry,
   Seat,
 } from '../../src/types.ts';
@@ -17,11 +17,12 @@ import {
 } from '../uiModel';
 
 interface MahjongTableProps {
-  view: GameView;
+  view: GameAudienceView;
   botThinking: boolean;
   isReplaying: boolean;
   onAction: (action: GameAction) => void;
   onReset: () => void;
+  resetLabel?: string;
 }
 
 type TablePosition = 'north' | 'west' | 'east' | 'south';
@@ -32,7 +33,7 @@ const seatPositions: ReadonlyArray<{ position: TablePosition; seat: Seat }> = [
   { position: 'east', seat: 1 },
   { position: 'south', seat: 0 },
 ];
-const phaseLabels: Record<GameView['phase'], string> = {
+const phaseLabels: Record<GameAudienceView['phase'], string> = {
   'awaiting-draw': '等待摸牌',
   'awaiting-discard': '等待出牌',
   claiming: '弃牌响应中',
@@ -40,16 +41,25 @@ const phaseLabels: Record<GameView['phase'], string> = {
   drawn: '荒庄',
 };
 
-function playerFor(view: GameView, seat: Seat): PlayerViewEntry {
+function playerFor(view: GameAudienceView, seat: Seat): PlayerViewEntry {
   const player = view.players.find((entry) => entry.seat === seat);
   if (player === undefined) throw new Error(`视图缺少 ${seat} 号玩家`);
   return player;
 }
 
-export function MahjongTable({ view, botThinking, isReplaying, onAction, onReset }: MahjongTableProps) {
+export function MahjongTable({
+  view,
+  botThinking,
+  isReplaying,
+  onAction,
+  onReset,
+  resetLabel,
+}: MahjongTableProps) {
   const prompt = isReplaying
     ? '正在查看历史局面，返回实时牌局后才能操作'
-    : getInteractionPrompt(view, botThinking);
+    : view.viewerSeat === null
+      ? '正在观战，牌桌将随服务端状态实时更新'
+      : getInteractionPrompt(view, botThinking);
   const latestEvent = view.events.at(-1);
 
   return (
@@ -58,7 +68,9 @@ export function MahjongTable({ view, botThinking, isReplaying, onAction, onReset
         <div className="felt-highlight felt-highlight--one" />
         <div className="felt-highlight felt-highlight--two" />
 
-        {seatPositions.map(({ position, seat }) => {
+        {seatPositions.map(({ position, seat: relativeSeat }) => {
+          const baseSeat = view.viewerSeat ?? 0;
+          const seat = ((baseSeat + relativeSeat) % 4) as Seat;
           return (
             <div className={`seat-slot seat-slot--${position}`} key={position}>
               <PlayerSeat
@@ -108,7 +120,7 @@ export function MahjongTable({ view, botThinking, isReplaying, onAction, onReset
         </span>
       </div>
 
-      <ResultPanel view={view} onReset={onReset} />
+      <ResultPanel view={view} onReset={onReset} {...(resetLabel === undefined ? {} : { resetLabel })} />
 
       <section className="table-lower-grid">
         <ActionBar

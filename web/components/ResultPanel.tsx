@@ -1,10 +1,11 @@
 import { tileLabel } from '../../src/tiles.ts';
-import type { GameView, Payment } from '../../src/types.ts';
+import type { GameAudienceView, Payment } from '../../src/types.ts';
 import { seatLabel } from '../uiModel';
 
 interface ResultPanelProps {
-  view: GameView;
+  view: GameAudienceView;
   onReset: () => void;
+  resetLabel?: string;
 }
 
 const paymentLabels: Record<Payment['reason'], string> = {
@@ -14,7 +15,7 @@ const paymentLabels: Record<Payment['reason'], string> = {
   'exposed-kong': '明杠',
 };
 
-export function ResultPanel({ view, onReset }: ResultPanelProps) {
+export function ResultPanel({ view, onReset, resetLabel = '再来一局' }: ResultPanelProps) {
   const result = view.result;
   if (result === null) return null;
 
@@ -77,7 +78,7 @@ export function ResultPanel({ view, onReset }: ResultPanelProps) {
         </div>
       )}
 
-      <button className="result-button" onClick={onReset} type="button">再来一局</button>
+      <button className="result-button" onClick={onReset} type="button">{resetLabel}</button>
     </section>
   );
 }

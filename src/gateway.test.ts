@@ -7,6 +7,18 @@ function gateway() {
   return new MultiplayerGateway(new RoomRegistry({ tokenSource: () => `${++token}` }));
 }
 
+async function fillPlayerSeats(target: MultiplayerGateway, roomId: string, prefix: string) {
+  for (const seat of [1, 2, 3] as const) {
+    await target.registry.joinRoom({
+      roomId,
+      connectionId: `${prefix}-${seat}`,
+      displayName: `P${seat}`,
+      role: 'player',
+      seatPreference: seat,
+    });
+  }
+}
+
 const base = { protocolVersion: 1 as const };
 
 describe('多人连接网关', () => {
@@ -40,6 +52,7 @@ describe('多人连接网关', () => {
       matchOptions: { dealerSeat: 0, seed: 10 },
     });
     if (!directCreated.ok) throw new Error('创建房间失败');
+    await fillPlayerSeats(target, 'play-room', 'play');
     const action = directCreated.snapshot.match.game.legalActions[0]!;
     const intent = 'tile' in action ? { type: action.type, tile: action.tile } : { type: action.type };
     const result = await target.handle('player', {
@@ -104,6 +117,7 @@ describe('多人连接网关', () => {
       roomId: 'trustee-gateway', connectionId: 'player', displayName: '玩家',
       matchOptions: { dealerSeat: 0, seed: 20 },
     });
+    await fillPlayerSeats(target, 'trustee-gateway', 'trustee');
     const updated = await target.handle('player', {
       ...base, requestId: 'trustee', type: 'set-trustee', enabled: true,
     });

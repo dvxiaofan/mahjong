@@ -75,6 +75,12 @@ describe('联网安全守卫', () => {
       roomId: 'action-security', connectionId: 'player', displayName: '玩家',
       matchOptions: { dealerSeat: 0, seed: 1 },
     });
+    for (const seat of [1, 2, 3] as const) {
+      await gateway.registry.joinRoom({
+        roomId: 'action-security', connectionId: `player-${seat}`,
+        displayName: `玩家${seat}`, role: 'player', seatPreference: seat,
+      });
+    }
     for (let index = 0; index < 3; index += 1) {
       await gateway.handle('player', {
         protocolVersion: 1,

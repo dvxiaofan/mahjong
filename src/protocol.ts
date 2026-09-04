@@ -81,6 +81,7 @@ export type ServerErrorCode =
   | 'not-joined'
   | 'room-lifecycle-required'
   | 'spectator-read-only'
+  | 'room-not-ready'
   | LifecycleErrorCode
   | SecurityRejectCode;
 

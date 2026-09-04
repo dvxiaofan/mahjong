@@ -4,7 +4,7 @@ import { eventTypeLabel, formatEventForViewer } from '../uiModel';
 
 interface EventFeedProps {
   events: readonly GameEventView[];
-  viewerSeat: Seat;
+  viewerSeat: Seat | null;
 }
 
 export function EventFeed({ events, viewerSeat }: EventFeedProps) {

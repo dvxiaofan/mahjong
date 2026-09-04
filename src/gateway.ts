@@ -152,6 +152,11 @@ export class MultiplayerGateway {
     if (room === null) {
       return [createServerErrorMessage(message.requestId, 'room-not-found', '房间不存在', false)];
     }
+    const lobby = this.registry.getRoomView(identity.roomId);
+    if ((message.type === 'submit-action' || message.type === 'start-next-round') &&
+        (lobby?.playerCount ?? 0) < 4) {
+      return [createServerErrorMessage(message.requestId, 'room-not-ready', '需要四名玩家入座后才能行动', true)];
+    }
     const messages = handleRoomProtocolMessage(room, {
       connectionId,
       seat: identity.seat,

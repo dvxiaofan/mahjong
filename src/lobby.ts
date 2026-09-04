@@ -537,6 +537,9 @@ export class RoomRegistry {
   processTimeouts(now = this.now()): TrusteeTickResult[] {
     const processed: TrusteeTickResult[] = [];
     for (const [roomId, room] of this.rooms) {
+      const playerCount = [...room.participants.values()]
+        .filter((participant) => participant.role === 'player' && participant.seat !== null).length;
+      if (playerCount < 4) continue;
       for (let attempt = 0; attempt < 16; attempt += 1) {
         const publicSnapshot = room.engine.getSpectatorSnapshot();
         if (publicSnapshot.match.phase !== 'playing') break;

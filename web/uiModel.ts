@@ -1,5 +1,5 @@
 import { tileLabel, type NormalTile } from '../src/tiles.ts';
-import type { GameAction, GameEventView, GameView, Seat } from '../src/types.ts';
+import type { GameAction, GameAudienceView, GameEventView, GameView, Seat } from '../src/types.ts';
 
 export type SeatActivity = 'active' | 'waiting' | 'responded' | 'discarder' | 'idle';
 export type EventFilter = 'all' | 'flow' | 'special' | 'settlement';
@@ -36,7 +36,8 @@ export function eventTypeLabel(type: GameEventView['type']): string {
   return eventNames[type];
 }
 
-export function seatLabel(seat: Seat, viewerSeat: Seat): string {
+export function seatLabel(seat: Seat, viewerSeat: Seat | null): string {
+  if (viewerSeat === null) return `${seat + 1}号玩家`;
   const delta = (seat - viewerSeat + 4) % 4;
   if (delta === 0) return '你';
   if (delta === 1) return '下家';
@@ -44,7 +45,7 @@ export function seatLabel(seat: Seat, viewerSeat: Seat): string {
   return '上家';
 }
 
-export function formatEventForViewer(event: GameEventView, viewerSeat: Seat): string {
+export function formatEventForViewer(event: GameEventView, viewerSeat: Seat | null): string {
   if (event.seat === null) return event.message;
   const prefix = `${event.seat}号玩家`;
   const readable = seatLabel(event.seat, viewerSeat);
@@ -53,7 +54,7 @@ export function formatEventForViewer(event: GameEventView, viewerSeat: Seat): st
     : `${readable}：${event.message}`;
 }
 
-export function formatActionForViewer(action: GameAction, viewerSeat: Seat): string {
+export function formatActionForViewer(action: GameAction, viewerSeat: Seat | null): string {
   const actor = seatLabel(action.seat, viewerSeat);
   return 'tile' in action
     ? `${actor}${actionNames[action.type]} ${tileLabel(action.tile)}`
@@ -83,7 +84,7 @@ export function findDiscardAction(
   return action ?? null;
 }
 
-export function getSeatActivity(view: GameView, seat: Seat): SeatActivity {
+export function getSeatActivity(view: GameAudienceView, seat: Seat): SeatActivity {
   if (view.phase === 'finished' || view.phase === 'drawn') return 'idle';
 
   if (view.phase === 'claiming' && view.pendingDiscard !== null) {

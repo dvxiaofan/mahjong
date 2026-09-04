@@ -240,3 +240,5 @@ export interface SpectatorGameView {
   payments: readonly Payment[];
   legalActions: readonly [];
 }
+
+export type GameAudienceView = GameView | SpectatorGameView;

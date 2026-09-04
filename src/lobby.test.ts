@@ -180,6 +180,12 @@ describe('房间注册表与生命周期', () => {
       roomId: 'trustee-room', connectionId: 'c0', displayName: 'P0',
       matchOptions: { dealerSeat: 0, seed: 11 },
     });
+    for (const seat of [1, 2, 3] as const) {
+      await rooms.joinRoom({
+        roomId: 'trustee-room', connectionId: `c${seat}`, displayName: `P${seat}`,
+        role: 'player', seatPreference: seat,
+      });
+    }
     rooms.setTrustee('c0', true);
     expect(rooms.processTimeouts()[0]).toMatchObject({ seat: 0, reason: 'trustee', accepted: true });
 
@@ -188,6 +194,12 @@ describe('房间注册表与生命周期', () => {
       roomId: 'disconnect-room', connectionId: 'c0', displayName: 'P0',
       matchOptions: { dealerSeat: 0, seed: 12 },
     });
+    for (const seat of [1, 2, 3] as const) {
+      await disconnectedRooms.joinRoom({
+        roomId: 'disconnect-room', connectionId: `d${seat}`, displayName: `P${seat}`,
+        role: 'player', seatPreference: seat,
+      });
+    }
     disconnectedRooms.disconnectRoom('c0');
     expect(disconnectedRooms.processTimeouts()[0]).toMatchObject({ seat: 0, reason: 'disconnected', accepted: true });
   }, 10_000);
