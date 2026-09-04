@@ -9,12 +9,15 @@
     "simulate:ai": "npm run build:engine && node scripts/ai-report.mjs",
     "test:watch": "vitest",
     "dev": "vite --config vite.config.ts",
+    "start": "node --enable-source-maps dist-server/server/index.js",
     "build:engine": "tsc -p tsconfig.json",
     "build:web": "vite build --config vite.config.ts",
-    "build": "npm run build:engine && npm run build:web",
+    "build:server": "tsc -p tsconfig.server.json",
+    "build": "npm run build:engine && npm run build:web && npm run build:server",
     "check:engine": "tsc -p tsconfig.json --noEmit",
     "check:web": "tsc -p tsconfig.web.json --noEmit",
-    "check": "npm run check:engine && npm run check:web"
+    "check:server": "tsc -p tsconfig.server.json --noEmit",
+    "check": "npm run check:engine && npm run check:web && npm run check:server"
   },
   "keywords": [],
   "author": "",
@@ -23,6 +26,7 @@
     "@types/node": "^26.4.1",
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.7",
+    "@types/ws": "^8.18.1",
     "@vitejs/plugin-react": "^6.1.1",
     "typescript": "^7.0.2",
     "vite": "^8.2.2",
@@ -31,6 +35,7 @@
   "type": "module",
   "dependencies": {
     "react": "^19.2.8",
-    "react-dom": "^19.2.8"
+    "react-dom": "^19.2.8",
+    "ws": "^8.21.3"
   }
 }

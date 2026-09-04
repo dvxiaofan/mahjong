@@ -99,6 +99,7 @@ export type ServerMessage =
     })
   | (ServerEnvelope & { type: 'room-left'; roomId: string })
   | (ServerEnvelope & { type: 'room-list'; rooms: readonly LobbyRoomView[] })
+  | (ServerEnvelope & { type: 'lobby-updated'; lobby: LobbyRoomView })
   | (ServerEnvelope & { type: 'trustee-updated'; enabled: boolean; lobby: LobbyRoomView })
   | (ServerEnvelope & { type: 'action-result'; result: RoomActionResult })
   | (ServerEnvelope & {
