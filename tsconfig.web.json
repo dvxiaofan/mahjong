@@ -1,7 +1,7 @@
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
-    "rootDir": "web",
+    "rootDir": ".",
     "outDir": "dist-web",
     "noEmit": true,
     "jsx": "react-jsx",
