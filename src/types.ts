@@ -132,7 +132,7 @@ export interface GameEvent {
 export interface GameState {
   players: PlayerState[];
   wall: WallState;
-  /** 本局由骰子确定的庄家/起牌位置，也是争抢优先顺序的起点。 */
+  /** 本局由骰子确定的庄家/起牌位置；弃牌争抢顺序以弃牌者下家为起点。 */
   dealerSeat: Seat;
   currentSeat: Seat;
   phase: GamePhase;

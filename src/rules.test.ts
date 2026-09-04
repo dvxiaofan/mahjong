@@ -30,6 +30,22 @@ describe('胡牌、番种与报嘴判定', () => {
       ],
     });
 
+    const purePungs = [
+      'm1', 'm1', 'm1',
+      'm2', 'm2', 'm2',
+      'm3', 'm3', 'm3',
+      'm4', 'm4', 'm4',
+      'm5', 'm5',
+    ] as const;
+    expect(calculateFan({ concealedTiles: purePungs, melds: [], fortuneCount: 3 })).toEqual({
+      total: 5,
+      items: [
+        { name: '碰碰胡', fan: 1 },
+        { name: '清一色', fan: 1 },
+        { name: '发财', fan: 3 },
+      ],
+    });
+
     const honorHand = [
       'm1', 'm1', 'm1',
       'm2', 'm2', 'm2',
@@ -91,5 +107,12 @@ describe('胡牌、番种与报嘴判定', () => {
     expect(canWinOnSelfDraw(before, [], reported, 's1')).toBe(true);
     expect(canWinOnSelfDraw(before, [], reported, 'm1')).toBe(false);
     expect(canWinOnDiscard(before, [], reported, 's1')).toBe(true);
+
+    expect(canWinOnDiscard(before, [], {
+      fortuneCount: 0,
+      mouthDeclared: false,
+      lockedWaits: [],
+      mouthRequired: false,
+    }, 's1')).toBe(false);
   });
 });

@@ -713,7 +713,7 @@ export function applyAction(state: GameState, action: GameAction): GameState {
       return next;
     }
     if (next.phase === 'claiming' && next.pendingDiscard !== null) {
-      // 抢同一张弃牌的动作必须先登记，待三家都回应后按固定起牌顺序决胜。
+      // 抢同一张弃牌的动作必须先登记，待三家都回应后按弃牌者下家顺序决胜。
       registerClaimResponse(next, action);
       return next;
     }
