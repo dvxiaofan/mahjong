@@ -13,6 +13,7 @@ import type {
   ParticipantRole,
   ParticipantSession,
 } from './lobby.js';
+import type { SecurityRejectCode } from './security.js';
 
 export const PROTOCOL_VERSION = 1 as const;
 
@@ -80,7 +81,8 @@ export type ServerErrorCode =
   | 'not-joined'
   | 'room-lifecycle-required'
   | 'spectator-read-only'
-  | LifecycleErrorCode;
+  | LifecycleErrorCode
+  | SecurityRejectCode;
 
 export type ServerMessage =
   | (ServerEnvelope & {

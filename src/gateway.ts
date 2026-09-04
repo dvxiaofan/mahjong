@@ -6,6 +6,7 @@ import {
   parseClientMessage,
   type ServerMessage,
 } from './protocol.js';
+import { SecurityGuard } from './security.js';
 
 function lifecycleMessages(requestId: string, result: LifecycleResult): ServerMessage[] {
   if (!result.ok) {
@@ -24,14 +25,26 @@ function lifecycleMessages(requestId: string, result: LifecycleResult): ServerMe
 /** Connection-aware, transport-neutral multiplayer gateway. */
 export class MultiplayerGateway {
   readonly registry: RoomRegistry;
+  readonly security: SecurityGuard;
 
-  constructor(registry = new RoomRegistry()) {
+  constructor(registry = new RoomRegistry(), security = new SecurityGuard()) {
     this.registry = registry;
+    this.security = security;
   }
 
   async handle(connectionId: string, payload: string | unknown): Promise<ServerMessage[]> {
+    const securityCheck = this.security.inspect(connectionId, payload);
+    if (!securityCheck.allowed) {
+      return [createServerErrorMessage(
+        null,
+        securityCheck.code,
+        securityCheck.message,
+        securityCheck.retryAfterMs > 0,
+      )];
+    }
     const parsed = parseClientMessage(payload);
     if (!parsed.success) {
+      this.security.recordViolation(connectionId, 'invalid-message', parsed.code);
       return [createServerErrorMessage(parsed.requestId, parsed.code, parsed.message, false)];
     }
     const message = parsed.message;
@@ -65,6 +78,9 @@ export class MultiplayerGateway {
         ...(message.password === undefined ? {} : { password: message.password }),
         ...(message.maxRounds === undefined ? {} : { matchOptions: { maxRounds: message.maxRounds } }),
       });
+      if (!result.ok && result.code === 'connection-in-use') {
+        this.security.recordViolation(connectionId, 'identity-conflict', result.code);
+      }
       return lifecycleMessages(message.requestId, result);
     }
 
@@ -75,6 +91,9 @@ export class MultiplayerGateway {
           connectionId,
           resumeToken: message.resumeToken,
         });
+        if (!result.ok && result.code === 'invalid-resume-token') {
+          this.security.recordViolation(connectionId, 'authentication-failure', result.code);
+        }
         return lifecycleMessages(message.requestId, result);
       }
       const input: JoinLobbyRoomInput = {
@@ -86,6 +105,13 @@ export class MultiplayerGateway {
         ...(message.seatPreference === undefined ? {} : { seatPreference: message.seatPreference }),
       };
       const result = await this.registry.joinRoom(input);
+      if (!result.ok) {
+        if (result.code === 'wrong-password' || result.code === 'invalid-resume-token') {
+          this.security.recordViolation(connectionId, 'authentication-failure', result.code);
+        } else if (result.code === 'connection-in-use') {
+          this.security.recordViolation(connectionId, 'identity-conflict', result.code);
+        }
+      }
       return lifecycleMessages(message.requestId, result);
     }
 
@@ -135,6 +161,13 @@ export class MultiplayerGateway {
       candidate.type === 'action-result' && candidate.result.accepted,
     )) {
       this.registry.noteRoomActivity(identity.roomId);
+    }
+    for (const candidate of messages) {
+      if (candidate.type !== 'action-result' || candidate.result.accepted) continue;
+      if (candidate.result.code === 'illegal-action' || candidate.result.code === 'seat-mismatch' ||
+          candidate.result.code === 'request-id-conflict') {
+        this.security.recordViolation(connectionId, 'invalid-action', candidate.result.code);
+      }
     }
     return messages;
   }

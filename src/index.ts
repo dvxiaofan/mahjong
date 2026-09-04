@@ -15,3 +15,4 @@ export * from './room.js';
 export * from './protocol.js';
 export * from './lobby.js';
 export * from './gateway.js';
+export * from './security.js';
