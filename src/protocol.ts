@@ -1,7 +1,18 @@
 import { isNormalTile } from './rules.js';
 import type { GameAction, GameEventView, Seat } from './types.js';
 import { SEATS } from './types.js';
-import { AuthoritativeRoom, type RoomActionResult, type RoomSnapshot } from './room.js';
+import {
+  AuthoritativeRoom,
+  type RoomActionResult,
+  type RoomSnapshot,
+  type SpectatorRoomSnapshot,
+} from './room.js';
+import type {
+  LifecycleErrorCode,
+  LobbyRoomView,
+  ParticipantRole,
+  ParticipantSession,
+} from './lobby.js';
 
 export const PROTOCOL_VERSION = 1 as const;
 
@@ -27,13 +38,24 @@ interface ClientEnvelope {
 export type ClientMessage =
   | (ClientEnvelope & { type: 'hello' })
   | (ClientEnvelope & {
+      type: 'create-room';
+      roomId: string;
+      displayName: string;
+      password?: string;
+      maxRounds?: number;
+    })
+  | (ClientEnvelope & {
       type: 'join-room';
       roomId: string;
       displayName: string;
+      role?: ParticipantRole;
+      password?: string;
       seatPreference?: Seat;
       resumeToken?: string;
     })
   | (ClientEnvelope & { type: 'get-snapshot' })
+  | (ClientEnvelope & { type: 'list-rooms' })
+  | (ClientEnvelope & { type: 'leave-room' })
   | (ClientEnvelope & {
       type: 'submit-action';
       expectedRevision: number;
@@ -55,15 +77,25 @@ export type ServerErrorCode =
   | 'invalid-message'
   | 'unsupported-version'
   | 'not-joined'
-  | 'room-lifecycle-required';
+  | 'room-lifecycle-required'
+  | 'spectator-read-only'
+  | LifecycleErrorCode;
 
 export type ServerMessage =
   | (ServerEnvelope & {
       type: 'welcome';
-      roomId: string;
-      revision: number;
+      roomId: string | null;
+      revision: number | null;
     })
-  | (ServerEnvelope & { type: 'snapshot'; snapshot: RoomSnapshot })
+  | (ServerEnvelope & { type: 'snapshot'; snapshot: RoomSnapshot | SpectatorRoomSnapshot })
+  | (ServerEnvelope & {
+      type: 'room-joined';
+      session: ParticipantSession;
+      lobby: LobbyRoomView;
+      snapshot: RoomSnapshot | SpectatorRoomSnapshot;
+    })
+  | (ServerEnvelope & { type: 'room-left'; roomId: string })
+  | (ServerEnvelope & { type: 'room-list'; rooms: readonly LobbyRoomView[] })
   | (ServerEnvelope & { type: 'action-result'; result: RoomActionResult })
   | (ServerEnvelope & {
       type: 'event-batch';
@@ -86,6 +118,7 @@ export type ClientMessageParseResult =
 export interface RoomProtocolContext {
   connectionId: string;
   seat: Seat | null;
+  role?: ParticipantRole;
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -152,6 +185,9 @@ export function parseClientMessage(payload: string | unknown): ClientMessagePars
   if (value.type === 'get-snapshot') {
     return { success: true, message: { ...base, type: 'get-snapshot' } };
   }
+  if (value.type === 'list-rooms' || value.type === 'leave-room') {
+    return { success: true, message: { ...base, type: value.type } };
+  }
   if (value.type === 'submit-action') {
     const action = parseActionIntent(value.action);
     if (!validRevision(value.expectedRevision) || action === null) {
@@ -170,6 +206,8 @@ export function parseClientMessage(payload: string | unknown): ClientMessagePars
   if (value.type === 'join-room') {
     if (typeof value.roomId !== 'string' || value.roomId.trim().length === 0 || value.roomId.length > 64 ||
         typeof value.displayName !== 'string' || value.displayName.trim().length === 0 || value.displayName.length > 24 ||
+        (value.role !== undefined && value.role !== 'player' && value.role !== 'spectator') ||
+        (value.password !== undefined && typeof value.password !== 'string') ||
         (value.seatPreference !== undefined && !validSeat(value.seatPreference)) ||
         (value.resumeToken !== undefined && typeof value.resumeToken !== 'string')) {
       return invalid('invalid-message', '加入房间参数无效', requestId);
@@ -181,8 +219,29 @@ export function parseClientMessage(payload: string | unknown): ClientMessagePars
         type: 'join-room',
         roomId: value.roomId,
         displayName: value.displayName,
+        ...(value.role === undefined ? {} : { role: value.role as ParticipantRole }),
+        ...(value.password === undefined ? {} : { password: value.password }),
         ...(value.seatPreference === undefined ? {} : { seatPreference: value.seatPreference }),
         ...(value.resumeToken === undefined ? {} : { resumeToken: value.resumeToken }),
+      },
+    };
+  }
+  if (value.type === 'create-room') {
+    if (typeof value.roomId !== 'string' || value.roomId.trim().length === 0 || value.roomId.length > 64 ||
+        typeof value.displayName !== 'string' || value.displayName.trim().length === 0 || value.displayName.length > 24 ||
+        (value.password !== undefined && typeof value.password !== 'string') ||
+        (value.maxRounds !== undefined && (!Number.isInteger(value.maxRounds) || (value.maxRounds as number) <= 0 || (value.maxRounds as number) > 100))) {
+      return invalid('invalid-message', '创建房间参数无效', requestId);
+    }
+    return {
+      success: true,
+      message: {
+        ...base,
+        type: 'create-room',
+        roomId: value.roomId,
+        displayName: value.displayName,
+        ...(value.password === undefined ? {} : { password: value.password }),
+        ...(value.maxRounds === undefined ? {} : { maxRounds: value.maxRounds as number }),
       },
     };
   }
@@ -193,7 +252,7 @@ export function encodeServerMessage(message: ServerMessage): string {
   return JSON.stringify(message);
 }
 
-function errorMessage(
+export function createServerErrorMessage(
   requestId: string | null,
   code: ServerErrorCode,
   message: string,
@@ -214,7 +273,7 @@ export function handleRoomProtocolMessage(
 ): ServerMessage[] {
   const parsed = parseClientMessage(payload);
   if (!parsed.success) {
-    return [errorMessage(parsed.requestId, parsed.code, parsed.message, false)];
+    return [createServerErrorMessage(parsed.requestId, parsed.code, parsed.message, false)];
   }
   const message = parsed.message;
   if (message.type === 'hello') {
@@ -229,19 +288,28 @@ export function handleRoomProtocolMessage(
   if (message.type === 'ping') {
     return [{ protocolVersion: PROTOCOL_VERSION, requestId: message.requestId, type: 'pong', nonce: message.nonce }];
   }
-  if (message.type === 'join-room') {
-    return [errorMessage(message.requestId, 'room-lifecycle-required', '加入房间由房间生命周期服务处理', true)];
-  }
-  if (context.seat === null) {
-    return [errorMessage(message.requestId, 'not-joined', '连接尚未加入座位', true)];
+  if (message.type === 'join-room' || message.type === 'create-room' ||
+      message.type === 'list-rooms' || message.type === 'leave-room') {
+    return [createServerErrorMessage(message.requestId, 'room-lifecycle-required', '房间生命周期消息由网关处理', true)];
   }
   if (message.type === 'get-snapshot') {
+    if (context.seat === null && context.role !== 'spectator') {
+      return [createServerErrorMessage(message.requestId, 'not-joined', '连接尚未加入房间', true)];
+    }
     return [{
       protocolVersion: PROTOCOL_VERSION,
       requestId: message.requestId,
       type: 'snapshot',
-      snapshot: room.getSnapshot(context.seat),
+      snapshot: context.seat === null ? room.getSpectatorSnapshot() : room.getSnapshot(context.seat),
     }];
+  }
+  if (context.seat === null) {
+    return [createServerErrorMessage(
+      message.requestId,
+      context.role === 'spectator' ? 'spectator-read-only' : 'not-joined',
+      context.role === 'spectator' ? '观战连接不能提交动作' : '连接尚未加入座位',
+      false,
+    )];
   }
 
   const result = message.type === 'submit-action'

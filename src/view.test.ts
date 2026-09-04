@@ -3,6 +3,7 @@ import { applyAction, createGame, getLegalActions } from './game.js';
 import type { GameAction, GameEventView } from './types.js';
 import {
   projectStateForSeat,
+  projectStateForSpectator,
   toPlayerView,
   toPublicPlayerView,
 } from './view.js';
@@ -170,5 +171,15 @@ describe('UI 视图契约', () => {
     expect(getLegalActions(state, 0)).not.toContainEqual({ type: 'pass', seat: 0 });
     expect(state.result!.fan!.items[0]!.fan).toBe(1);
     expect(state.result!.payments).toHaveLength(1);
+  });
+
+  it('观战视图不包含任何玩家暗手或合法动作', () => {
+    const state = createGame({ seed: 12 });
+    const view = projectStateForSpectator(state);
+    expect(view.viewerSeat).toBeNull();
+    expect(view.players.every((player) => player.visibility === 'public')).toBe(true);
+    expect(view.players.every((player) => !('concealedTiles' in player))).toBe(true);
+    expect(view.lastDrawnTile).toBeNull();
+    expect(view.legalActions).toEqual([]);
   });
 });

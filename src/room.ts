@@ -8,8 +8,8 @@ import {
   type MatchState,
   type WallOpening,
 } from './match.js';
-import { projectStateForSeat } from './view.js';
-import type { GameAction, GameView, RoundResult, Seat } from './types.js';
+import { projectStateForSeat, projectStateForSpectator } from './view.js';
+import type { GameAction, GameView, RoundResult, Seat, SpectatorGameView } from './types.js';
 
 export interface MatchRoundView {
   roundNumber: number;
@@ -31,10 +31,20 @@ export interface MatchView {
   game: GameView;
 }
 
+export interface SpectatorMatchView extends Omit<MatchView, 'game'> {
+  game: SpectatorGameView;
+}
+
 export interface RoomSnapshot {
   roomId: string;
   revision: number;
   match: MatchView;
+}
+
+export interface SpectatorRoomSnapshot {
+  roomId: string;
+  revision: number;
+  match: SpectatorMatchView;
 }
 
 export interface RoomActionCommand {
@@ -124,6 +134,19 @@ export function projectMatchForSeat(match: MatchState, seat: Seat): MatchView {
   };
 }
 
+export function projectMatchForSpectator(match: MatchState): SpectatorMatchView {
+  return {
+    phase: match.phase,
+    roundNumber: match.roundNumber,
+    maxRounds: match.maxRounds,
+    dealerSeat: match.dealerSeat,
+    opening: cloneJson(match.opening),
+    cumulativeScores: [...match.cumulativeScores],
+    history: match.history.map(projectRound),
+    game: projectStateForSpectator(match.game),
+  };
+}
+
 export class AuthoritativeRoom {
   readonly roomId: string;
   private match: MatchState;
@@ -148,6 +171,14 @@ export class AuthoritativeRoom {
       roomId: this.roomId,
       revision: this.revision,
       match: projectMatchForSeat(this.match, seat),
+    };
+  }
+
+  getSpectatorSnapshot(): SpectatorRoomSnapshot {
+    return {
+      roomId: this.roomId,
+      revision: this.revision,
+      match: projectMatchForSpectator(this.match),
     };
   }
 

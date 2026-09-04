@@ -223,3 +223,20 @@ export interface GameView {
   /** Actions for viewerSeat only. */
   legalActions: readonly GameAction[];
 }
+
+/** Spectator contract: all four players are public and no private action data exists. */
+export interface SpectatorGameView {
+  viewerSeat: null;
+  players: readonly PublicPlayerView[];
+  wallRemaining: number;
+  dealerSeat: Seat;
+  currentSeat: Seat;
+  phase: GamePhase;
+  drawMode: DrawMode | null;
+  lastDrawnTile: null;
+  pendingDiscard: PendingDiscardView | null;
+  result: RoundResult | null;
+  events: readonly GameEventView[];
+  payments: readonly Payment[];
+  legalActions: readonly [];
+}

@@ -16,6 +16,7 @@ import type {
   PublicPlayerView,
   RoundResult,
   Seat,
+  SpectatorGameView,
 } from './types.js';
 import { SEATS } from './types.js';
 
@@ -78,7 +79,7 @@ export function toPlayerView(player: PlayerState): PlayerView {
   };
 }
 
-function projectEvent(event: GameEvent, viewerSeat: Seat): GameEventView {
+function projectEvent(event: GameEvent, viewerSeat: Seat | null): GameEventView {
   const isOwnEvent = event.seat === viewerSeat;
   if (isOwnEvent || event.type === 'fortune') {
     return { ...event };
@@ -158,5 +159,24 @@ export function projectStateForSeat(state: GameState, viewerSeat: Seat): GameVie
     events: state.events.map((event) => projectEvent(event, viewerSeat)),
     payments: state.payments.map(clonePayment),
     legalActions: getLegalActions(state, viewerSeat).map(cloneAction),
+  };
+}
+
+/** Public-only projection for observers who do not own a seat. */
+export function projectStateForSpectator(state: GameState): SpectatorGameView {
+  return {
+    viewerSeat: null,
+    players: state.players.map(toPublicPlayerView),
+    wallRemaining: remainingWallTiles(state.wall),
+    dealerSeat: state.dealerSeat,
+    currentSeat: state.currentSeat,
+    phase: state.phase,
+    drawMode: state.drawMode,
+    lastDrawnTile: null,
+    pendingDiscard: projectPendingDiscard(state.pendingDiscard),
+    result: cloneResult(state.result),
+    events: state.events.map((event) => projectEvent(event, null)),
+    payments: state.payments.map(clonePayment),
+    legalActions: [],
   };
 }
