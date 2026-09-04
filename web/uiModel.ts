@@ -1,7 +1,76 @@
 import { tileLabel, type NormalTile } from '../src/tiles.ts';
-import type { GameAction, GameView, Seat } from '../src/types.ts';
+import type { GameAction, GameEventView, GameView, Seat } from '../src/types.ts';
 
 export type SeatActivity = 'active' | 'waiting' | 'responded' | 'discarder' | 'idle';
+export type EventFilter = 'all' | 'flow' | 'special' | 'settlement';
+
+const actionNames: Record<GameAction['type'], string> = {
+  draw: '摸牌',
+  discard: '打出',
+  win: '胡牌',
+  pass: '过牌',
+  pong: '碰',
+  'exposed-kong': '明杠',
+  'concealed-kong': '暗杠',
+  'supplement-kong': '补杠',
+  'declare-mouth': '报嘴',
+};
+
+const eventNames: Record<GameEventView['type'], string> = {
+  deal: '起牌',
+  draw: '摸牌',
+  fortune: '发财',
+  'replacement-draw': '补牌',
+  discard: '出牌',
+  pong: '碰',
+  'exposed-kong': '明杠',
+  'concealed-kong': '暗杠',
+  'supplement-kong': '补杠',
+  'mouth-declared': '报嘴',
+  win: '胡牌',
+  'gang-payment': '杠分',
+  'round-draw': '荒庄',
+};
+
+export function eventTypeLabel(type: GameEventView['type']): string {
+  return eventNames[type];
+}
+
+export function seatLabel(seat: Seat, viewerSeat: Seat): string {
+  const delta = (seat - viewerSeat + 4) % 4;
+  if (delta === 0) return '你';
+  if (delta === 1) return '下家';
+  if (delta === 2) return '对家';
+  return '上家';
+}
+
+export function formatEventForViewer(event: GameEventView, viewerSeat: Seat): string {
+  if (event.seat === null) return event.message;
+  const prefix = `${event.seat}号玩家`;
+  const readable = seatLabel(event.seat, viewerSeat);
+  return event.message.includes(prefix)
+    ? event.message.replace(prefix, readable)
+    : `${readable}：${event.message}`;
+}
+
+export function formatActionForViewer(action: GameAction, viewerSeat: Seat): string {
+  const actor = seatLabel(action.seat, viewerSeat);
+  return 'tile' in action
+    ? `${actor}${actionNames[action.type]} ${tileLabel(action.tile)}`
+    : `${actor}${actionNames[action.type]}`;
+}
+
+export function matchesEventFilter(event: GameEventView, filter: EventFilter): boolean {
+  if (filter === 'all') return true;
+  if (filter === 'flow') {
+    return ['deal', 'draw', 'replacement-draw', 'discard'].includes(event.type);
+  }
+  if (filter === 'special') {
+    return ['fortune', 'pong', 'exposed-kong', 'concealed-kong', 'supplement-kong', 'mouth-declared']
+      .includes(event.type);
+  }
+  return ['win', 'gang-payment', 'round-draw'].includes(event.type);
+}
 
 export function findDiscardAction(
   actions: readonly GameAction[],

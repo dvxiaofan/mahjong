@@ -3,9 +3,13 @@ import { applyAction, createGame } from '../src/game.js';
 import { projectStateForSeat } from '../src/view.js';
 import {
   findDiscardAction,
+  formatActionForViewer,
+  formatEventForViewer,
   getInteractionPrompt,
   getSeatActivity,
+  matchesEventFilter,
   nonDiscardActions,
+  seatLabel,
 } from './uiModel';
 
 describe('牌桌 UI 状态模型', () => {
@@ -55,5 +59,28 @@ describe('牌桌 UI 状态模型', () => {
     expect(getSeatActivity(view, 1)).toBe('responded');
     expect(getSeatActivity(view, 2)).toBe('waiting');
     expect(getSeatActivity(view, 3)).toBe('waiting');
+  });
+
+  it('把座位、事件和动作转成查看者视角的称呼', () => {
+    expect([0, 1, 2, 3].map((seat) => seatLabel(seat as 0 | 1 | 2 | 3, 0)))
+      .toEqual(['你', '下家', '对家', '上家']);
+    expect(formatEventForViewer({
+      type: 'discard',
+      seat: 1,
+      tile: 'm1',
+      message: '1号玩家打出1万',
+    }, 0)).toBe('下家打出1万');
+    expect(formatActionForViewer({ type: 'discard', seat: 0, tile: 'p2' }, 0))
+      .toBe('你打出 2筒');
+  });
+
+  it('按流程、特殊动作和结算筛选事件', () => {
+    const discard = { type: 'discard', seat: 0, tile: 'm1', message: '' } as const;
+    const fortune = { type: 'fortune', seat: 0, tile: null, message: '' } as const;
+    const win = { type: 'win', seat: 0, tile: 'm1', message: '' } as const;
+    expect(matchesEventFilter(discard, 'flow')).toBe(true);
+    expect(matchesEventFilter(fortune, 'special')).toBe(true);
+    expect(matchesEventFilter(win, 'settlement')).toBe(true);
+    expect(matchesEventFilter(discard, 'settlement')).toBe(false);
   });
 });
