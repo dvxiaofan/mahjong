@@ -24,8 +24,10 @@
 │   ├── game.ts         # 回合状态机与结算
 │   └── ...
 ├── src/*.test.ts       # vitest 单元测试
-└── local-docs/         # 需求分析存档
+└── local-docs/         # 需求分析、实施计划和进度台账
 ```
+
+详细实施步骤和当前进度见 [local-docs/开发实施计划.md](./local-docs/开发实施计划.md)。
 
 ## 开发
 
