@@ -232,7 +232,7 @@ function removeOne(tiles: readonly NormalTile[], tile: NormalTile): NormalTile[]
   return result;
 }
 
-function scoreHand(hand: HandEvaluation): number {
+export function scoreHandEvaluation(hand: HandEvaluation): number {
   return Math.round(
     -hand.shanten * 100 +
     hand.effectiveTileCount * 4 +
@@ -269,7 +269,7 @@ export function evaluateDiscardChoices(state: GameState, seat: Seat): DiscardEva
     choices.push({
       action,
       tile: action.tile,
-      score: scoreHand(hand),
+      score: scoreHandEvaluation(hand),
       hand,
       reasons: explainHand(hand),
     });
