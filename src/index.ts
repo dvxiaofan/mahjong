@@ -10,3 +10,4 @@ export * from './ai-evaluation.js';
 export * from './ai-strategy.js';
 export * from './ai-difficulty.js';
 export * from './ai-simulation.js';
+export * from './match.js';
