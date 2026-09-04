@@ -6,3 +6,4 @@ export * from './rules.js';
 export * from './game.js';
 export * from './view.js';
 export * from './ai.js';
+export * from './ai-evaluation.js';
