@@ -93,6 +93,33 @@ h1 {
   justify-content: flex-end;
 }
 
+.difficulty-control {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  border: 1px solid rgba(243, 241, 232, 0.16);
+  border-radius: 11px;
+  padding: 6px 8px 6px 10px;
+  color: var(--muted);
+  background: rgba(243, 241, 232, 0.045);
+  font-size: 0.7rem;
+}
+
+.difficulty-control select {
+  border: 0;
+  border-radius: 7px;
+  padding: 4px 22px 4px 7px;
+  color: var(--ink);
+  background: #143a32;
+  font: inherit;
+  font-weight: 750;
+  outline: none;
+}
+
+.difficulty-control select:focus-visible {
+  box-shadow: 0 0 0 2px rgba(229, 189, 104, 0.34);
+}
+
 .demo-badge,
 .replay-badge,
 .live-indicator,

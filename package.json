@@ -6,6 +6,7 @@
   "scripts": {
     "test": "vitest run",
     "test:acceptance": "vitest run web/acceptance/m2.acceptance.test.ts",
+    "simulate:ai": "npm run build:engine && node scripts/ai-report.mjs",
     "test:watch": "vitest",
     "dev": "vite --config vite.config.ts",
     "build:engine": "tsc -p tsconfig.json",

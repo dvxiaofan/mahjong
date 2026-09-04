@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   projectStateForSeat,
+  seededRandom,
+  type AiDifficulty,
   type GameAction,
   type GameState,
   type GameView,
@@ -53,19 +55,29 @@ function initialSession(seed: number): { session: LocalGameSession; restored: bo
     : loadLocalGameSession(storage, seed);
 }
 
+function decisionRandom(seed: number, actionCount: number) {
+  return seededRandom((seed ^ Math.imul(actionCount + 1, 0x6d2b79f5)) >>> 0);
+}
+
 /**
  * Local single-player controller. The React layer owns only the current state;
  * all legality and transitions remain inside the shared mahjong engine.
  */
-export function useLocalGame(seed: number): LocalGameController {
+export function useLocalGame(seed: number, difficulty: AiDifficulty = 'standard'): LocalGameController {
   const [loaded] = useState(() => initialSession(seed));
   const [session, setSession] = useState<LocalGameSession>(loaded.session);
   const [restored, setRestored] = useState(loaded.restored);
   const [replayStep, setReplayStep] = useState<number | null>(null);
   const isReplaying = replayStep !== null;
   const botDecision = useMemo(
-    () => isReplaying ? null : findNextBotDecision(session.state),
-    [isReplaying, session.state],
+    () => isReplaying
+      ? null
+      : findNextBotDecision(
+          session.state,
+          difficulty,
+          decisionRandom(seed, session.records.length),
+        ),
+    [difficulty, isReplaying, seed, session.records.length, session.state],
   );
   const autoPassAction = useMemo(
     () => isReplaying ? null : getOnlyPassAction(session.state, LOCAL_VIEWER_SEAT),
@@ -122,7 +134,11 @@ export function useLocalGame(seed: number): LocalGameController {
             reason: '唯一合法响应，自动过牌',
           });
         }
-        const nextBotDecision = findNextBotDecision(previous.state);
+        const nextBotDecision = findNextBotDecision(
+          previous.state,
+          difficulty,
+          decisionRandom(seed, previous.records.length),
+        );
         return nextBotDecision === null
           ? previous
           : appendRecordedAction(previous, nextBotDecision.action, 'bot', {
@@ -133,7 +149,7 @@ export function useLocalGame(seed: number): LocalGameController {
     }, autoPassAction === null ? BOT_TURN_DELAY_MS : AUTO_PASS_DELAY_MS);
 
     return () => window.clearTimeout(timer);
-  }, [autoPassAction, botDecision, isReplaying]);
+  }, [autoPassAction, botDecision, difficulty, isReplaying, seed]);
 
   return {
     state: session.state,

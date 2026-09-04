@@ -1,12 +1,20 @@
 import { useState } from 'react';
+import type { AiDifficulty } from '../src/ai-difficulty.ts';
 import { HistoryDrawer } from './components/HistoryDrawer';
 import { MahjongTable } from './components/MahjongTable';
 import { useLocalGame } from './useLocalGame';
 
 const DEMO_SEED = 20260904;
 
+const difficultyLabels: Record<AiDifficulty, string> = {
+  casual: '休闲',
+  standard: '标准',
+  advanced: '进阶',
+};
+
 export default function App() {
   const [historyOpen, setHistoryOpen] = useState(false);
+  const [difficulty, setDifficulty] = useState<AiDifficulty>('standard');
   const {
     view,
     botThinking,
@@ -18,7 +26,7 @@ export default function App() {
     reset,
     showReplayStep,
     resumeLive,
-  } = useLocalGame(DEMO_SEED);
+  } = useLocalGame(DEMO_SEED, difficulty);
 
   return (
     <div className="app-shell">
@@ -29,6 +37,18 @@ export default function App() {
           <p className="app-subtitle">自定义麻将 · 单局演示牌桌</p>
         </div>
         <div className="header-actions">
+          <label className="difficulty-control">
+            <span>AI 难度</span>
+            <select
+              aria-label="AI 难度"
+              onChange={(event) => setDifficulty(event.currentTarget.value as AiDifficulty)}
+              value={difficulty}
+            >
+              {(Object.keys(difficultyLabels) as AiDifficulty[]).map((value) => (
+                <option key={value} value={value}>{difficultyLabels[value]}</option>
+              ))}
+            </select>
+          </label>
           <span className="demo-badge">
             <span className="demo-dot" />
             {restored ? '已恢复本地牌局' : '自动保存已开启'}
