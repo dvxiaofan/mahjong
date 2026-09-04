@@ -1,4 +1,13 @@
-import { getMatchLegalActions, applyMatchAction, createMatch, type CreateMatchOptions, type MatchRoundRecord, type MatchState, type WallOpening } from './match.js';
+import {
+  getMatchLegalActions,
+  applyMatchAction,
+  createMatch,
+  startNextRound as startNextMatchRound,
+  type CreateMatchOptions,
+  type MatchRoundRecord,
+  type MatchState,
+  type WallOpening,
+} from './match.js';
 import { projectStateForSeat } from './view.js';
 import type { GameAction, GameView, RoundResult, Seat } from './types.js';
 
@@ -35,12 +44,19 @@ export interface RoomActionCommand {
   action: GameAction;
 }
 
+export interface RoomNextRoundCommand {
+  requestId: string;
+  expectedRevision: number;
+  seat: Seat;
+}
+
 export type RoomRejectCode =
   | 'invalid-request-id'
   | 'request-id-conflict'
   | 'stale-revision'
   | 'seat-mismatch'
   | 'round-not-playing'
+  | 'round-not-ready'
   | 'illegal-action';
 
 export type RoomActionResult =
@@ -62,7 +78,7 @@ export type RoomActionResult =
 export interface RoomAuditEntry {
   requestId: string;
   seat: Seat;
-  actionType: GameAction['type'];
+  actionType: GameAction['type'] | 'start-next-round';
   revisionBefore: number;
   revisionAfter: number;
   accepted: boolean;
@@ -221,6 +237,69 @@ export class AuthoritativeRoom {
       requestId: command.requestId,
       seat: command.seat,
       actionType: command.action.type,
+      revisionBefore,
+      revisionAfter: this.revision,
+      accepted: true,
+      rejectCode: null,
+    });
+    this.cache(command.requestId, fingerprint, result);
+    return cloneJson(result);
+  }
+
+  startNextRound(command: RoomNextRoundCommand): RoomActionResult {
+    const fingerprint = JSON.stringify({ type: 'start-next-round', ...command });
+    const cached = this.cachedCommands.get(command.requestId);
+    if (cached !== undefined) {
+      if (cached.fingerprint === fingerprint) return cloneJson(cached.result);
+      return {
+        accepted: false,
+        requestId: command.requestId,
+        revision: this.revision,
+        code: 'request-id-conflict',
+        message: '同一请求 ID 不能用于不同命令',
+        snapshot: this.getSnapshot(command.seat),
+      };
+    }
+
+    const reject = (code: RoomRejectCode, message: string): RoomActionResult => {
+      const result: RoomActionResult = {
+        accepted: false,
+        requestId: command.requestId,
+        revision: this.revision,
+        code,
+        message,
+        snapshot: this.getSnapshot(command.seat),
+      };
+      this.auditLog.push({
+        requestId: command.requestId,
+        seat: command.seat,
+        actionType: 'start-next-round',
+        revisionBefore: this.revision,
+        revisionAfter: this.revision,
+        accepted: false,
+        rejectCode: code,
+      });
+      this.cache(command.requestId, fingerprint, result);
+      return cloneJson(result);
+    };
+
+    if (command.requestId.trim().length === 0) return reject('invalid-request-id', '请求 ID 不能为空');
+    if (command.expectedRevision !== this.revision) return reject('stale-revision', '客户端修订号已过期');
+    if (this.match.phase !== 'between-rounds') return reject('round-not-ready', '当前不在局间阶段');
+
+    const revisionBefore = this.revision;
+    this.match = startNextMatchRound(this.match);
+    this.revision += 1;
+    const result: RoomActionResult = {
+      accepted: true,
+      requestId: command.requestId,
+      revision: this.revision,
+      snapshot: this.getSnapshot(command.seat),
+    };
+    this.auditLog.push({
+      requestId: command.requestId,
+      seat: command.seat,
+      actionType: 'start-next-round',
       revisionBefore,
       revisionAfter: this.revision,
       accepted: true,
