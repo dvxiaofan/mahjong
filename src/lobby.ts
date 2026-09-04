@@ -259,7 +259,7 @@ export class RoomRegistry {
         passwordDigest: persisted.passwordDigest,
         participants,
         hostParticipantId: persisted.hostParticipantId,
-        emptySince: participants.size === 0 ? persisted.emptySince ?? restoredAt : null,
+        emptySince: participants.size === 0 ? (persisted.emptySince ?? restoredAt) : null,
         actionDeadlineAt: restoredAt + registry.turnTimeoutMs,
       });
     }
@@ -299,8 +299,8 @@ export class RoomRegistry {
     for (let attempt = 0; attempt < 100; attempt += 1) {
       const token = `${prefix}_${this.tokenSource()}`;
       const collision = [...this.rooms.values()].some((room) =>
-        [...room.participants.values()].some((participant) =>
-          participant.participantId === token || participant.resumeToken === token,
+        [...room.participants.values()].some(
+          (participant) => participant.participantId === token || participant.resumeToken === token,
         ),
       );
       if (!collision) return token;
@@ -392,38 +392,53 @@ export class RoomRegistry {
   }
 
   async createRoom(input: CreateLobbyRoomInput): Promise<LifecycleResult> {
-    if (!validRoomId(input.roomId)) return { ok: false, code: 'invalid-room-id', message: '房间 ID 长度或字符无效' };
-    if (!validDisplayName(input.displayName)) return { ok: false, code: 'invalid-display-name', message: '昵称长度或字符无效' };
-    if (!validPassword(input.password)) return { ok: false, code: 'invalid-password', message: '密码需为 4 到 64 个字符' };
-    if (this.rooms.has(input.roomId)) return { ok: false, code: 'room-exists', message: '房间已存在' };
-    if (this.connections.has(input.connectionId)) return { ok: false, code: 'connection-in-use', message: '连接已经加入房间' };
+    if (!validRoomId(input.roomId))
+      return { ok: false, code: 'invalid-room-id', message: '房间 ID 长度或字符无效' };
+    if (!validDisplayName(input.displayName))
+      return { ok: false, code: 'invalid-display-name', message: '昵称长度或字符无效' };
+    if (!validPassword(input.password))
+      return { ok: false, code: 'invalid-password', message: '密码需为 4 到 64 个字符' };
+    if (this.rooms.has(input.roomId))
+      return { ok: false, code: 'room-exists', message: '房间已存在' };
+    if (this.connections.has(input.connectionId))
+      return { ok: false, code: 'connection-in-use', message: '连接已经加入房间' };
 
     const salt = input.password === undefined ? null : this.uniqueToken('salt');
     const room: ManagedRoom = {
       engine: new AuthoritativeRoom({ roomId: input.roomId, ...(input.matchOptions ?? {}) }),
       passwordSalt: salt,
-      passwordDigest: input.password === undefined ? null : await digestPassword(input.password, salt!),
+      passwordDigest:
+        input.password === undefined ? null : await digestPassword(input.password, salt!),
       participants: new Map(),
       hostParticipantId: null,
       emptySince: null,
       actionDeadlineAt: this.now() + this.turnTimeoutMs,
     };
     this.rooms.set(input.roomId, room);
-    return this.addParticipant(input.roomId, room, {
-      connectionId: input.connectionId,
-      displayName: input.displayName,
-      role: 'player',
-    }, 0);
+    return this.addParticipant(
+      input.roomId,
+      room,
+      {
+        connectionId: input.connectionId,
+        displayName: input.displayName,
+        role: 'player',
+      },
+      0,
+    );
   }
 
   async joinRoom(input: JoinLobbyRoomInput): Promise<LifecycleResult> {
     const room = this.rooms.get(input.roomId);
     if (room === undefined) return { ok: false, code: 'room-not-found', message: '房间不存在' };
-    if (!validDisplayName(input.displayName)) return { ok: false, code: 'invalid-display-name', message: '昵称长度或字符无效' };
-    if (!validPassword(input.password)) return { ok: false, code: 'invalid-password', message: '密码需为 4 到 64 个字符' };
-    if (this.connections.has(input.connectionId)) return { ok: false, code: 'connection-in-use', message: '连接已经加入房间' };
+    if (!validDisplayName(input.displayName))
+      return { ok: false, code: 'invalid-display-name', message: '昵称长度或字符无效' };
+    if (!validPassword(input.password))
+      return { ok: false, code: 'invalid-password', message: '密码需为 4 到 64 个字符' };
+    if (this.connections.has(input.connectionId))
+      return { ok: false, code: 'connection-in-use', message: '连接已经加入房间' };
     if (room.passwordDigest !== null && room.passwordSalt !== null) {
-      if (input.password === undefined) return { ok: false, code: 'wrong-password', message: '房间密码不正确' };
+      if (input.password === undefined)
+        return { ok: false, code: 'wrong-password', message: '房间密码不正确' };
       const digest = await digestPassword(input.password, room.passwordSalt);
       if (!constantTimeEqual(digest, room.passwordDigest)) {
         return { ok: false, code: 'wrong-password', message: '房间密码不正确' };
@@ -431,7 +446,9 @@ export class RoomRegistry {
     }
 
     if (input.role === 'spectator') {
-      const spectators = [...room.participants.values()].filter((participant) => participant.role === 'spectator');
+      const spectators = [...room.participants.values()].filter(
+        (participant) => participant.role === 'spectator',
+      );
       if (spectators.length >= this.spectatorLimit) {
         return { ok: false, code: 'spectator-limit', message: '观战人数已满' };
       }
@@ -501,7 +518,8 @@ export class RoomRegistry {
     if (connection === undefined) return null;
     const room = this.rooms.get(connection.roomId);
     const participant = room?.participants.get(connection.participantId);
-    if (room === undefined || participant === undefined || participant.role !== 'player') return null;
+    if (room === undefined || participant === undefined || participant.role !== 'player')
+      return null;
     participant.trustee = enabled;
     return this.roomView(connection.roomId, room);
   }
@@ -510,8 +528,9 @@ export class RoomRegistry {
     room.participants.delete(participant.participantId);
     if (participant.connectionId !== null) this.connections.delete(participant.connectionId);
     if (room.hostParticipantId === participant.participantId) {
-      room.hostParticipantId = [...room.participants.values()]
-        .sort((left, right) => left.joinOrder - right.joinOrder)[0]?.participantId ?? null;
+      room.hostParticipantId =
+        [...room.participants.values()].sort((left, right) => left.joinOrder - right.joinOrder)[0]
+          ?.participantId ?? null;
     }
     if (room.participants.size === 0) room.emptySince = this.now();
   }
@@ -531,26 +550,30 @@ export class RoomRegistry {
     const room = this.rooms.get(roomId);
     if (room === undefined) return;
     const phase = room.engine.getSpectatorSnapshot().match.game.phase;
-    room.actionDeadlineAt = now + (phase === 'claiming' ? this.responseTimeoutMs : this.turnTimeoutMs);
+    room.actionDeadlineAt =
+      now + (phase === 'claiming' ? this.responseTimeoutMs : this.turnTimeoutMs);
   }
 
   processTimeouts(now = this.now()): TrusteeTickResult[] {
     const processed: TrusteeTickResult[] = [];
     for (const [roomId, room] of this.rooms) {
-      const playerCount = [...room.participants.values()]
-        .filter((participant) => participant.role === 'player' && participant.seat !== null).length;
+      const playerCount = [...room.participants.values()].filter(
+        (participant) => participant.role === 'player' && participant.seat !== null,
+      ).length;
       if (playerCount < 4) continue;
       for (let attempt = 0; attempt < 16; attempt += 1) {
         const publicSnapshot = room.engine.getSpectatorSnapshot();
         if (publicSnapshot.match.phase !== 'playing') break;
         const candidates = [...room.participants.values()]
-          .filter((participant): participant is ManagedParticipant & { seat: Seat } =>
-            participant.role === 'player' && participant.seat !== null &&
-            room.engine.getSnapshot(participant.seat).match.game.legalActions.length > 0,
+          .filter(
+            (participant): participant is ManagedParticipant & { seat: Seat } =>
+              participant.role === 'player' &&
+              participant.seat !== null &&
+              room.engine.getSnapshot(participant.seat).match.game.legalActions.length > 0,
           )
           .sort((left, right) => left.seat - right.seat);
-        const participant = candidates.find((candidate) =>
-          !candidate.connected || candidate.trustee || now >= room.actionDeadlineAt,
+        const participant = candidates.find(
+          (candidate) => !candidate.connected || candidate.trustee || now >= room.actionDeadlineAt,
         );
         if (participant === undefined) break;
         const reason: TrusteeTickResult['reason'] = !participant.connected
@@ -563,8 +586,9 @@ export class RoomRegistry {
         let revision = room.engine.getRevision();
 
         if (reason === 'timeout' && publicSnapshot.match.game.phase === 'claiming') {
-          const pass = room.engine.getSnapshot(participant.seat).match.game.legalActions
-            .find((action) => action.type === 'pass');
+          const pass = room.engine
+            .getSnapshot(participant.seat)
+            .match.game.legalActions.find((action) => action.type === 'pass');
           if (pass !== undefined) {
             const result = room.engine.submitAction({
               requestId,
@@ -599,8 +623,11 @@ export class RoomRegistry {
     const removed: string[] = [];
     for (const [roomId, room] of this.rooms) {
       for (const participant of [...room.participants.values()]) {
-        if (!participant.connected && participant.disconnectedAt !== null &&
-            now - participant.disconnectedAt >= this.disconnectedGraceMs) {
+        if (
+          !participant.connected &&
+          participant.disconnectedAt !== null &&
+          now - participant.disconnectedAt >= this.disconnectedGraceMs
+        ) {
           this.removeParticipant(room, participant);
           removed.push(participant.participantId);
         }

@@ -11,7 +11,7 @@ export function shuffle<T>(items: readonly T[], random: RandomSource = Math.rand
 
 /** A small deterministic generator for reproducible tests and replay. */
 export function seededRandom(seed: number): RandomSource {
-  let value = (seed >>> 0) || 0x9e3779b9;
+  let value = seed >>> 0 || 0x9e3779b9;
   return () => {
     value = (value + 0x6d2b79f5) | 0;
     let t = Math.imul(value ^ (value >>> 15), 1 | value);

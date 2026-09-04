@@ -9,8 +9,19 @@ import {
 } from './ai-strategy.js';
 
 const winningBeforeSelfDraw = [
-  'm1', 'm1', 'm1', 'm2', 'm2', 'm2', 'm3',
-  'm3', 'm3', 'p1', 'p1', 'p1', 's1',
+  'm1',
+  'm1',
+  'm1',
+  'm2',
+  'm2',
+  'm2',
+  'm3',
+  'm3',
+  'm3',
+  'p1',
+  'p1',
+  'p1',
+  's1',
 ] as const;
 
 describe('AI 出牌策略', () => {
@@ -29,9 +40,20 @@ describe('AI 出牌策略', () => {
     state.phase = 'awaiting-discard';
     state.lastDrawnTile = 'white';
     state.players[0]!.concealedTiles = [
-      'm1', 'm2', 'm3', 'm4', 'm5', 'm6',
-      'p1', 'p2', 'p3', 's1', 's2',
-      'red', 'red', 'white',
+      'm1',
+      'm2',
+      'm3',
+      'm4',
+      'm5',
+      'm6',
+      'p1',
+      'p2',
+      'p3',
+      's1',
+      's2',
+      'red',
+      'red',
+      'white',
     ];
 
     const ranked = rankStrategicDiscards(state, 0);
@@ -45,8 +67,20 @@ describe('AI 出牌策略', () => {
     state.phase = 'awaiting-discard';
     state.lastDrawnTile = 'p9';
     state.players[0]!.concealedTiles = [
-      'm1', 'm1', 'm2', 'm2', 'm3', 'm3', 'm4',
-      'm5', 'm6', 'm7', 'm7', 'm8', 'm9', 'p9',
+      'm1',
+      'm1',
+      'm2',
+      'm2',
+      'm3',
+      'm3',
+      'm4',
+      'm5',
+      'm6',
+      'm7',
+      'm7',
+      'm8',
+      'm9',
+      'p9',
     ];
 
     const ranked = rankStrategicDiscards(state, 0);
@@ -62,8 +96,20 @@ describe('AI 出牌策略', () => {
     state.players[0]!.mouthDeclared = true;
     state.players[0]!.lockedWaits = ['m1'];
     state.players[0]!.concealedTiles = [
-      'm1', 'm1', 'm1', 'm2', 'm2', 'm2', 'm3',
-      'm3', 'm3', 'p1', 'p1', 'p1', 's1', 'p9',
+      'm1',
+      'm1',
+      'm1',
+      'm2',
+      'm2',
+      'm2',
+      'm3',
+      'm3',
+      'm3',
+      'p1',
+      'p1',
+      'p1',
+      's1',
+      'p9',
     ];
 
     const decision = decideAiAction(state, 0, strategicDiscardPolicy);
@@ -91,8 +137,19 @@ describe('AI 出牌策略', () => {
     state.phase = 'claiming';
     state.pendingDiscard = { tile: 'm1', discarder: 1, responses: {} };
     state.players[0]!.concealedTiles = [
-      'm1', 'm1', 'm2', 'm3', 'm4', 'm5', 'm6',
-      'm7', 'm8', 'm9', 'p1', 'p2', 'p3',
+      'm1',
+      'm1',
+      'm2',
+      'm3',
+      'm4',
+      'm5',
+      'm6',
+      'm7',
+      'm8',
+      'm9',
+      'p1',
+      'p2',
+      'p3',
     ];
 
     expect(evaluatePongClaim(state, 0)?.accept).toBe(false);
@@ -104,12 +161,25 @@ describe('AI 出牌策略', () => {
     state.phase = 'claiming';
     state.pendingDiscard = { tile: 'm1', discarder: 1, responses: {} };
     state.players[0]!.concealedTiles = [
-      'm1', 'm1', 'm1', 'm2', 'm2', 'm2', 'm3',
-      'm3', 'm3', 'p1', 'p1', 'p1', 's1',
+      'm1',
+      'm1',
+      'm1',
+      'm2',
+      'm2',
+      'm2',
+      'm3',
+      'm3',
+      'm3',
+      'p1',
+      'p1',
+      'p1',
+      's1',
     ];
 
-    expect(decideAiAction(state, 0, strategicAiPolicy)?.action)
-      .toEqual({ type: 'exposed-kong', seat: 0 });
+    expect(decideAiAction(state, 0, strategicAiPolicy)?.action).toEqual({
+      type: 'exposed-kong',
+      seat: 0,
+    });
   });
 
   it('暗杠不增加向听时接受暗杠，补杠优先获得即时杠分', () => {
@@ -118,22 +188,50 @@ describe('AI 出牌策略', () => {
     concealed.phase = 'awaiting-discard';
     concealed.lastDrawnTile = 'm1';
     concealed.players[0]!.concealedTiles = [
-      'm1', 'm1', 'm1', 'm1', 'm2', 'm2', 'm2',
-      'm3', 'm3', 'm3', 'p1', 'p1', 'p1', 's1',
+      'm1',
+      'm1',
+      'm1',
+      'm1',
+      'm2',
+      'm2',
+      'm2',
+      'm3',
+      'm3',
+      'm3',
+      'p1',
+      'p1',
+      'p1',
+      's1',
     ];
-    expect(decideAiAction(concealed, 0, strategicAiPolicy)?.action)
-      .toEqual({ type: 'concealed-kong', seat: 0, tile: 'm1' });
+    expect(decideAiAction(concealed, 0, strategicAiPolicy)?.action).toEqual({
+      type: 'concealed-kong',
+      seat: 0,
+      tile: 'm1',
+    });
 
     const supplement = createGame({ seed: 8 });
     supplement.currentSeat = 0;
     supplement.phase = 'awaiting-discard';
     supplement.lastDrawnTile = 'm1';
     supplement.players[0]!.concealedTiles = [
-      'm2', 'm3', 'm4', 'm5', 'm6', 'm7', 'm8',
-      'm9', 'p1', 'p2', 'p3', 'm1',
+      'm2',
+      'm3',
+      'm4',
+      'm5',
+      'm6',
+      'm7',
+      'm8',
+      'm9',
+      'p1',
+      'p2',
+      'p3',
+      'm1',
     ];
     supplement.players[0]!.melds = [{ kind: 'pong', tile: 'm1', fromSeat: 1 }];
-    expect(decideAiAction(supplement, 0, strategicAiPolicy)?.action)
-      .toEqual({ type: 'supplement-kong', seat: 0, tile: 'm1' });
+    expect(decideAiAction(supplement, 0, strategicAiPolicy)?.action).toEqual({
+      type: 'supplement-kong',
+      seat: 0,
+      tile: 'm1',
+    });
   });
 });

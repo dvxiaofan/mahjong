@@ -107,26 +107,29 @@ function cloneState(state: GameState): GameState {
       ...state.wall,
       tiles: [...state.wall.tiles],
     },
-    pendingDiscard: state.pendingDiscard === null
-      ? null
-      : {
-          ...state.pendingDiscard,
-          responses: { ...state.pendingDiscard.responses },
-        },
+    pendingDiscard:
+      state.pendingDiscard === null
+        ? null
+        : {
+            ...state.pendingDiscard,
+            responses: { ...state.pendingDiscard.responses },
+          },
     events: [...state.events],
     payments: [...state.payments],
-    result: state.result === null
-      ? null
-      : {
-          ...state.result,
-          fan: state.result.fan === null
-            ? null
-            : {
-                ...state.result.fan,
-                items: state.result.fan.items.map((item) => ({ ...item })),
-              },
-          payments: state.result.payments.map((payment) => ({ ...payment })),
-        },
+    result:
+      state.result === null
+        ? null
+        : {
+            ...state.result,
+            fan:
+              state.result.fan === null
+                ? null
+                : {
+                    ...state.result.fan,
+                    items: state.result.fan.items.map((item) => ({ ...item })),
+                  },
+            payments: state.result.payments.map((payment) => ({ ...payment })),
+          },
   };
 }
 
@@ -182,15 +185,11 @@ function updateMouthRequirement(
 
   // 一旦达到“3财且听牌”的状态，未报嘴限制在本局持续有效；
   // 换听、碰杠或补牌不会自动解除它。
-  player.mouthRequired = player.mouthRequired ||
-    getWaitingTiles(candidateTiles, player.melds).length > 0;
+  player.mouthRequired =
+    player.mouthRequired || getWaitingTiles(candidateTiles, player.melds).length > 0;
 }
 
-function recordConsumedFortunes(
-  state: GameState,
-  seat: Seat,
-  consumed: readonly Tile[],
-): void {
+function recordConsumedFortunes(state: GameState, seat: Seat, consumed: readonly Tile[]): void {
   const player = playerAt(state, seat);
   for (const tile of consumed) {
     if (!isFortuneTile(tile)) continue;
@@ -251,9 +250,7 @@ function dealOne(state: GameState, seat: Seat): NormalTile | null {
 
 function initialState(dealerSeat: Seat, wallTiles?: readonly Tile[], seed?: number): GameState {
   const random = seededRandom(seed ?? Date.now());
-  const wall = wallTiles === undefined
-    ? createWall(random)
-    : createWallFromTiles(wallTiles);
+  const wall = wallTiles === undefined ? createWall(random) : createWallFromTiles(wallTiles);
   const state: GameState = {
     players: SEATS.map(createPlayer),
     wall,
@@ -319,9 +316,11 @@ function concealedBeforeLastDraw(state: GameState, player: PlayerState): NormalT
  * has the correct 13-minus-meld-count shape.
  */
 function mouthCandidateTiles(state: GameState, player: PlayerState): NormalTile[] {
-  if (state.phase === 'awaiting-discard' &&
-      state.currentSeat === player.seat &&
-      state.lastDrawnTile !== null) {
+  if (
+    state.phase === 'awaiting-discard' &&
+    state.currentSeat === player.seat &&
+    state.lastDrawnTile !== null
+  ) {
     return concealedBeforeLastDraw(state, player);
   }
   return [...player.concealedTiles];
@@ -342,32 +341,21 @@ function isWinningSelfDraw(state: GameState, player: PlayerState): boolean {
   return canWinOnSelfDraw(before, player.melds, player, state.lastDrawnTile);
 }
 
-function claimResponseFor(
-  state: GameState,
-  seat: Seat,
-): GameAction[] {
+function claimResponseFor(state: GameState, seat: Seat): GameAction[] {
   const pending = state.pendingDiscard;
   if (pending === null || seat === pending.discarder) return [];
   if (pending.responses[seat] !== undefined) return [];
 
   const player = playerAt(state, seat);
   const actions: GameAction[] = [];
-  if (canDeclareMouth(
-    player.concealedTiles,
-    player.melds,
-    player.fortuneCount,
-    player.mouthDeclared,
-  )) {
+  if (
+    canDeclareMouth(player.concealedTiles, player.melds, player.fortuneCount, player.mouthDeclared)
+  ) {
     // 规则只要求在胡牌前完成报嘴，因此在弃牌响应阶段仍可先报嘴，
     // 再决定是否胡这张牌。
     actions.push({ type: 'declare-mouth', seat });
   }
-  const canWin = canWinOnDiscard(
-    player.concealedTiles,
-    player.melds,
-    player,
-    pending.tile,
-  );
+  const canWin = canWinOnDiscard(player.concealedTiles, player.melds, player, pending.tile);
   if (canWin) actions.push({ type: 'win', seat });
   if (!player.mouthDeclared && countTile(player.concealedTiles, pending.tile) >= 3) {
     actions.push({ type: 'exposed-kong', seat });
@@ -393,7 +381,9 @@ export function getLegalActions(state: GameState, seat: Seat = state.currentSeat
     // 杠后必须先完成墙尾补牌；只有正常起手等待摸牌时，才允许
     // 直接宣布“起手即齐四张”的暗杠。
     if (!player.mouthDeclared && state.drawMode === 'normal') {
-      const uniqueTiles = NORMAL_TILE_TYPES.filter((tile) => countTile(player.concealedTiles, tile) >= 4);
+      const uniqueTiles = NORMAL_TILE_TYPES.filter(
+        (tile) => countTile(player.concealedTiles, tile) >= 4,
+      );
       for (const tile of uniqueTiles) {
         actions.push({ type: 'concealed-kong', seat, tile });
       }
@@ -413,10 +403,15 @@ export function getLegalActions(state: GameState, seat: Seat = state.currentSeat
       actions.push({ type: 'win', seat });
     }
 
-    if (!player.mouthDeclared || state.lastDrawnTile === null || !isWinningSelfDraw(state, player)) {
-      const discardTiles = player.mouthDeclared && state.lastDrawnTile !== null
-        ? [state.lastDrawnTile]
-        : player.concealedTiles;
+    if (
+      !player.mouthDeclared ||
+      state.lastDrawnTile === null ||
+      !isWinningSelfDraw(state, player)
+    ) {
+      const discardTiles =
+        player.mouthDeclared && state.lastDrawnTile !== null
+          ? [state.lastDrawnTile]
+          : player.concealedTiles;
       for (const tile of discardTiles) {
         if (!actions.some((action) => action.type === 'discard' && action.tile === tile)) {
           actions.push({ type: 'discard', seat, tile });
@@ -425,7 +420,9 @@ export function getLegalActions(state: GameState, seat: Seat = state.currentSeat
     }
 
     if (!player.mouthDeclared) {
-      const uniqueTiles = NORMAL_TILE_TYPES.filter((tile) => countTile(player.concealedTiles, tile) >= 4);
+      const uniqueTiles = NORMAL_TILE_TYPES.filter(
+        (tile) => countTile(player.concealedTiles, tile) >= 4,
+      );
       for (const tile of uniqueTiles) {
         actions.push({ type: 'concealed-kong', seat, tile });
       }
@@ -441,9 +438,7 @@ export function getLegalActions(state: GameState, seat: Seat = state.currentSeat
     if (pending === null) return [];
     if (seat === pending.discarder) {
       const player = playerAt(state, seat);
-      return canPlayerDeclareMouth(state, player)
-        ? [{ type: 'declare-mouth', seat }]
-        : [];
+      return canPlayerDeclareMouth(state, player) ? [{ type: 'declare-mouth', seat }] : [];
     }
     return claimResponseFor(state, seat);
   }
@@ -487,18 +482,19 @@ function addMouth(state: GameState, seat: Seat): void {
   const player = playerAt(state, seat);
   const candidateTiles = mouthCandidateTiles(state, player);
   const waits = getWaitingTiles(candidateTiles, player.melds);
-  if (!canDeclareMouth(
-    candidateTiles,
-    player.melds,
-    player.fortuneCount,
-    player.mouthDeclared,
-  )) {
+  if (!canDeclareMouth(candidateTiles, player.melds, player.fortuneCount, player.mouthDeclared)) {
     throw new Error('当前不能报嘴');
   }
   player.mouthDeclared = true;
   player.mouthRequired = false;
   player.lockedWaits = waits;
-  addEvent(state, 'mouth-declared', seat, null, `${seat}号玩家报嘴，听${waits.map(tileLabel).join('、')}`);
+  addEvent(
+    state,
+    'mouth-declared',
+    seat,
+    null,
+    `${seat}号玩家报嘴，听${waits.map(tileLabel).join('、')}`,
+  );
 }
 
 function settleEndGangs(state: GameState): void {
@@ -533,9 +529,11 @@ function settleEndGangs(state: GameState): void {
 function refundGangPayments(state: GameState): void {
   const retained: Payment[] = [];
   for (const payment of state.payments) {
-    if (payment.reason !== 'supplement-kong' &&
-        payment.reason !== 'concealed-kong' &&
-        payment.reason !== 'exposed-kong') {
+    if (
+      payment.reason !== 'supplement-kong' &&
+      payment.reason !== 'concealed-kong' &&
+      payment.reason !== 'exposed-kong'
+    ) {
       retained.push(payment);
       continue;
     }
@@ -588,9 +586,8 @@ function finishWin(
   discarder: Seat | null,
 ): void {
   const player = playerAt(state, winner);
-  const concealedWithoutWinning = winType === 'self-draw'
-    ? concealedBeforeLastDraw(state, player)
-    : [...player.concealedTiles];
+  const concealedWithoutWinning =
+    winType === 'self-draw' ? concealedBeforeLastDraw(state, player) : [...player.concealedTiles];
   const completedConcealed = [...concealedWithoutWinning, winningTile];
   const fan = calculateFan({
     concealedTiles: completedConcealed,
@@ -633,8 +630,9 @@ function finishWin(
 }
 
 function allResponsesReceived(pending: PendingDiscard): boolean {
-  return SEATS.filter((seat) => seat !== pending.discarder)
-    .every((seat) => pending.responses[seat] !== undefined);
+  return SEATS.filter((seat) => seat !== pending.discarder).every(
+    (seat) => pending.responses[seat] !== undefined,
+  );
 }
 
 function resolvePendingDiscard(state: GameState): void {
@@ -644,7 +642,9 @@ function resolvePendingDiscard(state: GameState): void {
   const order = claimOrder(pending.discarder);
   const responseEntries = order
     .map((seat) => ({ seat, response: pending.responses[seat] }))
-    .filter((entry): entry is { seat: Seat; response: ClaimResponse } => entry.response !== undefined);
+    .filter(
+      (entry): entry is { seat: Seat; response: ClaimResponse } => entry.response !== undefined,
+    );
 
   // 最新规则确定：同一弃牌上的所有动作都从弃牌者下家开始，
   // 沿逆时针依次竞争，不再额外使用“胡 > 杠 > 碰”的动作等级。
@@ -675,7 +675,13 @@ function resolvePendingDiscard(state: GameState): void {
     state.currentSeat = claim.seat;
     state.phase = 'awaiting-discard';
     state.drawMode = null;
-    addEvent(state, 'pong', claim.seat, pending.tile, `${claim.seat}号玩家碰${tileLabel(pending.tile)}`);
+    addEvent(
+      state,
+      'pong',
+      claim.seat,
+      pending.tile,
+      `${claim.seat}号玩家碰${tileLabel(pending.tile)}`,
+    );
     return;
   }
 
@@ -688,13 +694,24 @@ function resolvePendingDiscard(state: GameState): void {
   state.phase = 'awaiting-draw';
   state.drawMode = 'replacement';
   state.drawAfterGang = true;
-  addEvent(state, 'exposed-kong', claim.seat, pending.tile, `${claim.seat}号玩家明杠${tileLabel(pending.tile)}`);
+  addEvent(
+    state,
+    'exposed-kong',
+    claim.seat,
+    pending.tile,
+    `${claim.seat}号玩家明杠${tileLabel(pending.tile)}`,
+  );
 }
 
 function registerClaimResponse(state: GameState, action: GameAction): void {
   const pending = state.pendingDiscard;
   if (pending === null) throw new Error('当前没有待响应的弃牌');
-  if (action.type !== 'pass' && action.type !== 'pong' && action.type !== 'exposed-kong' && action.type !== 'win') {
+  if (
+    action.type !== 'pass' &&
+    action.type !== 'pong' &&
+    action.type !== 'exposed-kong' &&
+    action.type !== 'win'
+  ) {
     throw new Error('不是弃牌响应动作');
   }
   const response: ClaimResponse = { type: action.type };
@@ -744,7 +761,13 @@ export function applyAction(state: GameState, action: GameAction): GameState {
     };
     next.phase = 'claiming';
     next.drawMode = null;
-    addEvent(next, 'discard', action.seat, action.tile, `${action.seat}号玩家打出${tileLabel(action.tile)}`);
+    addEvent(
+      next,
+      'discard',
+      action.seat,
+      action.tile,
+      `${action.seat}号玩家打出${tileLabel(action.tile)}`,
+    );
     return next;
   }
 
@@ -763,13 +786,21 @@ export function applyAction(state: GameState, action: GameAction): GameState {
     next.phase = 'awaiting-draw';
     next.drawMode = 'replacement';
     next.drawAfterGang = true;
-    addEvent(next, 'concealed-kong', action.seat, action.tile, `${action.seat}号玩家暗杠${tileLabel(action.tile)}`);
+    addEvent(
+      next,
+      'concealed-kong',
+      action.seat,
+      action.tile,
+      `${action.seat}号玩家暗杠${tileLabel(action.tile)}`,
+    );
     return next;
   }
 
   if (action.type === 'supplement-kong') {
     if (next.lastDrawnTile !== action.tile) throw new Error('补杠必须使用本次摸到的牌');
-    const meldIndex = player.melds.findIndex((meld) => meld.kind === 'pong' && meld.tile === action.tile);
+    const meldIndex = player.melds.findIndex(
+      (meld) => meld.kind === 'pong' && meld.tile === action.tile,
+    );
     if (meldIndex < 0) throw new Error('没有对应的碰牌，不能补杠');
     removeTile(player.concealedTiles, action.tile);
     const pong = player.melds[meldIndex];
@@ -778,7 +809,13 @@ export function applyAction(state: GameState, action: GameAction): GameState {
     const payer = pong.fromSeat;
     recordGang(player, 'supplement', payer, 'immediate', true);
     addPayment(next, { from: payer, to: action.seat, amount: 1, reason: 'supplement-kong' });
-    addEvent(next, 'supplement-kong', action.seat, action.tile, `${action.seat}号玩家补杠${tileLabel(action.tile)}`);
+    addEvent(
+      next,
+      'supplement-kong',
+      action.seat,
+      action.tile,
+      `${action.seat}号玩家补杠${tileLabel(action.tile)}`,
+    );
     updateMouthRequirement(player);
     next.lastDrawnTile = null;
     next.currentSeat = action.seat;
@@ -799,7 +836,10 @@ export function getRemainingWallCount(state: GameState): number {
   return remainingWallTiles(state.wall);
 }
 
-export function getCurrentWaitingTiles(state: GameState, seat: Seat = state.currentSeat): NormalTile[] {
+export function getCurrentWaitingTiles(
+  state: GameState,
+  seat: Seat = state.currentSeat,
+): NormalTile[] {
   const player = playerAt(state, seat);
   if (player.mouthDeclared) return [...player.lockedWaits];
   return getWaitingTiles(mouthCandidateTiles(state, player), player.melds);
@@ -814,11 +854,13 @@ export function getCurrentFanIfWinning(
   const player = playerAt(state, seat);
   let concealed: NormalTile[];
   if (winType === 'self-draw') {
-    concealed = state.currentSeat === seat && state.lastDrawnTile !== null
-      ? concealedBeforeLastDraw(state, player)
-      : [...player.concealedTiles];
+    concealed =
+      state.currentSeat === seat && state.lastDrawnTile !== null
+        ? concealedBeforeLastDraw(state, player)
+        : [...player.concealedTiles];
   } else {
-    const alreadyCompleted = state.result?.outcome === 'win' &&
+    const alreadyCompleted =
+      state.result?.outcome === 'win' &&
       state.result.winner === seat &&
       state.result.winType === 'discard' &&
       state.result.winningTile === winningTile;
@@ -827,6 +869,10 @@ export function getCurrentFanIfWinning(
   }
   const completed = [...concealed, winningTile];
   return isWinningHand(completed, player.melds)
-    ? calculateFan({ concealedTiles: completed, melds: player.melds, fortuneCount: player.fortuneCount })
+    ? calculateFan({
+        concealedTiles: completed,
+        melds: player.melds,
+        fortuneCount: player.fortuneCount,
+      })
     : null;
 }

@@ -40,12 +40,13 @@ function cloneResult(result: RoundResult | null): RoundResult | null {
   if (result === null) return null;
   return {
     ...result,
-    fan: result.fan === null
-      ? null
-      : {
-          ...result.fan,
-          items: result.fan.items.map((item) => ({ ...item })),
-        },
+    fan:
+      result.fan === null
+        ? null
+        : {
+            ...result.fan,
+            items: result.fan.items.map((item) => ({ ...item })),
+          },
     payments: result.payments.map(clonePayment),
   };
 }
@@ -140,9 +141,7 @@ export function projectStateForSeat(state: GameState, viewerSeat: Seat): GameVie
   if (viewer === undefined) throw new Error(`不存在 ${viewerSeat} 号玩家`);
 
   const players: PlayerViewEntry[] = state.players.map((player) =>
-    player.seat === viewerSeat
-      ? toPlayerView(player)
-      : toPublicPlayerView(player),
+    player.seat === viewerSeat ? toPlayerView(player) : toPublicPlayerView(player),
   );
 
   return {

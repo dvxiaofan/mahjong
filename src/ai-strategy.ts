@@ -30,7 +30,8 @@ function suitedNeighborCount(tiles: readonly NormalTile[], tile: NormalTile): nu
   const rank = tileRank(tile);
   const suit = tileSuit(tile);
   return tiles.filter((candidate) => {
-    if (!isSuitedTile(candidate) || tileSuit(candidate) !== suit || candidate === tile) return false;
+    if (!isSuitedTile(candidate) || tileSuit(candidate) !== suit || candidate === tile)
+      return false;
     return Math.abs(tileRank(candidate) - rank) <= 2;
   }).length;
 }
@@ -51,7 +52,11 @@ function applyDiscardHeuristics(
     heuristics.push('孤张字牌优先处理');
   }
 
-  if (isSuitedTile(evaluation.tile) && count === 1 && suitedNeighborCount(player.concealedTiles, evaluation.tile) === 0) {
+  if (
+    isSuitedTile(evaluation.tile) &&
+    count === 1 &&
+    suitedNeighborCount(player.concealedTiles, evaluation.tile) === 0
+  ) {
     adjustment += 10;
     heuristics.push('缺少相邻搭子的孤张');
   }
@@ -90,9 +95,7 @@ export function rankStrategicDiscards(state: GameState, seat: Seat): StrategicDi
   const baseline = evaluateHand(state, seat);
   return evaluateDiscardChoices(state, seat)
     .map((evaluation) => applyDiscardHeuristics(state, seat, evaluation, baseline))
-    .sort((left, right) =>
-      right.strategicScore - left.strategicScore || right.score - left.score,
-    );
+    .sort((left, right) => right.strategicScore - left.strategicScore || right.score - left.score);
 }
 
 function asCandidates(evaluations: readonly StrategicDiscardEvaluation[]): AiDecisionCandidate[] {
@@ -121,10 +124,7 @@ export const strategicDiscardPolicy: AiPolicy = {
   },
 };
 
-function actionOf(
-  actions: readonly GameAction[],
-  type: GameAction['type'],
-): GameAction | null {
+function actionOf(actions: readonly GameAction[], type: GameAction['type']): GameAction | null {
   return actions.find((action) => action.type === type) ?? null;
 }
 
@@ -143,7 +143,7 @@ function cloneForClaim(state: GameState): GameState {
     players: state.players.map((player) => ({
       ...player,
       concealedTiles: [...player.concealedTiles],
-      melds: player.melds.map((meld) => ({ ...meld } as Meld)),
+      melds: player.melds.map((meld) => ({ ...meld }) as Meld),
       discards: [...player.discards],
       lockedWaits: [...player.lockedWaits],
       gangs: player.gangs.map((gang) => ({ ...gang })),
@@ -162,7 +162,11 @@ function simulateClaimMeld(
   const simulated = cloneForClaim(state);
   const simulatedPlayer = simulated.players[seat]!;
   const amount = kind === 'pong' ? 2 : 3;
-  simulatedPlayer.concealedTiles = removeTiles(simulatedPlayer.concealedTiles, pending.tile, amount);
+  simulatedPlayer.concealedTiles = removeTiles(
+    simulatedPlayer.concealedTiles,
+    pending.tile,
+    amount,
+  );
   simulatedPlayer.melds.push({ kind, tile: pending.tile, fromSeat: pending.discarder });
   const discarder = simulated.players[pending.discarder]!;
   const discardIndex = discarder.discards.lastIndexOf(pending.tile);
@@ -195,9 +199,9 @@ export function evaluatePongClaim(state: GameState, seat: Seat): ClaimEvaluation
       simulation.melds,
     ),
   );
-  const after = afterOptions.sort((left, right) =>
-    scoreHandEvaluation(right) - scoreHandEvaluation(left),
-  )[0] ?? evaluateHand(simulation.state, seat, simulation.concealed, simulation.melds);
+  const after =
+    afterOptions.sort((left, right) => scoreHandEvaluation(right) - scoreHandEvaluation(left))[0] ??
+    evaluateHand(simulation.state, seat, simulation.concealed, simulation.melds);
   const scoreDelta = scoreHandEvaluation(after) - scoreHandEvaluation(before);
   const structureGain = (after.allPungsPotential - before.allPungsPotential) * 20;
   const adjustedDelta = Math.round(scoreDelta + structureGain);
@@ -219,7 +223,8 @@ export function evaluateExposedKongClaim(state: GameState, seat: Seat): ClaimEva
   const before = evaluateHand(state, seat);
   const after = evaluateHand(simulation.state, seat, simulation.concealed, simulation.melds);
   const scoreDelta = scoreHandEvaluation(after) - scoreHandEvaluation(before) + 8;
-  const accept = state.wall.drawIndex <= state.wall.replacementIndex && after.shanten <= before.shanten;
+  const accept =
+    state.wall.drawIndex <= state.wall.replacementIndex && after.shanten <= before.shanten;
   return {
     accept,
     scoreDelta,
@@ -232,14 +237,16 @@ export function evaluateExposedKongClaim(state: GameState, seat: Seat): ClaimEva
 }
 
 function chooseSelfKong(input: AiPolicyInput): AiPolicyChoice | null {
-  const kongActions = input.legalActions.filter(
-    (action) => action.type === 'concealed-kong' || action.type === 'supplement-kong',
-  ).sort((left, right) =>
-    Number(right.type === 'supplement-kong') - Number(left.type === 'supplement-kong'),
-  );
+  const kongActions = input.legalActions
+    .filter((action) => action.type === 'concealed-kong' || action.type === 'supplement-kong')
+    .sort(
+      (left, right) =>
+        Number(right.type === 'supplement-kong') - Number(left.type === 'supplement-kong'),
+    );
   if (kongActions.length === 0) return null;
   const bestDiscard = rankStrategicDiscards(input.state, input.seat)[0];
-  const baselineShanten = bestDiscard?.hand.shanten ?? evaluateHand(input.state, input.seat).shanten;
+  const baselineShanten =
+    bestDiscard?.hand.shanten ?? evaluateHand(input.state, input.seat).shanten;
 
   for (const action of kongActions) {
     if (action.type === 'supplement-kong') {
@@ -265,7 +272,10 @@ export const strategicAiPolicy: AiPolicy = {
   choose(input) {
     const win = actionOf(input.legalActions, 'win');
     if (win !== null) {
-      return { action: win, reason: input.turnKind === 'claim' ? '接受合法点炮胡' : '接受合法自摸胡' };
+      return {
+        action: win,
+        reason: input.turnKind === 'claim' ? '接受合法点炮胡' : '接受合法自摸胡',
+      };
     }
 
     const mouth = actionOf(input.legalActions, 'declare-mouth');

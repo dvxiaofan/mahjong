@@ -24,9 +24,7 @@ describe('结算面板', () => {
           { name: '发财', fan: 2 },
         ],
       },
-      payments: [
-        { from: 1, to: 0, amount: 4, reason: 'win' },
-      ],
+      payments: [{ from: 1, to: 0, amount: 4, reason: 'win' }],
       reason: 'normal',
     };
 

@@ -16,9 +16,8 @@ describe('牌桌 UI 状态模型', () => {
   it('从合法动作中找到对应手牌的出牌动作', () => {
     const state = createGame({ seed: 20260904 });
     const view = projectStateForSeat(state, 0);
-    const tile = view.players[0]!.visibility === 'self'
-      ? view.players[0]!.concealedTiles[0]!
-      : null;
+    const tile =
+      view.players[0]!.visibility === 'self' ? view.players[0]!.concealedTiles[0]! : null;
     if (tile === null) throw new Error('缺少自己的手牌');
 
     expect(findDiscardAction(view.legalActions, tile)).toEqual({
@@ -62,16 +61,24 @@ describe('牌桌 UI 状态模型', () => {
   });
 
   it('把座位、事件和动作转成查看者视角的称呼', () => {
-    expect([0, 1, 2, 3].map((seat) => seatLabel(seat as 0 | 1 | 2 | 3, 0)))
-      .toEqual(['你', '下家', '对家', '上家']);
-    expect(formatEventForViewer({
-      type: 'discard',
-      seat: 1,
-      tile: 'm1',
-      message: '1号玩家打出1万',
-    }, 0)).toBe('下家打出1万');
-    expect(formatActionForViewer({ type: 'discard', seat: 0, tile: 'p2' }, 0))
-      .toBe('你打出 2筒');
+    expect([0, 1, 2, 3].map((seat) => seatLabel(seat as 0 | 1 | 2 | 3, 0))).toEqual([
+      '你',
+      '下家',
+      '对家',
+      '上家',
+    ]);
+    expect(
+      formatEventForViewer(
+        {
+          type: 'discard',
+          seat: 1,
+          tile: 'm1',
+          message: '1号玩家打出1万',
+        },
+        0,
+      ),
+    ).toBe('下家打出1万');
+    expect(formatActionForViewer({ type: 'discard', seat: 0, tile: 'p2' }, 0)).toBe('你打出 2筒');
   });
 
   it('按流程、特殊动作和结算筛选事件', () => {

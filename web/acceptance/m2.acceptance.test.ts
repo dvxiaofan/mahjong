@@ -4,10 +4,18 @@ import type { GameState } from '../../src/types.js';
 import { projectStateForSeat } from '../../src/view.js';
 
 const winningBeforeSelfDraw = [
-  'm1', 'm1', 'm1',
-  'm2', 'm2', 'm2',
-  'm3', 'm3', 'm3',
-  'p1', 'p1', 'p1',
+  'm1',
+  'm1',
+  'm1',
+  'm2',
+  'm2',
+  'm2',
+  'm3',
+  'm3',
+  'm3',
+  'p1',
+  'p1',
+  'p1',
   's1',
 ] as const;
 
@@ -113,7 +121,11 @@ describe('M2 本地 UI 总验收场景', () => {
     supplement.lastDrawnTile = 'm1';
     supplement.players[0]!.concealedTiles = ['m1'];
     supplement.players[0]!.melds = [{ kind: 'pong', tile: 'm1', fromSeat: 1 }];
-    const afterSupplement = applyAction(supplement, { type: 'supplement-kong', seat: 0, tile: 'm1' });
+    const afterSupplement = applyAction(supplement, {
+      type: 'supplement-kong',
+      seat: 0,
+      tile: 'm1',
+    });
     expect(afterSupplement.drawMode).toBe('replacement');
     expect(afterSupplement.payments).toEqual([
       { from: 1, to: 0, amount: 1, reason: 'supplement-kong' },
@@ -135,8 +147,17 @@ describe('M2 本地 UI 总验收场景', () => {
     gang.phase = 'awaiting-discard';
     gang.lastDrawnTile = 'm1';
     gang.players[0]!.concealedTiles = [
-      'm2', 'm2', 'm2', 'm3', 'm3', 'm3',
-      'p1', 'p1', 'p1', 's1', 'm1',
+      'm2',
+      'm2',
+      'm2',
+      'm3',
+      'm3',
+      'm3',
+      'p1',
+      'p1',
+      'p1',
+      's1',
+      'm1',
     ];
     gang.players[0]!.melds = [{ kind: 'pong', tile: 'm1', fromSeat: 1 }];
     gang.wall.tiles[gang.wall.replacementIndex] = 's1';
@@ -156,10 +177,16 @@ describe('M2 本地 UI 总验收场景', () => {
     state.players[0]!.score = 1;
     state.players[1]!.score = -1;
     state.payments = [{ from: 1, to: 0, amount: 1, reason: 'supplement-kong' }];
-    state.players[0]!.gangs = [{
-      kind: 'supplement', seat: 0, payer: 1, amount: 1,
-      settlement: 'immediate', settled: true,
-    }];
+    state.players[0]!.gangs = [
+      {
+        kind: 'supplement',
+        seat: 0,
+        payer: 1,
+        amount: 1,
+        settlement: 'immediate',
+        settled: true,
+      },
+    ];
 
     const next = applyAction(state, { type: 'draw', seat: 0 });
     expect(next.result?.outcome).toBe('draw');

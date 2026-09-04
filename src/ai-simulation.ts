@@ -66,13 +66,15 @@ export function runAiSimulation(options: AiSimulationOptions): AiSimulationSumma
   for (let gameIndex = 0; gameIndex < options.games; gameIndex += 1) {
     const gameSeed = options.seed + gameIndex;
     let state = createGame({ dealerSeat: (gameIndex % 4) as Seat, seed: gameSeed });
-    const policies = Object.fromEntries(SEATS.map((seat) => [
-      seat,
-      createDifficultyAiPolicy(
-        options.difficulty,
-        seededRandom((gameSeed ^ ((seat + 1) * 0x9e3779b9)) >>> 0),
-      ),
-    ])) as Record<Seat, ReturnType<typeof createDifficultyAiPolicy>>;
+    const policies = Object.fromEntries(
+      SEATS.map((seat) => [
+        seat,
+        createDifficultyAiPolicy(
+          options.difficulty,
+          seededRandom((gameSeed ^ ((seat + 1) * 0x9e3779b9)) >>> 0),
+        ),
+      ]),
+    ) as Record<Seat, ReturnType<typeof createDifficultyAiPolicy>>;
     let actions = 0;
 
     while (state.phase !== 'finished' && state.phase !== 'drawn' && actions < maxActions) {
@@ -103,8 +105,7 @@ export function runAiSimulation(options: AiSimulationOptions): AiSimulationSumma
   }
 
   summary.averageActions = summary.totalActions / summary.games;
-  summary.optimalDiscardRate = summary.discardDecisions === 0
-    ? 0
-    : summary.topRatedDiscards / summary.discardDecisions;
+  summary.optimalDiscardRate =
+    summary.discardDecisions === 0 ? 0 : summary.topRatedDiscards / summary.discardDecisions;
   return summary;
 }

@@ -91,10 +91,7 @@ export function selectInitialDealer(random: RandomSource): DealerSelection {
 }
 
 /** Map two dice to one of four 15-stack walls and a tile offset in the 120-tile array. */
-export function calculateWallOpening(
-  rollerSeat: Seat,
-  dice: DicePair,
-): WallOpening {
+export function calculateWallOpening(rollerSeat: Seat, dice: DicePair): WallOpening {
   const total = diceTotal(dice);
   const wallSeat = ((rollerSeat + total - 1) % 4) as Seat;
   const stack = (total - 1) % WALL_STACKS_PER_SIDE;
@@ -137,9 +134,10 @@ function createRound(
 function cloneResult(result: RoundResult): RoundResult {
   return {
     ...result,
-    fan: result.fan === null
-      ? null
-      : { ...result.fan, items: result.fan.items.map((item) => ({ ...item })) },
+    fan:
+      result.fan === null
+        ? null
+        : { ...result.fan, items: result.fan.items.map((item) => ({ ...item })) },
     payments: result.payments.map((payment) => ({ ...payment })),
   };
 }
@@ -175,9 +173,7 @@ export function createMatch(options: CreateMatchOptions = {}): MatchState {
     throw new Error('比赛局数必须是正整数');
   }
   const random = seededRandom(seed ^ 0xc3c3c3c3);
-  const dealerSelection = options.dealerSeat === undefined
-    ? selectInitialDealer(random)
-    : null;
+  const dealerSelection = options.dealerSeat === undefined ? selectInitialDealer(random) : null;
   const dealerSeat = options.dealerSeat ?? dealerSelection!.dealerSeat;
   const openingDice = dealerSelection?.winningRoll ?? rollDicePair(random);
   const round = createRound(seed, 1, dealerSeat, openingDice);

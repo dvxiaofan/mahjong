@@ -180,8 +180,12 @@ export class AuthoritativeRoom {
   }
 
   static restore(persistence: AuthoritativeRoomPersistence): AuthoritativeRoom {
-    if (persistence.version !== 1 || persistence.roomId.trim().length === 0 ||
-        !Number.isInteger(persistence.revision) || persistence.revision < 0) {
+    if (
+      persistence.version !== 1 ||
+      persistence.roomId.trim().length === 0 ||
+      !Number.isInteger(persistence.revision) ||
+      persistence.revision < 0
+    ) {
       throw new Error('权威房间持久化数据无效');
     }
     const room = new AuthoritativeRoom({
@@ -197,7 +201,11 @@ export class AuthoritativeRoom {
     for (const [requestId, command] of persistence.cachedCommands) {
       room.cachedCommands.set(requestId, cloneJson(command));
     }
-    room.auditLog.splice(0, room.auditLog.length, ...persistence.auditLog.map((entry) => ({ ...entry })));
+    room.auditLog.splice(
+      0,
+      room.auditLog.length,
+      ...persistence.auditLog.map((entry) => ({ ...entry })),
+    );
     return room;
   }
 
@@ -303,8 +311,9 @@ export class AuthoritativeRoom {
     if (this.match.phase !== 'playing') {
       return this.reject(command, 'round-not-playing', '当前没有进行中的单局', fingerprint);
     }
-    const legal = getMatchLegalActions(this.match, command.seat)
-      .some((action) => sameAction(action, command.action));
+    const legal = getMatchLegalActions(this.match, command.seat).some((action) =>
+      sameAction(action, command.action),
+    );
     if (!legal) {
       return this.reject(command, 'illegal-action', '动作不在当前合法动作集中', fingerprint);
     }
@@ -368,8 +377,10 @@ export class AuthoritativeRoom {
       return cloneJson(result);
     };
 
-    if (command.requestId.trim().length === 0) return reject('invalid-request-id', '请求 ID 不能为空');
-    if (command.expectedRevision !== this.revision) return reject('stale-revision', '客户端修订号已过期');
+    if (command.requestId.trim().length === 0)
+      return reject('invalid-request-id', '请求 ID 不能为空');
+    if (command.expectedRevision !== this.revision)
+      return reject('stale-revision', '客户端修订号已过期');
     if (this.match.phase !== 'between-rounds') return reject('round-not-ready', '当前不在局间阶段');
 
     const revisionBefore = this.revision;

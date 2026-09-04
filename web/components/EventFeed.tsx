@@ -16,20 +16,25 @@ export function EventFeed({ events, viewerSeat }: EventFeedProps) {
           <p className="panel-eyebrow">LIVE LOG</p>
           <h2>牌局动态</h2>
         </div>
-        <span className="live-indicator"><span />实时</span>
+        <span className="live-indicator">
+          <span />
+          实时
+        </span>
       </div>
       <div className="event-list">
-        {recentEvents.length > 0
-          ? recentEvents.map((event, index) => (
-              <div
-                className={`event-item ${index === 0 ? 'event-item--latest' : ''}`}
-                key={`${event.type}-${event.seat}-${index}`}
-              >
-                <span className="event-tag">{eventTypeLabel(event.type)}</span>
-                <span className="event-message">{formatEventForViewer(event, viewerSeat)}</span>
-              </div>
-            ))
-          : <span className="empty-panel-note">等待牌局事件</span>}
+        {recentEvents.length > 0 ? (
+          recentEvents.map((event, index) => (
+            <div
+              className={`event-item ${index === 0 ? 'event-item--latest' : ''}`}
+              key={`${event.type}-${event.seat}-${index}`}
+            >
+              <span className="event-tag">{eventTypeLabel(event.type)}</span>
+              <span className="event-message">{formatEventForViewer(event, viewerSeat)}</span>
+            </div>
+          ))
+        ) : (
+          <span className="empty-panel-note">等待牌局事件</span>
+        )}
       </div>
     </section>
   );

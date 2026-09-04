@@ -10,11 +10,10 @@ export const BOT_SEATS = [1, 2, 3] as const;
  * It never invents an action: every returned action comes from getLegalActions().
  */
 export function chooseBasicBotAction(state: GameState, seat: Seat): GameAction | null {
-  return decideAiAction(
-    state,
-    seat,
-    createDifficultyAiPolicy('advanced', seededRandom(1)),
-  )?.action ?? null;
+  return (
+    decideAiAction(state, seat, createDifficultyAiPolicy('advanced', seededRandom(1)))?.action ??
+    null
+  );
 }
 
 export function findNextBotDecision(

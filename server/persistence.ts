@@ -1,6 +1,10 @@
 import { mkdir, readFile, rename, writeFile } from 'node:fs/promises';
 import { dirname } from 'node:path';
-import { RoomRegistry, type RoomRegistryOptions, type RoomRegistryPersistence } from '../src/lobby.js';
+import {
+  RoomRegistry,
+  type RoomRegistryOptions,
+  type RoomRegistryPersistence,
+} from '../src/lobby.js';
 
 export async function saveRoomRegistry(registry: RoomRegistry, path: string): Promise<void> {
   await mkdir(dirname(path), { recursive: true });

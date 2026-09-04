@@ -7,5 +7,12 @@
     "noEmit": false
   },
   "include": ["src/**/*.ts", "server/**/*.ts"],
-  "exclude": ["node_modules", "dist", "dist-web", "dist-server", "src/**/*.test.ts", "server/**/*.test.ts"]
+  "exclude": [
+    "node_modules",
+    "dist",
+    "dist-web",
+    "dist-server",
+    "src/**/*.test.ts",
+    "server/**/*.test.ts"
+  ]
 }

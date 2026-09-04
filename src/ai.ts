@@ -142,9 +142,10 @@ export function decideAiAction(
   const fallback = chooseFallbackAction(state, legalActions);
   return {
     action: { ...fallback } as GameAction,
-    reason: choice === null
-      ? '策略未返回可用动作，采用安全合法回退'
-      : '策略返回非法动作，采用安全合法回退',
+    reason:
+      choice === null
+        ? '策略未返回可用动作，采用安全合法回退'
+        : '策略返回非法动作，采用安全合法回退',
     policyId: policy.id,
     source: 'fallback',
     turnKind,

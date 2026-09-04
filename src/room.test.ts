@@ -31,9 +31,14 @@ describe('服务端权威房间', () => {
     expect(result.accepted).toBe(true);
     expect(result.revision).toBe(1);
     expect(room.getRevision()).toBe(1);
-    expect(room.getAuditLog()).toContainEqual(expect.objectContaining({
-      requestId: 'request-1', accepted: true, revisionBefore: 0, revisionAfter: 1,
-    }));
+    expect(room.getAuditLog()).toContainEqual(
+      expect.objectContaining({
+        requestId: 'request-1',
+        accepted: true,
+        revisionBefore: 0,
+        revisionAfter: 1,
+      }),
+    );
   });
 
   it('相同请求可幂等重试且返回副本', () => {
@@ -55,22 +60,34 @@ describe('服务端权威房间', () => {
 
   it('拒绝过期修订号、座位冒用和非法动作', () => {
     const staleRoom = createRoom();
-    expect(staleRoom.submitAction({
-      requestId: 'stale', expectedRevision: 1, seat: 0,
-      action: staleRoom.getSnapshot(0).match.game.legalActions[0]!,
-    })).toMatchObject({ accepted: false, code: 'stale-revision' });
+    expect(
+      staleRoom.submitAction({
+        requestId: 'stale',
+        expectedRevision: 1,
+        seat: 0,
+        action: staleRoom.getSnapshot(0).match.game.legalActions[0]!,
+      }),
+    ).toMatchObject({ accepted: false, code: 'stale-revision' });
 
     const mismatchRoom = createRoom();
-    expect(mismatchRoom.submitAction({
-      requestId: 'mismatch', expectedRevision: 0, seat: 1,
-      action: mismatchRoom.getSnapshot(0).match.game.legalActions[0]!,
-    })).toMatchObject({ accepted: false, code: 'seat-mismatch' });
+    expect(
+      mismatchRoom.submitAction({
+        requestId: 'mismatch',
+        expectedRevision: 0,
+        seat: 1,
+        action: mismatchRoom.getSnapshot(0).match.game.legalActions[0]!,
+      }),
+    ).toMatchObject({ accepted: false, code: 'seat-mismatch' });
 
     const illegalRoom = createRoom();
-    expect(illegalRoom.submitAction({
-      requestId: 'illegal', expectedRevision: 0, seat: 0,
-      action: { type: 'pass', seat: 0 },
-    })).toMatchObject({ accepted: false, code: 'illegal-action' });
+    expect(
+      illegalRoom.submitAction({
+        requestId: 'illegal',
+        expectedRevision: 0,
+        seat: 0,
+        action: { type: 'pass', seat: 0 },
+      }),
+    ).toMatchObject({ accepted: false, code: 'illegal-action' });
   });
 
   it('相同请求 ID 携带不同命令会被识别为冲突', () => {
@@ -78,7 +95,9 @@ describe('服务端权威房间', () => {
     const action = room.getSnapshot(0).match.game.legalActions[0]!;
     room.submitAction({ requestId: 'conflict', expectedRevision: 0, seat: 0, action });
     const conflict = room.submitAction({
-      requestId: 'conflict', expectedRevision: 1, seat: 0,
+      requestId: 'conflict',
+      expectedRevision: 1,
+      seat: 0,
       action: { type: 'pass', seat: 0 },
     });
     expect(conflict).toMatchObject({ accepted: false, code: 'request-id-conflict' });
@@ -87,7 +106,12 @@ describe('服务端权威房间', () => {
   it('服务端快照恢复修订号、状态、幂等缓存和审计', () => {
     const original = createRoom();
     const action = original.getSnapshot(0).match.game.legalActions[0]!;
-    const command = { requestId: 'persisted-action', expectedRevision: 0, seat: 0 as const, action };
+    const command = {
+      requestId: 'persisted-action',
+      expectedRevision: 0,
+      seat: 0 as const,
+      action,
+    };
     const accepted = original.submitAction(command);
     const restored = AuthoritativeRoom.restore(original.exportState());
 

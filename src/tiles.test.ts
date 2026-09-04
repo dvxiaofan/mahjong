@@ -1,10 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import {
-  ALL_TILE_TYPES,
-  NORMAL_TILE_TYPES,
-  createTileSet,
-  tileLabel,
-} from './tiles.js';
+import { ALL_TILE_TYPES, NORMAL_TILE_TYPES, createTileSet, tileLabel } from './tiles.js';
 
 describe('牌库', () => {
   it('包含120张牌，且每种牌恰好4张', () => {

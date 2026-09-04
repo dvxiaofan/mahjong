@@ -74,9 +74,7 @@ export function drawWithFortuneReplacement(
   while (true) {
     let next: Tile;
     try {
-      next = mode === 'normal' && consumed.length === 0
-        ? drawNormal(wall)
-        : drawReplacement(wall);
+      next = mode === 'normal' && consumed.length === 0 ? drawNormal(wall) : drawReplacement(wall);
     } catch (error) {
       if (error instanceof WallExhaustedError) {
         throw new WallExhaustedError('发财/补牌流程耗尽牌墙', consumed, fortunes);

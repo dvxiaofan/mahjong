@@ -77,7 +77,11 @@ export class SecurityGuard {
   private state(connectionId: string): ConnectionSecurityState {
     const existing = this.states.get(connectionId);
     if (existing !== undefined) return existing;
-    const created: ConnectionSecurityState = { requestTimes: [], violationCount: 0, bannedUntil: 0 };
+    const created: ConnectionSecurityState = {
+      requestTimes: [],
+      violationCount: 0,
+      bannedUntil: 0,
+    };
     this.states.set(connectionId, created);
     return created;
   }
@@ -107,7 +111,9 @@ export class SecurityGuard {
       };
     }
 
-    state.requestTimes = state.requestTimes.filter((timestamp) => now - timestamp < this.requestWindowMs);
+    state.requestTimes = state.requestTimes.filter(
+      (timestamp) => now - timestamp < this.requestWindowMs,
+    );
     if (state.requestTimes.length >= this.maxRequestsPerWindow) {
       this.recordViolation(connectionId, 'rate-limit', 'request-window-exceeded', now);
       return {

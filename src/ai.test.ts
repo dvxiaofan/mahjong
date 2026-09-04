@@ -1,10 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { createGame, getLegalActions } from './game.js';
-import {
-  classifyAiTurn,
-  decideAiAction,
-  type AiPolicy,
-} from './ai.js';
+import { classifyAiTurn, decideAiAction, type AiPolicy } from './ai.js';
 
 describe('AI 合法动作代理', () => {
   it('基础策略返回带原因的合法动作', () => {
@@ -39,7 +35,9 @@ describe('AI 合法动作代理', () => {
     const state = createGame({ seed: 2 });
     const throwingPolicy: AiPolicy = {
       id: 'throw-test',
-      choose: () => { throw new Error('测试异常'); },
+      choose: () => {
+        throw new Error('测试异常');
+      },
     };
     const decision = decideAiAction(state, 0, throwingPolicy);
     expect(decision?.source).toBe('fallback');

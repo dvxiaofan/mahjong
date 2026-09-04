@@ -7,7 +7,9 @@ const stateFile = process.env.MAHJONG_STATE_FILE ?? resolve(process.cwd(), 'data
 const server = await createMahjongServer({ host, port, stateFile });
 const address = await server.listen();
 
-process.stdout.write(`Mahjong server listening on ${address.httpUrl} (WebSocket ${address.webSocketUrl})\n`);
+process.stdout.write(
+  `Mahjong server listening on ${address.httpUrl} (WebSocket ${address.webSocketUrl})\n`,
+);
 
 const shutdown = async () => {
   await server.close();

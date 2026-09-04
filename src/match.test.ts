@@ -1,14 +1,20 @@
 import { describe, expect, it } from 'vitest';
-import {
-  applyMatchAction,
-  calculateWallOpening,
-  createMatch,
-  startNextRound,
-} from './match.js';
+import { applyMatchAction, calculateWallOpening, createMatch, startNextRound } from './match.js';
 
 const winningBeforeSelfDraw = [
-  'm1', 'm1', 'm1', 'm2', 'm2', 'm2', 'm3',
-  'm3', 'm3', 'p1', 'p1', 'p1', 's1',
+  'm1',
+  'm1',
+  'm1',
+  'm2',
+  'm2',
+  'm2',
+  'm3',
+  'm3',
+  'm3',
+  'p1',
+  'p1',
+  'p1',
+  's1',
 ] as const;
 
 function makeCurrentDealerWin(match: ReturnType<typeof createMatch>) {
@@ -19,7 +25,9 @@ function makeCurrentDealerWin(match: ReturnType<typeof createMatch>) {
   match.game.players[seat]!.concealedTiles = [...winningBeforeSelfDraw, 's1'];
   match.game.players[seat]!.fortuneCount = 0;
   match.game.players[seat]!.melds = [];
-  match.game.players.forEach((player) => { player.score = 0; });
+  match.game.players.forEach((player) => {
+    player.score = 0;
+  });
   return applyMatchAction(match, { type: 'win', seat });
 }
 
@@ -80,7 +88,9 @@ describe('多局会话层', () => {
     let match = createMatch({ seed: 3, maxRounds: 1, dealerSeat: 0 });
     match = makeCurrentDealerWin(match);
     expect(match.phase).toBe('finished');
-    expect(() => applyMatchAction(match, { type: 'draw', seat: 0 })).toThrow('当前不在进行中的牌局');
+    expect(() => applyMatchAction(match, { type: 'draw', seat: 0 })).toThrow(
+      '当前不在进行中的牌局',
+    );
     expect(() => startNextRound(match)).toThrow('当前不能开始下一局');
   });
 });

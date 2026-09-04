@@ -67,8 +67,14 @@ export function matchesEventFilter(event: GameEventView, filter: EventFilter): b
     return ['deal', 'draw', 'replacement-draw', 'discard'].includes(event.type);
   }
   if (filter === 'special') {
-    return ['fortune', 'pong', 'exposed-kong', 'concealed-kong', 'supplement-kong', 'mouth-declared']
-      .includes(event.type);
+    return [
+      'fortune',
+      'pong',
+      'exposed-kong',
+      'concealed-kong',
+      'supplement-kong',
+      'mouth-declared',
+    ].includes(event.type);
   }
   return ['win', 'gang-payment', 'round-draw'].includes(event.type);
 }

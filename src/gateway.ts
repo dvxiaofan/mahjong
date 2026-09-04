@@ -12,14 +12,16 @@ function lifecycleMessages(requestId: string, result: LifecycleResult): ServerMe
   if (!result.ok) {
     return [createServerErrorMessage(requestId, result.code, result.message, false)];
   }
-  return [{
-    protocolVersion: PROTOCOL_VERSION,
-    requestId,
-    type: 'room-joined',
-    session: result.session,
-    lobby: result.lobby,
-    snapshot: result.snapshot,
-  }];
+  return [
+    {
+      protocolVersion: PROTOCOL_VERSION,
+      requestId,
+      type: 'room-joined',
+      session: result.session,
+      lobby: result.lobby,
+      snapshot: result.snapshot,
+    },
+  ];
 }
 
 /** Connection-aware, transport-neutral multiplayer gateway. */
@@ -35,12 +37,14 @@ export class MultiplayerGateway {
   async handle(connectionId: string, payload: string | unknown): Promise<ServerMessage[]> {
     const securityCheck = this.security.inspect(connectionId, payload);
     if (!securityCheck.allowed) {
-      return [createServerErrorMessage(
-        null,
-        securityCheck.code,
-        securityCheck.message,
-        securityCheck.retryAfterMs > 0,
-      )];
+      return [
+        createServerErrorMessage(
+          null,
+          securityCheck.code,
+          securityCheck.message,
+          securityCheck.retryAfterMs > 0,
+        ),
+      ];
     }
     const parsed = parseClientMessage(payload);
     if (!parsed.success) {
@@ -52,22 +56,26 @@ export class MultiplayerGateway {
 
     if (message.type === 'hello') {
       const room = identity === null ? null : this.registry.getRoom(identity.roomId);
-      return [{
-        protocolVersion: PROTOCOL_VERSION,
-        requestId: message.requestId,
-        type: 'welcome',
-        roomId: identity?.roomId ?? null,
-        revision: room?.getRevision() ?? null,
-      }];
+      return [
+        {
+          protocolVersion: PROTOCOL_VERSION,
+          requestId: message.requestId,
+          type: 'welcome',
+          roomId: identity?.roomId ?? null,
+          revision: room?.getRevision() ?? null,
+        },
+      ];
     }
 
     if (message.type === 'list-rooms') {
-      return [{
-        protocolVersion: PROTOCOL_VERSION,
-        requestId: message.requestId,
-        type: 'room-list',
-        rooms: this.registry.listRooms(),
-      }];
+      return [
+        {
+          protocolVersion: PROTOCOL_VERSION,
+          requestId: message.requestId,
+          type: 'room-list',
+          rooms: this.registry.listRooms(),
+        },
+      ];
     }
 
     if (message.type === 'create-room') {
@@ -76,7 +84,9 @@ export class MultiplayerGateway {
         connectionId,
         displayName: message.displayName,
         ...(message.password === undefined ? {} : { password: message.password }),
-        ...(message.maxRounds === undefined ? {} : { matchOptions: { maxRounds: message.maxRounds } }),
+        ...(message.maxRounds === undefined
+          ? {}
+          : { matchOptions: { maxRounds: message.maxRounds } }),
       });
       if (!result.ok && result.code === 'connection-in-use') {
         this.security.recordViolation(connectionId, 'identity-conflict', result.code);
@@ -117,32 +127,42 @@ export class MultiplayerGateway {
 
     if (message.type === 'leave-room') {
       if (identity === null) {
-        return [createServerErrorMessage(message.requestId, 'not-joined', '连接尚未加入房间', false)];
+        return [
+          createServerErrorMessage(message.requestId, 'not-joined', '连接尚未加入房间', false),
+        ];
       }
       this.registry.leaveRoom(connectionId);
-      return [{
-        protocolVersion: PROTOCOL_VERSION,
-        requestId: message.requestId,
-        type: 'room-left',
-        roomId: identity.roomId,
-      }];
+      return [
+        {
+          protocolVersion: PROTOCOL_VERSION,
+          requestId: message.requestId,
+          type: 'room-left',
+          roomId: identity.roomId,
+        },
+      ];
     }
 
     if (message.type === 'set-trustee') {
       if (identity === null || identity.role !== 'player') {
-        return [createServerErrorMessage(message.requestId, 'not-joined', '玩家连接尚未加入房间', false)];
+        return [
+          createServerErrorMessage(message.requestId, 'not-joined', '玩家连接尚未加入房间', false),
+        ];
       }
       const lobby = this.registry.setTrustee(connectionId, message.enabled);
       if (lobby === null) {
-        return [createServerErrorMessage(message.requestId, 'not-joined', '无法更新托管状态', false)];
+        return [
+          createServerErrorMessage(message.requestId, 'not-joined', '无法更新托管状态', false),
+        ];
       }
-      return [{
-        protocolVersion: PROTOCOL_VERSION,
-        requestId: message.requestId,
-        type: 'trustee-updated',
-        enabled: message.enabled,
-        lobby,
-      }];
+      return [
+        {
+          protocolVersion: PROTOCOL_VERSION,
+          requestId: message.requestId,
+          type: 'trustee-updated',
+          enabled: message.enabled,
+          lobby,
+        },
+      ];
     }
 
     if (identity === null) {
@@ -153,24 +173,40 @@ export class MultiplayerGateway {
       return [createServerErrorMessage(message.requestId, 'room-not-found', '房间不存在', false)];
     }
     const lobby = this.registry.getRoomView(identity.roomId);
-    if ((message.type === 'submit-action' || message.type === 'start-next-round') &&
-        (lobby?.playerCount ?? 0) < 4) {
-      return [createServerErrorMessage(message.requestId, 'room-not-ready', '需要四名玩家入座后才能行动', true)];
+    if (
+      (message.type === 'submit-action' || message.type === 'start-next-round') &&
+      (lobby?.playerCount ?? 0) < 4
+    ) {
+      return [
+        createServerErrorMessage(
+          message.requestId,
+          'room-not-ready',
+          '需要四名玩家入座后才能行动',
+          true,
+        ),
+      ];
     }
-    const messages = handleRoomProtocolMessage(room, {
-      connectionId,
-      seat: identity.seat,
-      role: identity.role,
-    }, message);
-    if (messages.some((candidate) =>
-      candidate.type === 'action-result' && candidate.result.accepted,
-    )) {
+    const messages = handleRoomProtocolMessage(
+      room,
+      {
+        connectionId,
+        seat: identity.seat,
+        role: identity.role,
+      },
+      message,
+    );
+    if (
+      messages.some((candidate) => candidate.type === 'action-result' && candidate.result.accepted)
+    ) {
       this.registry.noteRoomActivity(identity.roomId);
     }
     for (const candidate of messages) {
       if (candidate.type !== 'action-result' || candidate.result.accepted) continue;
-      if (candidate.result.code === 'illegal-action' || candidate.result.code === 'seat-mismatch' ||
-          candidate.result.code === 'request-id-conflict') {
+      if (
+        candidate.result.code === 'illegal-action' ||
+        candidate.result.code === 'seat-mismatch' ||
+        candidate.result.code === 'request-id-conflict'
+      ) {
         this.security.recordViolation(connectionId, 'invalid-action', candidate.result.code);
       }
     }

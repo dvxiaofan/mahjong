@@ -77,13 +77,22 @@ export function HistoryDrawer({
             <h2>牌局记录</h2>
             <p>从动作轨迹重建任意一步，不会修改实时牌局。</p>
           </div>
-          <button aria-label="关闭牌局记录" className="drawer-close" onClick={onClose} type="button">×</button>
+          <button
+            aria-label="关闭牌局记录"
+            className="drawer-close"
+            onClick={onClose}
+            type="button"
+          >
+            ×
+          </button>
         </header>
 
         <section className="replay-control" aria-label="回放控制">
           <div className="replay-heading">
             <strong>{replayStep === null ? '实时牌局' : `回放至第 ${currentStep} 步`}</strong>
-            <span>{currentStep} / {records.length}</span>
+            <span>
+              {currentStep} / {records.length}
+            </span>
           </div>
           <input
             aria-label="回放步骤"
@@ -99,18 +108,24 @@ export function HistoryDrawer({
               disabled={currentStep === 0}
               onClick={() => onReplayStep(currentStep - 1)}
               type="button"
-            >上一步</button>
+            >
+              上一步
+            </button>
             <button
               disabled={currentStep >= records.length}
               onClick={() => onReplayStep(currentStep + 1)}
               type="button"
-            >下一步</button>
+            >
+              下一步
+            </button>
             <button
               className="resume-button"
               disabled={replayStep === null}
               onClick={onResumeLive}
               type="button"
-            >返回实时</button>
+            >
+              返回实时
+            </button>
           </div>
         </section>
 
@@ -121,14 +136,18 @@ export function HistoryDrawer({
             onClick={() => setMode('events')}
             role="tab"
             type="button"
-          >事件 {view.events.length}</button>
+          >
+            事件 {view.events.length}
+          </button>
           <button
             aria-selected={mode === 'actions'}
             className={mode === 'actions' ? 'is-active' : ''}
             onClick={() => setMode('actions')}
             role="tab"
             type="button"
-          >动作 {records.length}</button>
+          >
+            动作 {records.length}
+          </button>
         </div>
 
         {mode === 'events' && (
@@ -140,18 +159,25 @@ export function HistoryDrawer({
                   key={key}
                   onClick={() => setFilter(key)}
                   type="button"
-                >{filterLabels[key]}</button>
+                >
+                  {filterLabels[key]}
+                </button>
               ))}
             </div>
             <div className="history-list">
               {[...visibleEvents].reverse().map((event, reverseIndex) => (
-                <article className="history-entry" key={`${event.type}-${event.seat}-${reverseIndex}`}>
+                <article
+                  className="history-entry"
+                  key={`${event.type}-${event.seat}-${reverseIndex}`}
+                >
                   <span className="history-index">{visibleEvents.length - reverseIndex}</span>
                   <span className="event-tag">{eventTypeLabel(event.type)}</span>
                   <span>{formatEventForViewer(event, view.viewerSeat)}</span>
                 </article>
               ))}
-              {visibleEvents.length === 0 && <p className="empty-history">当前步骤没有这类事件。</p>}
+              {visibleEvents.length === 0 && (
+                <p className="empty-history">当前步骤没有这类事件。</p>
+              )}
             </div>
           </>
         )}
@@ -167,7 +193,9 @@ export function HistoryDrawer({
                     'action-history-entry',
                     step === currentStep ? 'is-current' : '',
                     step > currentStep ? 'is-future' : '',
-                  ].filter(Boolean).join(' ')}
+                  ]
+                    .filter(Boolean)
+                    .join(' ')}
                   key={`${record.action.seat}-${record.action.type}-${index}`}
                   onClick={() => onReplayStep(step)}
                   type="button"
@@ -178,9 +206,14 @@ export function HistoryDrawer({
                     <small>{record.reason ?? sourceLabels[record.source]}</small>
                     {(record.candidates?.length ?? 0) > 1 && (
                       <small className="candidate-summary">
-                        备选：{record.candidates!.slice(1, 4).map((candidate) =>
-                          `${formatActionForViewer(candidate.action, view.viewerSeat)} ${candidate.score}`,
-                        ).join(' · ')}
+                        备选：
+                        {record
+                          .candidates!.slice(1, 4)
+                          .map(
+                            (candidate) =>
+                              `${formatActionForViewer(candidate.action, view.viewerSeat)} ${candidate.score}`,
+                          )
+                          .join(' · ')}
                       </small>
                     )}
                   </span>
@@ -188,7 +221,9 @@ export function HistoryDrawer({
                 </button>
               );
             })}
-            {records.length === 0 && <p className="empty-history">完成第一个动作后，这里会出现动作轨迹。</p>}
+            {records.length === 0 && (
+              <p className="empty-history">完成第一个动作后，这里会出现动作轨迹。</p>
+            )}
           </div>
         )}
       </aside>

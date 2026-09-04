@@ -11,11 +11,20 @@ import {
 } from './rules.js';
 
 const pungsWithPair = [
-  'm1', 'm1', 'm1',
-  'm2', 'm2', 'm2',
-  'm3', 'm3', 'm3',
-  'p1', 'p1', 'p1',
-  's1', 's1',
+  'm1',
+  'm1',
+  'm1',
+  'm2',
+  'm2',
+  'm2',
+  'm3',
+  'm3',
+  'm3',
+  'p1',
+  'p1',
+  'p1',
+  's1',
+  's1',
 ] as const;
 
 describe('胡牌、番种与报嘴判定', () => {
@@ -31,11 +40,20 @@ describe('胡牌、番种与报嘴判定', () => {
     });
 
     const purePungs = [
-      'm1', 'm1', 'm1',
-      'm2', 'm2', 'm2',
-      'm3', 'm3', 'm3',
-      'm4', 'm4', 'm4',
-      'm5', 'm5',
+      'm1',
+      'm1',
+      'm1',
+      'm2',
+      'm2',
+      'm2',
+      'm3',
+      'm3',
+      'm3',
+      'm4',
+      'm4',
+      'm4',
+      'm5',
+      'm5',
     ] as const;
     expect(calculateFan({ concealedTiles: purePungs, melds: [], fortuneCount: 3 })).toEqual({
       total: 5,
@@ -47,11 +65,20 @@ describe('胡牌、番种与报嘴判定', () => {
     });
 
     const honorHand = [
-      'm1', 'm1', 'm1',
-      'm2', 'm2', 'm2',
-      'm3', 'm3', 'm3',
-      'red', 'red', 'red',
-      'white', 'white',
+      'm1',
+      'm1',
+      'm1',
+      'm2',
+      'm2',
+      'm2',
+      'm3',
+      'm3',
+      'm3',
+      'red',
+      'red',
+      'red',
+      'white',
+      'white',
     ] as const;
     expect(isWinningHand(honorHand)).toBe(true);
     expect(isAllPungs(honorHand)).toBe(true);
@@ -60,11 +87,20 @@ describe('胡牌、番种与报嘴判定', () => {
 
   it('清一色只接受单一序数花色，不接受红中/白板', () => {
     const pure = [
-      'm1', 'm2', 'm3',
-      'm4', 'm5', 'm6',
-      'm7', 'm8', 'm9',
-      'm1', 'm1', 'm1',
-      'm2', 'm2',
+      'm1',
+      'm2',
+      'm3',
+      'm4',
+      'm5',
+      'm6',
+      'm7',
+      'm8',
+      'm9',
+      'm1',
+      'm1',
+      'm1',
+      'm2',
+      'm2',
     ] as const;
     expect(isWinningHand(pure)).toBe(true);
     expect(isPureSuit(pure)).toBe(true);
@@ -77,10 +113,19 @@ describe('胡牌、番种与报嘴判定', () => {
 
   it('支持多面听，发财不作为胡牌张', () => {
     const waiting = [
-      'm1', 'm2', 'm3',
-      'm4', 'm5', 'm6',
-      'm7', 'm8', 'm9',
-      'p1', 'p1', 'p2', 'p2',
+      'm1',
+      'm2',
+      'm3',
+      'm4',
+      'm5',
+      'm6',
+      'm7',
+      'm8',
+      'm9',
+      'p1',
+      'p1',
+      'p2',
+      'p2',
     ] as const;
     expect(getWaitingTiles(waiting)).toEqual(['p1', 'p2']);
     expect(getWaitingTiles(waiting)).not.toContain('fortune');
@@ -108,11 +153,18 @@ describe('胡牌、番种与报嘴判定', () => {
     expect(canWinOnSelfDraw(before, [], reported, 'm1')).toBe(false);
     expect(canWinOnDiscard(before, [], reported, 's1')).toBe(true);
 
-    expect(canWinOnDiscard(before, [], {
-      fortuneCount: 0,
-      mouthDeclared: false,
-      lockedWaits: [],
-      mouthRequired: false,
-    }, 's1')).toBe(false);
+    expect(
+      canWinOnDiscard(
+        before,
+        [],
+        {
+          fortuneCount: 0,
+          mouthDeclared: false,
+          lockedWaits: [],
+          mouthRequired: false,
+        },
+        's1',
+      ),
+    ).toBe(false);
   });
 });

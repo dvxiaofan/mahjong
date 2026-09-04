@@ -61,20 +61,12 @@ export interface WallState {
   replacementIndex: number;
 }
 
-export type GamePhase =
-  | 'awaiting-draw'
-  | 'awaiting-discard'
-  | 'claiming'
-  | 'finished'
-  | 'drawn';
+export type GamePhase = 'awaiting-draw' | 'awaiting-discard' | 'claiming' | 'finished' | 'drawn';
 
 export type DrawMode = 'normal' | 'replacement';
 
 export type ClaimResponse =
-  | { type: 'pass' }
-  | { type: 'win' }
-  | { type: 'pong' }
-  | { type: 'exposed-kong' };
+  { type: 'pass' } | { type: 'win' } | { type: 'pong' } | { type: 'exposed-kong' };
 
 export interface PendingDiscard {
   tile: NormalTile;

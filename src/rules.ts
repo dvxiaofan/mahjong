@@ -139,13 +139,7 @@ export function isWinningHand(
   if (concealedTiles.some((tile) => !NORMAL_TILE_TYPES.includes(tile))) return false;
   if (concealedTiles.length !== requiredConcealedTileCount(melds.length)) return false;
 
-  return canPartition(
-    createCounts(concealedTiles),
-    4 - melds.length,
-    false,
-    true,
-    new Map(),
-  );
+  return canPartition(createCounts(concealedTiles), 4 - melds.length, false, true, new Map());
 }
 
 /** Return every normal tile that completes the current 13-tile hand. */
@@ -153,9 +147,7 @@ export function getWaitingTiles(
   concealedTiles: readonly NormalTile[],
   melds: readonly Meld[] = [],
 ): NormalTile[] {
-  return NORMAL_TILE_TYPES.filter((tile) =>
-    isWinningHand([...concealedTiles, tile], melds),
-  );
+  return NORMAL_TILE_TYPES.filter((tile) => isWinningHand([...concealedTiles, tile], melds));
 }
 
 export function isTing(
@@ -172,21 +164,14 @@ function isPungOnlyConcealed(
   if (!validateMelds(melds)) return false;
   if (!melds.every((meld) => ALL_PUNG_KINDS.includes(meld.kind))) return false;
   if (concealedTiles.length !== requiredConcealedTileCount(melds.length)) return false;
-  return canPartition(
-    createCounts(concealedTiles),
-    4 - melds.length,
-    false,
-    false,
-    new Map(),
-  );
+  return canPartition(createCounts(concealedTiles), 4 - melds.length, false, false, new Map());
 }
 
 export function isAllPungs(
   concealedTiles: readonly NormalTile[],
   melds: readonly Meld[] = [],
 ): boolean {
-  return isPungOnlyConcealed(concealedTiles, melds) &&
-    isWinningHand(concealedTiles, melds);
+  return isPungOnlyConcealed(concealedTiles, melds) && isWinningHand(concealedTiles, melds);
 }
 
 export function isPureSuit(
@@ -196,10 +181,7 @@ export function isPureSuit(
   if (!validateMelds(melds) || concealedTiles.some((tile) => !NORMAL_TILE_TYPES.includes(tile))) {
     return false;
   }
-  const allTiles: NormalTile[] = [
-    ...concealedTiles,
-    ...melds.map((meld) => meld.tile),
-  ];
+  const allTiles: NormalTile[] = [...concealedTiles, ...melds.map((meld) => meld.tile)];
   const suits = new Set(allTiles.map(tileSuit));
   return allTiles.length > 0 && suits.size === 1 && !suits.has(null);
 }
@@ -274,10 +256,12 @@ export function canDeclareMouth(
   fortuneCount: number,
   alreadyDeclared: boolean,
 ): boolean {
-  return !alreadyDeclared &&
+  return (
+    !alreadyDeclared &&
     Number.isInteger(fortuneCount) &&
     fortuneCount >= 3 &&
-    isTing(concealedTiles, melds);
+    isTing(concealedTiles, melds)
+  );
 }
 
 export function isNormalTile(tile: string): tile is NormalTile {

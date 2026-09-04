@@ -1,8 +1,4 @@
-import {
-  applyAction,
-  createGame,
-  getLegalActions,
-} from '../src/game.ts';
+import { applyAction, createGame, getLegalActions } from '../src/game.ts';
 import { isNormalTile } from '../src/rules.ts';
 import type { AiDecisionCandidate } from '../src/ai.ts';
 import { SEATS, type GameAction, type GameState, type Seat } from '../src/types.ts';
@@ -69,23 +65,28 @@ function isGameAction(value: unknown): value is GameAction {
     return typeof candidate.tile === 'string' && isNormalTile(candidate.tile);
   }
 
-  return ['draw', 'win', 'pass', 'pong', 'exposed-kong', 'declare-mouth']
-    .includes(candidate.type);
+  return ['draw', 'win', 'pass', 'pong', 'exposed-kong', 'declare-mouth'].includes(candidate.type);
 }
 
 function isRecordedAction(value: unknown): value is RecordedAction {
   if (value === null || typeof value !== 'object') return false;
   const candidate = value as Record<string, unknown>;
-  const sourceValid = candidate.source === 'human' || candidate.source === 'bot' || candidate.source === 'auto-pass';
+  const sourceValid =
+    candidate.source === 'human' || candidate.source === 'bot' || candidate.source === 'auto-pass';
   const reasonValid = candidate.reason === undefined || typeof candidate.reason === 'string';
-  const candidatesValid = candidate.candidates === undefined || (
-    Array.isArray(candidate.candidates) && candidate.candidates.every((item) => {
-      if (item === null || typeof item !== 'object') return false;
-      const decision = item as Record<string, unknown>;
-      return isGameAction(decision.action) && typeof decision.score === 'number' &&
-        Array.isArray(decision.reasons) && decision.reasons.every((reason) => typeof reason === 'string');
-    })
-  );
+  const candidatesValid =
+    candidate.candidates === undefined ||
+    (Array.isArray(candidate.candidates) &&
+      candidate.candidates.every((item) => {
+        if (item === null || typeof item !== 'object') return false;
+        const decision = item as Record<string, unknown>;
+        return (
+          isGameAction(decision.action) &&
+          typeof decision.score === 'number' &&
+          Array.isArray(decision.reasons) &&
+          decision.reasons.every((reason) => typeof reason === 'string')
+        );
+      }));
   return sourceValid && reasonValid && candidatesValid && isGameAction(candidate.action);
 }
 
@@ -129,25 +130,31 @@ export function appendRecordedAction(
   source: ActionSource,
   metadata: RecordedActionMetadata = {},
 ): LocalGameSession {
-  const legal = getLegalActions(session.state, action.seat)
-    .some((candidate) => sameAction(candidate, action));
+  const legal = getLegalActions(session.state, action.seat).some((candidate) =>
+    sameAction(candidate, action),
+  );
   if (!legal) return session;
 
   return {
     ...session,
     state: applyAction(session.state, action),
-    records: [...session.records, {
-      action: { ...action } as GameAction,
-      source,
-      ...(metadata.reason === undefined ? {} : { reason: metadata.reason }),
-      ...(metadata.candidates === undefined ? {} : {
-        candidates: metadata.candidates.map((candidate) => ({
-          action: { ...candidate.action } as GameAction,
-          score: candidate.score,
-          reasons: [...candidate.reasons],
-        })),
-      }),
-    }],
+    records: [
+      ...session.records,
+      {
+        action: { ...action } as GameAction,
+        source,
+        ...(metadata.reason === undefined ? {} : { reason: metadata.reason }),
+        ...(metadata.candidates === undefined
+          ? {}
+          : {
+              candidates: metadata.candidates.map((candidate) => ({
+                action: { ...candidate.action } as GameAction,
+                score: candidate.score,
+                reasons: [...candidate.reasons],
+              })),
+            }),
+      },
+    ],
   };
 }
 

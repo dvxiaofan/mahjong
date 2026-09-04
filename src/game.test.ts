@@ -4,10 +4,18 @@ import type { GameState } from './types.js';
 import type { Tile } from './tiles.js';
 
 const winningBeforeSelfDraw = [
-  'm1', 'm1', 'm1',
-  'm2', 'm2', 'm2',
-  'm3', 'm3', 'm3',
-  'p1', 'p1', 'p1',
+  'm1',
+  'm1',
+  'm1',
+  'm2',
+  'm2',
+  'm2',
+  'm3',
+  'm3',
+  'm3',
+  'p1',
+  'p1',
+  'p1',
   's1',
 ] as const;
 
@@ -42,22 +50,32 @@ function winningStateWithEndGang(kind: 'concealed' | 'exposed'): GameState {
   state.phase = 'awaiting-discard';
   state.lastDrawnTile = 's1';
   state.players[0]!.concealedTiles = [
-    'm2', 'm2', 'm2',
-    'm3', 'm3', 'm3',
-    'p1', 'p1', 'p1',
-    's1', 's1',
+    'm2',
+    'm2',
+    'm2',
+    'm3',
+    'm3',
+    'm3',
+    'p1',
+    'p1',
+    'p1',
+    's1',
+    's1',
   ];
-  state.players[0]!.melds = kind === 'concealed'
-    ? [{ kind: 'concealed-kong', tile: 'm1' }]
-    : [{ kind: 'exposed-kong', tile: 'm1', fromSeat: 2 }];
-  state.players[0]!.gangs = [{
-    kind,
-    seat: 0,
-    payer: kind === 'exposed' ? 2 : null,
-    amount: 1,
-    settlement: 'end',
-    settled: false,
-  }];
+  state.players[0]!.melds =
+    kind === 'concealed'
+      ? [{ kind: 'concealed-kong', tile: 'm1' }]
+      : [{ kind: 'exposed-kong', tile: 'm1', fromSeat: 2 }];
+  state.players[0]!.gangs = [
+    {
+      kind,
+      seat: 0,
+      payer: kind === 'exposed' ? 2 : null,
+      amount: 1,
+      settlement: 'end',
+      settled: false,
+    },
+  ];
   return state;
 }
 
@@ -84,8 +102,26 @@ describe('牌局状态机', () => {
     state.currentSeat = 1;
     state.phase = 'awaiting-draw';
     state.drawMode = 'normal';
-    state.players[1]!.concealedTiles = ['m1', 'm1', 'm1', 'm1', 'p1', 'p2', 'p3', 's1', 's2', 's3', 'red', 'red', 'white'];
-    expect(getLegalActions(state, 1)).toContainEqual({ type: 'concealed-kong', seat: 1, tile: 'm1' });
+    state.players[1]!.concealedTiles = [
+      'm1',
+      'm1',
+      'm1',
+      'm1',
+      'p1',
+      'p2',
+      'p3',
+      's1',
+      's2',
+      's3',
+      'red',
+      'red',
+      'white',
+    ];
+    expect(getLegalActions(state, 1)).toContainEqual({
+      type: 'concealed-kong',
+      seat: 1,
+      tile: 'm1',
+    });
     const next = applyAction(state, { type: 'concealed-kong', seat: 1, tile: 'm1' });
     expect(next.players[1]!.melds).toContainEqual({ kind: 'concealed-kong', tile: 'm1' });
     expect(next.phase).toBe('awaiting-draw');
@@ -98,7 +134,11 @@ describe('牌局状态机', () => {
     state.phase = 'awaiting-draw';
     state.drawMode = 'replacement';
     state.players[1]!.concealedTiles = ['m1', 'm1', 'm1', 'm1', 'p1', 'p2', 'p3', 's1', 's2', 's3'];
-    expect(getLegalActions(state, 1)).not.toContainEqual({ type: 'concealed-kong', seat: 1, tile: 'm1' });
+    expect(getLegalActions(state, 1)).not.toContainEqual({
+      type: 'concealed-kong',
+      seat: 1,
+      tile: 'm1',
+    });
     expect(getLegalActions(state, 1)).toContainEqual({ type: 'draw', seat: 1 });
   });
 
@@ -204,9 +244,7 @@ describe('牌局状态机', () => {
     next = applyAction(next, { type: 'pass', seat: 3 });
 
     expect(next.result?.fan?.total).toBe(2);
-    expect(next.payments).toEqual([
-      { from: 2, to: 0, amount: 3, reason: 'win' },
-    ]);
+    expect(next.payments).toEqual([{ from: 2, to: 0, amount: 3, reason: 'win' }]);
     expect(next.players.map((player) => player.score)).toEqual([3, 0, -3, 0]);
   });
 
@@ -215,10 +253,18 @@ describe('牌局状态机', () => {
     state.phase = 'claiming';
     state.pendingDiscard = { tile: 'm5', discarder: 1, responses: {} };
     state.players[0]!.concealedTiles = [
-      'm1', 'm1', 'm1',
-      'm2', 'm2', 'm2',
-      'm3', 'm3', 'm3',
-      'm4', 'm4', 'm4',
+      'm1',
+      'm1',
+      'm1',
+      'm2',
+      'm2',
+      'm2',
+      'm3',
+      'm3',
+      'm3',
+      'm4',
+      'm4',
+      'm4',
       'm5',
     ];
     state.players[0]!.fortuneCount = 3;
@@ -237,9 +283,7 @@ describe('牌局状态机', () => {
         { name: '发财', fan: 3 },
       ],
     });
-    expect(next.payments).toEqual([
-      { from: 1, to: 0, amount: 6, reason: 'win' },
-    ]);
+    expect(next.payments).toEqual([{ from: 1, to: 0, amount: 6, reason: 'win' }]);
     expect(next.players.map((player) => player.score)).toEqual([6, -6, 0, 0]);
   });
 
@@ -279,9 +323,15 @@ describe('牌局状态机', () => {
     state.phase = 'awaiting-discard';
     state.lastDrawnTile = 'm1';
     state.players[0]!.concealedTiles = [
-      'm2', 'm2', 'm2',
-      'm3', 'm3', 'm3',
-      'p1', 'p1', 'p1',
+      'm2',
+      'm2',
+      'm2',
+      'm3',
+      'm3',
+      'm3',
+      'p1',
+      'p1',
+      'p1',
       's1',
       'm1',
     ];
@@ -290,9 +340,7 @@ describe('牌局状态机', () => {
 
     let next = applyAction(state, { type: 'supplement-kong', seat: 0, tile: 'm1' });
     expect(next.players.map((player) => player.score)).toEqual([1, -1, 0, 0]);
-    expect(next.payments).toEqual([
-      { from: 1, to: 0, amount: 1, reason: 'supplement-kong' },
-    ]);
+    expect(next.payments).toEqual([{ from: 1, to: 0, amount: 1, reason: 'supplement-kong' }]);
 
     next = applyAction(next, { type: 'draw', seat: 0 });
     next = applyAction(next, { type: 'win', seat: 0 });
@@ -313,22 +361,26 @@ describe('牌局状态机', () => {
     state.drawMode = 'replacement';
     state.wall.drawIndex = 1;
     state.wall.replacementIndex = 0;
-    state.players[0]!.gangs = [{
-      kind: 'concealed',
-      seat: 0,
-      payer: null,
-      amount: 1,
-      settlement: 'end',
-      settled: false,
-    }];
-    state.players[1]!.gangs = [{
-      kind: 'exposed',
-      seat: 1,
-      payer: 0,
-      amount: 1,
-      settlement: 'end',
-      settled: false,
-    }];
+    state.players[0]!.gangs = [
+      {
+        kind: 'concealed',
+        seat: 0,
+        payer: null,
+        amount: 1,
+        settlement: 'end',
+        settled: false,
+      },
+    ];
+    state.players[1]!.gangs = [
+      {
+        kind: 'exposed',
+        seat: 1,
+        payer: 0,
+        amount: 1,
+        settlement: 'end',
+        settled: false,
+      },
+    ];
 
     const next = applyAction(state, { type: 'draw', seat: 0 });
 
@@ -361,9 +413,26 @@ describe('牌局状态机', () => {
     state.currentSeat = 0;
     state.phase = 'awaiting-discard';
     state.lastDrawnTile = 'm1';
-    state.players[0]!.concealedTiles = ['m2', 'm3', 'm4', 'm5', 'm6', 'm7', 'm8', 'm9', 'p1', 'p2', 'p3', 'm1'];
+    state.players[0]!.concealedTiles = [
+      'm2',
+      'm3',
+      'm4',
+      'm5',
+      'm6',
+      'm7',
+      'm8',
+      'm9',
+      'p1',
+      'p2',
+      'p3',
+      'm1',
+    ];
     state.players[0]!.melds = [{ kind: 'pong', tile: 'm1', fromSeat: 1 }];
-    expect(getLegalActions(state, 0)).toContainEqual({ type: 'supplement-kong', seat: 0, tile: 'm1' });
+    expect(getLegalActions(state, 0)).toContainEqual({
+      type: 'supplement-kong',
+      seat: 0,
+      tile: 'm1',
+    });
 
     const next = applyAction(state, { type: 'supplement-kong', seat: 0, tile: 'm1' });
     expect(next.pendingDiscard).toBeNull();
@@ -416,7 +485,9 @@ describe('牌局状态机', () => {
     state.players[0]!.score = 1;
     state.players[1]!.score = -1;
     state.payments = [{ from: 1, to: 0, amount: 1, reason: 'supplement-kong' }];
-    state.players[0]!.gangs = [{ kind: 'supplement', seat: 0, payer: 1, amount: 1, settlement: 'immediate', settled: true }];
+    state.players[0]!.gangs = [
+      { kind: 'supplement', seat: 0, payer: 1, amount: 1, settlement: 'immediate', settled: true },
+    ];
 
     const next = applyAction(state, { type: 'draw', seat: 0 });
     expect(next.phase).toBe('drawn');

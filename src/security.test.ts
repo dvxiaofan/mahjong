@@ -7,7 +7,10 @@ describe('联网安全守卫', () => {
   it('拒绝超大消息且审计不保存原始消息体', () => {
     const guard = new SecurityGuard({ maxMessageBytes: 16 });
     const secret = 'super-secret-password';
-    expect(guard.inspect('c1', secret)).toMatchObject({ allowed: false, code: 'message-too-large' });
+    expect(guard.inspect('c1', secret)).toMatchObject({
+      allowed: false,
+      code: 'message-too-large',
+    });
     const report = guard.getAuditSummary();
     expect(report.totalViolations).toBe(1);
     expect(JSON.stringify(report)).not.toContain(secret);
@@ -32,7 +35,10 @@ describe('联网安全守卫', () => {
     const guard = new SecurityGuard({ violationThreshold: 2, banMs: 100, now: () => now });
     guard.recordViolation('attacker', 'invalid-action', 'illegal-action');
     guard.recordViolation('attacker', 'invalid-action', 'illegal-action');
-    expect(guard.inspect('attacker', '{}')).toMatchObject({ allowed: false, code: 'temporarily-banned' });
+    expect(guard.inspect('attacker', '{}')).toMatchObject({
+      allowed: false,
+      code: 'temporarily-banned',
+    });
     expect(guard.getAuditSummary().bannedConnections).toHaveLength(1);
     now = 111;
     expect(guard.inspect('attacker', '{}').allowed).toBe(true);
@@ -46,18 +52,30 @@ describe('联网安全守卫', () => {
       guard,
     );
     await gateway.handle('owner', {
-      protocolVersion: 1, requestId: 'create', type: 'create-room',
-      roomId: 'secure-gateway', displayName: '房主', password: 'correct-secret',
+      protocolVersion: 1,
+      requestId: 'create',
+      type: 'create-room',
+      roomId: 'secure-gateway',
+      displayName: '房主',
+      password: 'correct-secret',
     });
     for (const requestId of ['bad-1', 'bad-2']) {
       await gateway.handle('attacker', {
-        protocolVersion: 1, requestId, type: 'join-room',
-        roomId: 'secure-gateway', displayName: '攻击者', password: 'wrong-secret',
+        protocolVersion: 1,
+        requestId,
+        type: 'join-room',
+        roomId: 'secure-gateway',
+        displayName: '攻击者',
+        password: 'wrong-secret',
       });
     }
-    expect(await gateway.handle('attacker', {
-      protocolVersion: 1, requestId: 'hello', type: 'hello',
-    })).toEqual([expect.objectContaining({ type: 'error', code: 'temporarily-banned' })]);
+    expect(
+      await gateway.handle('attacker', {
+        protocolVersion: 1,
+        requestId: 'hello',
+        type: 'hello',
+      }),
+    ).toEqual([expect.objectContaining({ type: 'error', code: 'temporarily-banned' })]);
     const report = JSON.stringify(guard.getAuditSummary());
     expect(report).not.toContain('correct-secret');
     expect(report).not.toContain('wrong-secret');
@@ -72,13 +90,18 @@ describe('联网安全守卫', () => {
       guard,
     );
     await gateway.registry.createRoom({
-      roomId: 'action-security', connectionId: 'player', displayName: '玩家',
+      roomId: 'action-security',
+      connectionId: 'player',
+      displayName: '玩家',
       matchOptions: { dealerSeat: 0, seed: 1 },
     });
     for (const seat of [1, 2, 3] as const) {
       await gateway.registry.joinRoom({
-        roomId: 'action-security', connectionId: `player-${seat}`,
-        displayName: `玩家${seat}`, role: 'player', seatPreference: seat,
+        roomId: 'action-security',
+        connectionId: `player-${seat}`,
+        displayName: `玩家${seat}`,
+        role: 'player',
+        seatPreference: seat,
       });
     }
     for (let index = 0; index < 3; index += 1) {
@@ -90,9 +113,15 @@ describe('联网安全守卫', () => {
         action: { type: 'pass' },
       });
     }
-    expect(guard.getAuditSummary().entries.filter((entry) => entry.kind === 'invalid-action')).toHaveLength(3);
-    expect(await gateway.handle('player', {
-      protocolVersion: 1, requestId: 'after-ban', type: 'get-snapshot',
-    })).toEqual([expect.objectContaining({ type: 'error', code: 'temporarily-banned' })]);
+    expect(
+      guard.getAuditSummary().entries.filter((entry) => entry.kind === 'invalid-action'),
+    ).toHaveLength(3);
+    expect(
+      await gateway.handle('player', {
+        protocolVersion: 1,
+        requestId: 'after-ban',
+        type: 'get-snapshot',
+      }),
+    ).toEqual([expect.objectContaining({ type: 'error', code: 'temporarily-banned' })]);
   });
 });

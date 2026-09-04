@@ -1,10 +1,5 @@
 import { rankStrategicDiscards, strategicAiPolicy } from './ai-strategy.js';
-import type {
-  AiDecisionCandidate,
-  AiPolicy,
-  AiPolicyChoice,
-  AiPolicyInput,
-} from './ai.js';
+import type { AiDecisionCandidate, AiPolicy, AiPolicyChoice, AiPolicyInput } from './ai.js';
 import type { RandomSource } from './random.js';
 import type { GameAction } from './types.js';
 
@@ -105,17 +100,18 @@ function safeAlternative(
 
 function acceptanceRate(action: GameAction, profile: DifficultyProfile): number {
   if (action.type === 'declare-mouth') return profile.mouthRate;
-  if (action.type === 'concealed-kong' || action.type === 'supplement-kong' || action.type === 'exposed-kong') {
+  if (
+    action.type === 'concealed-kong' ||
+    action.type === 'supplement-kong' ||
+    action.type === 'exposed-kong'
+  ) {
     return profile.kongRate;
   }
   if (action.type === 'pong') return profile.optionalClaimRate;
   return 1;
 }
 
-export function createDifficultyAiPolicy(
-  difficulty: AiDifficulty,
-  random: RandomSource,
-): AiPolicy {
+export function createDifficultyAiPolicy(difficulty: AiDifficulty, random: RandomSource): AiPolicy {
   const profile = profiles[difficulty];
   return {
     id: `difficulty-${difficulty}-v1`,
@@ -129,12 +125,14 @@ export function createDifficultyAiPolicy(
 
       const rate = acceptanceRate(strategic.action, profile);
       if (rate < 1 && random() > rate) {
-        return safeAlternative(
-          input,
-          profile,
-          random,
-          `${difficulty} 难度本次放弃可选的 ${strategic.action.type} 动作`,
-        ) ?? strategic;
+        return (
+          safeAlternative(
+            input,
+            profile,
+            random,
+            `${difficulty} 难度本次放弃可选的 ${strategic.action.type} 动作`,
+          ) ?? strategic
+        );
       }
       return strategic;
     },

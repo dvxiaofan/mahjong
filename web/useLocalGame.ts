@@ -63,31 +63,36 @@ function decisionRandom(seed: number, actionCount: number) {
  * Local single-player controller. The React layer owns only the current state;
  * all legality and transitions remain inside the shared mahjong engine.
  */
-export function useLocalGame(seed: number, difficulty: AiDifficulty = 'standard'): LocalGameController {
+export function useLocalGame(
+  seed: number,
+  difficulty: AiDifficulty = 'standard',
+): LocalGameController {
   const [loaded] = useState(() => initialSession(seed));
   const [session, setSession] = useState<LocalGameSession>(loaded.session);
   const [restored, setRestored] = useState(loaded.restored);
   const [replayStep, setReplayStep] = useState<number | null>(null);
   const isReplaying = replayStep !== null;
   const botDecision = useMemo(
-    () => isReplaying
-      ? null
-      : findNextBotDecision(
-          session.state,
-          difficulty,
-          decisionRandom(seed, session.records.length),
-        ),
+    () =>
+      isReplaying
+        ? null
+        : findNextBotDecision(
+            session.state,
+            difficulty,
+            decisionRandom(seed, session.records.length),
+          ),
     [difficulty, isReplaying, seed, session.records.length, session.state],
   );
   const autoPassAction = useMemo(
-    () => isReplaying ? null : getOnlyPassAction(session.state, LOCAL_VIEWER_SEAT),
+    () => (isReplaying ? null : getOnlyPassAction(session.state, LOCAL_VIEWER_SEAT)),
     [isReplaying, session.state],
   );
 
   const displayedState = useMemo(
-    () => replayStep === null
-      ? session.state
-      : replayRecordedActions(seed, session.records, replayStep),
+    () =>
+      replayStep === null
+        ? session.state
+        : replayRecordedActions(seed, session.records, replayStep),
     [replayStep, seed, session.records, session.state],
   );
 
@@ -96,12 +101,17 @@ export function useLocalGame(seed: number, difficulty: AiDifficulty = 'standard'
     return isReplaying ? { ...projected, legalActions: [] } : projected;
   }, [displayedState, isReplaying]);
 
-  const dispatch = useCallback((action: GameAction) => {
-    if (action.seat !== LOCAL_VIEWER_SEAT || isReplaying) return;
-    setSession((previous) => appendRecordedAction(previous, action, 'human', {
-      reason: '玩家手动选择',
-    }));
-  }, [isReplaying]);
+  const dispatch = useCallback(
+    (action: GameAction) => {
+      if (action.seat !== LOCAL_VIEWER_SEAT || isReplaying) return;
+      setSession((previous) =>
+        appendRecordedAction(previous, action, 'human', {
+          reason: '玩家手动选择',
+        }),
+      );
+    },
+    [isReplaying],
+  );
 
   const reset = useCallback(() => {
     const storage = browserStorage();
@@ -111,9 +121,12 @@ export function useLocalGame(seed: number, difficulty: AiDifficulty = 'standard'
     setRestored(false);
   }, [seed]);
 
-  const showReplayStep = useCallback((step: number) => {
-    setReplayStep(Math.max(0, Math.min(step, session.records.length)));
-  }, [session.records.length]);
+  const showReplayStep = useCallback(
+    (step: number) => {
+      setReplayStep(Math.max(0, Math.min(step, session.records.length)));
+    },
+    [session.records.length],
+  );
 
   const resumeLive = useCallback(() => setReplayStep(null), []);
 
@@ -126,27 +139,30 @@ export function useLocalGame(seed: number, difficulty: AiDifficulty = 'standard'
     const automaticAction = autoPassAction ?? botDecision?.action ?? null;
     if (automaticAction === null || isReplaying) return undefined;
 
-    const timer = window.setTimeout(() => {
-      setSession((previous) => {
-        const nextAutoPass = getOnlyPassAction(previous.state, LOCAL_VIEWER_SEAT);
-        if (nextAutoPass !== null) {
-          return appendRecordedAction(previous, nextAutoPass, 'auto-pass', {
-            reason: '唯一合法响应，自动过牌',
-          });
-        }
-        const nextBotDecision = findNextBotDecision(
-          previous.state,
-          difficulty,
-          decisionRandom(seed, previous.records.length),
-        );
-        return nextBotDecision === null
-          ? previous
-          : appendRecordedAction(previous, nextBotDecision.action, 'bot', {
-              reason: nextBotDecision.reason,
-              candidates: nextBotDecision.candidates,
+    const timer = window.setTimeout(
+      () => {
+        setSession((previous) => {
+          const nextAutoPass = getOnlyPassAction(previous.state, LOCAL_VIEWER_SEAT);
+          if (nextAutoPass !== null) {
+            return appendRecordedAction(previous, nextAutoPass, 'auto-pass', {
+              reason: '唯一合法响应，自动过牌',
             });
-      });
-    }, autoPassAction === null ? BOT_TURN_DELAY_MS : AUTO_PASS_DELAY_MS);
+          }
+          const nextBotDecision = findNextBotDecision(
+            previous.state,
+            difficulty,
+            decisionRandom(seed, previous.records.length),
+          );
+          return nextBotDecision === null
+            ? previous
+            : appendRecordedAction(previous, nextBotDecision.action, 'bot', {
+                reason: nextBotDecision.reason,
+                candidates: nextBotDecision.candidates,
+              });
+        });
+      },
+      autoPassAction === null ? BOT_TURN_DELAY_MS : AUTO_PASS_DELAY_MS,
+    );
 
     return () => window.clearTimeout(timer);
   }, [autoPassAction, botDecision, difficulty, isReplaying, seed]);

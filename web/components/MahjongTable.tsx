@@ -1,20 +1,10 @@
 import { tileLabel } from '../../src/tiles.ts';
-import type {
-  GameAction,
-  GameAudienceView,
-  PlayerViewEntry,
-  Seat,
-} from '../../src/types.ts';
+import type { GameAction, GameAudienceView, PlayerViewEntry, Seat } from '../../src/types.ts';
 import { ActionBar } from './ActionBar';
 import { EventFeed } from './EventFeed';
 import { PlayerSeat } from './PlayerSeat';
 import { ResultPanel } from './ResultPanel';
-import {
-  formatEventForViewer,
-  getInteractionPrompt,
-  getSeatActivity,
-  seatLabel,
-} from '../uiModel';
+import { formatEventForViewer, getInteractionPrompt, getSeatActivity, seatLabel } from '../uiModel';
 
 interface MahjongTableProps {
   view: GameAudienceView;
@@ -107,20 +97,30 @@ export function MahjongTable({
         </div>
 
         <div className="table-mark table-mark--top">逆时针</div>
-        <div className="table-mark table-mark--bottom">庄家 · {seatLabel(view.dealerSeat, view.viewerSeat)}</div>
+        <div className="table-mark table-mark--bottom">
+          庄家 · {seatLabel(view.dealerSeat, view.viewerSeat)}
+        </div>
       </section>
 
       <div className="table-status-strip" aria-live="polite">
-        <span className="status-icon">{view.phase === 'finished' ? '胡' : view.phase === 'drawn' ? '荒' : '局'}</span>
+        <span className="status-icon">
+          {view.phase === 'finished' ? '胡' : view.phase === 'drawn' ? '荒' : '局'}
+        </span>
         <span className="status-copy">
           <strong>{prompt}</strong>
-          <small>{latestEvent === undefined
-            ? '牌局准备就绪'
-            : formatEventForViewer(latestEvent, view.viewerSeat)}</small>
+          <small>
+            {latestEvent === undefined
+              ? '牌局准备就绪'
+              : formatEventForViewer(latestEvent, view.viewerSeat)}
+          </small>
         </span>
       </div>
 
-      <ResultPanel view={view} onReset={onReset} {...(resetLabel === undefined ? {} : { resetLabel })} />
+      <ResultPanel
+        view={view}
+        onReset={onReset}
+        {...(resetLabel === undefined ? {} : { resetLabel })}
+      />
 
       <section className="table-lower-grid">
         <ActionBar

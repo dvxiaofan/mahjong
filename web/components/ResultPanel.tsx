@@ -19,17 +19,17 @@ export function ResultPanel({ view, onReset, resetLabel = '再来一局' }: Resu
   const result = view.result;
   if (result === null) return null;
 
-  const winnerLabel = result.winner === null
-    ? null
-    : seatLabel(result.winner, view.viewerSeat);
-  const title = result.outcome === 'draw'
-    ? '本局荒庄'
-    : result.winner === view.viewerSeat
-      ? '恭喜，你胡了！'
-      : `${winnerLabel}胡牌`;
-  const subtitle = result.outcome === 'draw'
-    ? '牌墙已经耗尽，本局杠分全部作废。'
-    : `${result.winType === 'self-draw' ? '自摸' : '点炮'}${result.reason === 'gang-draw' ? ' · 杠上开花' : ''}${result.winningTile === null ? '' : ` · ${tileLabel(result.winningTile)}`}`;
+  const winnerLabel = result.winner === null ? null : seatLabel(result.winner, view.viewerSeat);
+  const title =
+    result.outcome === 'draw'
+      ? '本局荒庄'
+      : result.winner === view.viewerSeat
+        ? '恭喜，你胡了！'
+        : `${winnerLabel}胡牌`;
+  const subtitle =
+    result.outcome === 'draw'
+      ? '牌墙已经耗尽，本局杠分全部作废。'
+      : `${result.winType === 'self-draw' ? '自摸' : '点炮'}${result.reason === 'gang-draw' ? ' · 杠上开花' : ''}${result.winningTile === null ? '' : ` · ${tileLabel(result.winningTile)}`}`;
 
   return (
     <section className="result-panel" aria-live="assertive">
@@ -44,11 +44,15 @@ export function ResultPanel({ view, onReset, resetLabel = '再来一局' }: Resu
           <span className="result-label">番数</span>
           <strong className="result-total">{result.fan.total} 番</strong>
           <div className="fan-list">
-            {result.fan.items.length > 0
-              ? result.fan.items.map((item) => (
-                  <span className="fan-chip" key={item.name}>{item.name} +{item.fan}</span>
-                ))
-              : <span className="empty-note">无额外番种</span>}
+            {result.fan.items.length > 0 ? (
+              result.fan.items.map((item) => (
+                <span className="fan-chip" key={item.name}>
+                  {item.name} +{item.fan}
+                </span>
+              ))
+            ) : (
+              <span className="empty-note">无额外番种</span>
+            )}
           </div>
         </div>
       )}
@@ -59,8 +63,13 @@ export function ResultPanel({ view, onReset, resetLabel = '再来一局' }: Resu
           {view.players.map((player) => (
             <span key={player.seat}>
               <small>{seatLabel(player.seat, view.viewerSeat)}</small>
-              <strong className={player.score > 0 ? 'score-positive' : player.score < 0 ? 'score-negative' : ''}>
-                {player.score > 0 ? '+' : ''}{player.score}
+              <strong
+                className={
+                  player.score > 0 ? 'score-positive' : player.score < 0 ? 'score-negative' : ''
+                }
+              >
+                {player.score > 0 ? '+' : ''}
+                {player.score}
               </strong>
             </span>
           ))}
@@ -72,13 +81,16 @@ export function ResultPanel({ view, onReset, resetLabel = '再来一局' }: Resu
           <span className="result-label">支付流水</span>
           {result.payments.map((payment, index) => (
             <span key={`${payment.from}-${payment.to}-${payment.reason}-${index}`}>
-              {seatLabel(payment.from, view.viewerSeat)} → {seatLabel(payment.to, view.viewerSeat)} · {paymentLabels[payment.reason]} {payment.amount} 分
+              {seatLabel(payment.from, view.viewerSeat)} → {seatLabel(payment.to, view.viewerSeat)}{' '}
+              · {paymentLabels[payment.reason]} {payment.amount} 分
             </span>
           ))}
         </div>
       )}
 
-      <button className="result-button" onClick={onReset} type="button">{resetLabel}</button>
+      <button className="result-button" onClick={onReset} type="button">
+        {resetLabel}
+      </button>
     </section>
   );
 }

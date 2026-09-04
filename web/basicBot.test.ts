@@ -29,10 +29,18 @@ function blankState(): GameState {
 }
 
 const winningBeforeSelfDraw = [
-  'm1', 'm1', 'm1',
-  'm2', 'm2', 'm2',
-  'm3', 'm3', 'm3',
-  'p1', 'p1', 'p1',
+  'm1',
+  'm1',
+  'm1',
+  'm2',
+  'm2',
+  'm2',
+  'm3',
+  'm3',
+  'm3',
+  'p1',
+  'p1',
+  'p1',
   's1',
 ] as const;
 

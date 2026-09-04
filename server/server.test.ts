@@ -42,7 +42,10 @@ function waitForMessage(
   });
 }
 
-async function request(socket: WebSocket, message: Record<string, unknown>): Promise<ServerMessage> {
+async function request(
+  socket: WebSocket,
+  message: Record<string, unknown>,
+): Promise<ServerMessage> {
   const pending = waitForMessage(socket, (candidate) => candidate.requestId === message.requestId);
   socket.send(JSON.stringify(message));
   return pending;
@@ -78,8 +81,9 @@ describe('HTTP + WebSocket 服务', () => {
     if (created.type !== 'room-joined') return;
     const ownerToken = created.session.resumeToken;
 
-    const lobbyBroadcast = waitForMessage(firstPlayer, (message) =>
-      message.type === 'lobby-updated' && message.lobby.playerCount === 2,
+    const lobbyBroadcast = waitForMessage(
+      firstPlayer,
+      (message) => message.type === 'lobby-updated' && message.lobby.playerCount === 2,
     );
     const secondPlayer = await connect(address.webSocketUrl);
     const joined = await request(secondPlayer, {
@@ -92,9 +96,14 @@ describe('HTTP + WebSocket 服务', () => {
     expect(joined.type).toBe('room-joined');
     await lobbyBroadcast;
 
-    expect(await request(firstPlayer, {
-      protocolVersion: 1, requestId: 'ping', type: 'ping', nonce: 'hello',
-    })).toMatchObject({ type: 'pong', nonce: 'hello' });
+    expect(
+      await request(firstPlayer, {
+        protocolVersion: 1,
+        requestId: 'ping',
+        type: 'ping',
+        nonce: 'hello',
+      }),
+    ).toMatchObject({ type: 'pong', nonce: 'hello' });
 
     const secondToken = joined.type === 'room-joined' ? joined.session.resumeToken : '';
     await new Promise<void>((resolvePromise) => {

@@ -33,7 +33,8 @@ function actionClass(action: GameAction): string {
   if (action.type === 'win') return 'action-button action-button--win';
   if (action.type === 'declare-mouth') return 'action-button action-button--mouth';
   if (action.type === 'pass') return 'action-button action-button--pass';
-  if (action.type === 'pong' || action.type.includes('kong')) return 'action-button action-button--meld';
+  if (action.type === 'pong' || action.type.includes('kong'))
+    return 'action-button action-button--meld';
   if (action.type === 'discard') return 'action-button action-button--discard';
   return 'action-button';
 }
@@ -56,23 +57,26 @@ export function ActionBar({ actions, botThinking, isReplaying, prompt, onAction 
         {prompt}
       </div>
       <div className="action-list">
-        {controlActions.length > 0 && controlActions.map((action, index) => (
-              <button
-                className={actionClass(action)}
-                key={`${action.type}-${'tile' in action ? action.tile : 'none'}-${index}`}
-                onClick={() => onAction(action)}
-                title={actionText(action)}
-                type="button"
-              >
-                {actionText(action)}
-              </button>
-            ))}
-        {canDiscard && (
-          <span className="hand-action-callout">点击手牌即可出牌</span>
-        )}
+        {controlActions.length > 0 &&
+          controlActions.map((action, index) => (
+            <button
+              className={actionClass(action)}
+              key={`${action.type}-${'tile' in action ? action.tile : 'none'}-${index}`}
+              onClick={() => onAction(action)}
+              title={actionText(action)}
+              type="button"
+            >
+              {actionText(action)}
+            </button>
+          ))}
+        {canDiscard && <span className="hand-action-callout">点击手牌即可出牌</span>}
         {actions.length === 0 && (
           <span className="empty-panel-note">
-            {isReplaying ? '回放模式不能提交动作' : botThinking ? '对手正在完成当前动作' : '当前没有可用动作'}
+            {isReplaying
+              ? '回放模式不能提交动作'
+              : botThinking
+                ? '对手正在完成当前动作'
+                : '当前没有可用动作'}
           </span>
         )}
       </div>

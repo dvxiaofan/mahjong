@@ -1,17 +1,22 @@
 import { describe, expect, it } from 'vitest';
 import { createGame } from './game.js';
-import {
-  calculateShanten,
-  evaluateDiscardChoices,
-  evaluateHand,
-} from './ai-evaluation.js';
+import { calculateShanten, evaluateDiscardChoices, evaluateHand } from './ai-evaluation.js';
 
 const completeHand = [
-  'm1', 'm1', 'm1',
-  'm2', 'm2', 'm2',
-  'm3', 'm3', 'm3',
-  'p1', 'p1', 'p1',
-  's1', 's1',
+  'm1',
+  'm1',
+  'm1',
+  'm2',
+  'm2',
+  'm2',
+  'm3',
+  'm3',
+  'm3',
+  'p1',
+  'p1',
+  'p1',
+  's1',
+  's1',
 ] as const;
 
 describe('AI 手牌评估', () => {
@@ -47,7 +52,8 @@ describe('AI 手牌评估', () => {
     const choices = evaluateDiscardChoices(state, 0);
     expect(choices.length).toBeGreaterThan(0);
     expect(choices.every((choice) => choice.reasons.length >= 2)).toBe(true);
-    expect(choices.every((choice, index) => index === 0 || choices[index - 1]!.score >= choice.score))
-      .toBe(true);
+    expect(
+      choices.every((choice, index) => index === 0 || choices[index - 1]!.score >= choice.score),
+    ).toBe(true);
   });
 });

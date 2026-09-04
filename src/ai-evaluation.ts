@@ -39,10 +39,9 @@ export interface DiscardEvaluation {
 const shantenCache = new Map<string, number>();
 
 function countsFor(tiles: readonly NormalTile[]): number[] {
-  return NORMAL_TILE_TYPES.map((tile) => tiles.reduce(
-    (total, candidate) => total + (candidate === tile ? 1 : 0),
-    0,
-  ));
+  return NORMAL_TILE_TYPES.map((tile) =>
+    tiles.reduce((total, candidate) => total + (candidate === tile ? 1 : 0), 0),
+  );
 }
 
 function shantenKey(counts: readonly number[], meldCount: number): string {
@@ -52,7 +51,12 @@ function shantenKey(counts: readonly number[], meldCount: number): string {
 function searchShanten(counts: number[], fixedMelds: number): number {
   const memo = new Map<string, number>();
 
-  function visit(start: number, completeMelds: number, pairUsed: boolean, partialGroups: number): number {
+  function visit(
+    start: number,
+    completeMelds: number,
+    pairUsed: boolean,
+    partialGroups: number,
+  ): number {
     let index = start;
     while (index < counts.length && counts[index] === 0) index += 1;
 
@@ -157,10 +161,12 @@ function visibleTileCount(
     0,
   );
   const publicMelds = state.players.reduce(
-    (total, player) => total + player.melds.reduce(
-      (meldTotal, meld) => meldTotal + (meld.tile === tile ? meldTileCount(meld) : 0),
-      0,
-    ),
+    (total, player) =>
+      total +
+      player.melds.reduce(
+        (meldTotal, meld) => meldTotal + (meld.tile === tile ? meldTileCount(meld) : 0),
+        0,
+      ),
     0,
   );
   // The explicit seat parameter documents that only this seat's concealed hand is counted.
@@ -235,10 +241,10 @@ function removeOne(tiles: readonly NormalTile[], tile: NormalTile): NormalTile[]
 export function scoreHandEvaluation(hand: HandEvaluation): number {
   return Math.round(
     -hand.shanten * 100 +
-    hand.effectiveTileCount * 4 +
-    hand.pureSuitPotential * 18 +
-    hand.allPungsPotential * 14 +
-    hand.fortuneFan * 2,
+      hand.effectiveTileCount * 4 +
+      hand.pureSuitPotential * 18 +
+      hand.allPungsPotential * 14 +
+      hand.fortuneFan * 2,
   );
 }
 
@@ -275,7 +281,7 @@ export function evaluateDiscardChoices(state: GameState, seat: Seat): DiscardEva
     });
   }
 
-  return choices.sort((left, right) =>
-    right.score - left.score || tileSortKey(left.tile) - tileSortKey(right.tile),
+  return choices.sort(
+    (left, right) => right.score - left.score || tileSortKey(left.tile) - tileSortKey(right.tile),
   );
 }

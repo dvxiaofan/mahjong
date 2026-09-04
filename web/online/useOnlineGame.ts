@@ -54,10 +54,7 @@ interface LocationLike {
   port: string;
 }
 
-export function resolveWebSocketUrl(
-  location: LocationLike,
-  configured?: string,
-): string {
+export function resolveWebSocketUrl(location: LocationLike, configured?: string): string {
   if (configured !== undefined && configured.trim().length > 0) return configured;
   const protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
   const port = location.port === '5173' ? '8787' : location.port;
@@ -69,7 +66,8 @@ function loadStoredSession(): StoredOnlineSession | null {
     const value = localStorage.getItem(ONLINE_SESSION_KEY);
     if (value === null) return null;
     const parsed = JSON.parse(value) as Partial<StoredOnlineSession>;
-    return typeof parsed.roomId === 'string' && typeof parsed.displayName === 'string' &&
+    return typeof parsed.roomId === 'string' &&
+      typeof parsed.displayName === 'string' &&
       typeof parsed.resumeToken === 'string'
       ? { roomId: parsed.roomId, displayName: parsed.displayName, resumeToken: parsed.resumeToken }
       : null;
@@ -81,11 +79,15 @@ function loadStoredSession(): StoredOnlineSession | null {
 function saveStoredSession(session: ParticipantSession | null): void {
   try {
     if (session === null) localStorage.removeItem(ONLINE_SESSION_KEY);
-    else localStorage.setItem(ONLINE_SESSION_KEY, JSON.stringify({
-      roomId: session.roomId,
-      displayName: session.displayName,
-      resumeToken: session.resumeToken,
-    }));
+    else
+      localStorage.setItem(
+        ONLINE_SESSION_KEY,
+        JSON.stringify({
+          roomId: session.roomId,
+          displayName: session.displayName,
+          resumeToken: session.resumeToken,
+        }),
+      );
   } catch {
     // Online play still works when storage is unavailable; only auto-resume is disabled.
   }
@@ -93,8 +95,8 @@ function saveStoredSession(session: ParticipantSession | null): void {
 
 function intentFromAction(action: GameAction): ClientActionIntent {
   return 'tile' in action
-    ? { type: action.type, tile: action.tile } as ClientActionIntent
-    : { type: action.type } as ClientActionIntent;
+    ? ({ type: action.type, tile: action.tile } as ClientActionIntent)
+    : ({ type: action.type } as ClientActionIntent);
 }
 
 export function useOnlineGame(): OnlineGameController {
@@ -141,20 +143,24 @@ export function useOnlineGame(): OnlineGameController {
         setError(null);
         const stored = loadStoredSession();
         if (stored !== null) {
-          socket.send(JSON.stringify({
-            protocolVersion: PROTOCOL_VERSION,
-            requestId: nextRequestId(),
-            type: 'join-room',
-            roomId: stored.roomId,
-            displayName: stored.displayName,
-            resumeToken: stored.resumeToken,
-          }));
+          socket.send(
+            JSON.stringify({
+              protocolVersion: PROTOCOL_VERSION,
+              requestId: nextRequestId(),
+              type: 'join-room',
+              roomId: stored.roomId,
+              displayName: stored.displayName,
+              resumeToken: stored.resumeToken,
+            }),
+          );
         } else {
-          socket.send(JSON.stringify({
-            protocolVersion: PROTOCOL_VERSION,
-            requestId: nextRequestId(),
-            type: 'list-rooms',
-          }));
+          socket.send(
+            JSON.stringify({
+              protocolVersion: PROTOCOL_VERSION,
+              requestId: nextRequestId(),
+              type: 'list-rooms',
+            }),
+          );
         }
       });
       socket.addEventListener('message', (event) => {
@@ -221,12 +227,18 @@ export function useOnlineGame(): OnlineGameController {
     snapshot,
     rooms,
     error,
-    createRoom: (input) => send({
-      requestId: nextRequestId(), type: 'create-room', ...input,
-    }),
-    joinRoom: (input) => send({
-      requestId: nextRequestId(), type: 'join-room', ...input,
-    }),
+    createRoom: (input) =>
+      send({
+        requestId: nextRequestId(),
+        type: 'create-room',
+        ...input,
+      }),
+    joinRoom: (input) =>
+      send({
+        requestId: nextRequestId(),
+        type: 'join-room',
+        ...input,
+      }),
     leaveRoom: () => send({ requestId: nextRequestId(), type: 'leave-room' }),
     refreshRooms: () => send({ requestId: nextRequestId(), type: 'list-rooms' }),
     dispatch: (action) => {

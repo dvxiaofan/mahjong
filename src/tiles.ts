@@ -14,22 +14,14 @@ export const SUITED_TILES: readonly SuitedTile[] = SUITS.flatMap((suit) =>
 );
 
 export const HONOR_TILES: readonly HonorTile[] = ['red', 'white'];
-export const NORMAL_TILE_TYPES: readonly NormalTile[] = [
-  ...SUITED_TILES,
-  ...HONOR_TILES,
-];
-export const ALL_TILE_TYPES: readonly Tile[] = [
-  ...NORMAL_TILE_TYPES,
-  'fortune',
-];
+export const NORMAL_TILE_TYPES: readonly NormalTile[] = [...SUITED_TILES, ...HONOR_TILES];
+export const ALL_TILE_TYPES: readonly Tile[] = [...NORMAL_TILE_TYPES, 'fortune'];
 
 export const TILE_COPIES = 4;
 export const WALL_SIZE = ALL_TILE_TYPES.length * TILE_COPIES;
 
 export function createTileSet(): Tile[] {
-  return ALL_TILE_TYPES.flatMap((tile) =>
-    Array.from({ length: TILE_COPIES }, () => tile),
-  );
+  return ALL_TILE_TYPES.flatMap((tile) => Array.from({ length: TILE_COPIES }, () => tile));
 }
 
 export function isFortuneTile(tile: Tile): tile is 'fortune' {
@@ -41,10 +33,12 @@ export function isHonorTile(tile: Tile): tile is HonorTile {
 }
 
 export function isSuitedTile(tile: Tile): tile is SuitedTile {
-  return typeof tile === 'string' &&
+  return (
+    typeof tile === 'string' &&
     tile.length === 2 &&
     SUITS.includes(tile[0] as Suit) &&
-    /^[1-9]$/.test(tile[1] ?? '');
+    /^[1-9]$/.test(tile[1] ?? '')
+  );
 }
 
 export function tileSuit(tile: NormalTile): Suit | null {

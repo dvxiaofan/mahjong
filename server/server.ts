@@ -45,7 +45,10 @@ function send(socket: WebSocket, message: ServerMessage): void {
   if (socket.readyState === WebSocket.OPEN) socket.send(encodeServerMessage(message));
 }
 
-async function staticResponse(staticDir: string, requestPath: string): Promise<{ body: Buffer; type: string } | null> {
+async function staticResponse(
+  staticDir: string,
+  requestPath: string,
+): Promise<{ body: Buffer; type: string } | null> {
   let decoded: string;
   try {
     decoded = decodeURIComponent(requestPath.split('?')[0] ?? '/');
@@ -73,13 +76,16 @@ async function staticResponse(staticDir: string, requestPath: string): Promise<{
   }
 }
 
-export async function createMahjongServer(options: MahjongServerOptions = {}): Promise<MahjongServer> {
+export async function createMahjongServer(
+  options: MahjongServerOptions = {},
+): Promise<MahjongServer> {
   const host = options.host ?? '127.0.0.1';
   const port = options.port ?? 8787;
   const staticDir = options.staticDir ?? resolve(process.cwd(), 'dist-web');
-  const restoredRegistry = options.gateway === undefined && options.stateFile !== undefined
-    ? await loadRoomRegistry(options.stateFile)
-    : null;
+  const restoredRegistry =
+    options.gateway === undefined && options.stateFile !== undefined
+      ? await loadRoomRegistry(options.stateFile)
+      : null;
   const gateway = options.gateway ?? new MultiplayerGateway(restoredRegistry ?? new RoomRegistry());
   let shuttingDown = false;
   let persistenceQueue = Promise.resolve();
@@ -102,7 +108,11 @@ export async function createMahjongServer(options: MahjongServerOptions = {}): P
     });
     response.end(request.method === 'HEAD' ? undefined : asset.body);
   });
-  const webSockets = new WebSocketServer({ server: httpServer, path: '/ws', maxPayload: 16 * 1024 });
+  const webSockets = new WebSocketServer({
+    server: httpServer,
+    path: '/ws',
+    maxPayload: 16 * 1024,
+  });
   const connections = new Map<WebSocket, string>();
 
   const schedulePersistence = () => {
@@ -129,7 +139,8 @@ export async function createMahjongServer(options: MahjongServerOptions = {}): P
         protocolVersion: PROTOCOL_VERSION,
         requestId: null,
         type: 'snapshot',
-        snapshot: identity.seat === null ? room.getSpectatorSnapshot() : room.getSnapshot(identity.seat),
+        snapshot:
+          identity.seat === null ? room.getSpectatorSnapshot() : room.getSnapshot(identity.seat),
       });
     }
   };
@@ -154,10 +165,12 @@ export async function createMahjongServer(options: MahjongServerOptions = {}): P
       const messages = await gateway.handle(connectionId, data.toString());
       for (const message of messages) send(socket, message);
       const after = gateway.registry.getConnectionIdentity(connectionId)?.roomId ?? null;
-      const changed = messages.some((message) =>
-        message.type === 'room-joined' || message.type === 'room-left' ||
-        message.type === 'trustee-updated' ||
-        (message.type === 'action-result' && message.result.accepted),
+      const changed = messages.some(
+        (message) =>
+          message.type === 'room-joined' ||
+          message.type === 'room-left' ||
+          message.type === 'trustee-updated' ||
+          (message.type === 'action-result' && message.result.accepted),
       );
       if (changed) {
         if (before !== null) broadcastRoom(before);
@@ -188,24 +201,25 @@ export async function createMahjongServer(options: MahjongServerOptions = {}): P
   return {
     gateway,
     httpServer,
-    listen: () => new Promise((resolvePromise, reject) => {
-      const onError = (error: Error) => reject(error);
-      httpServer.once('error', onError);
-      httpServer.listen(port, host, () => {
-        httpServer.off('error', onError);
-        const address = httpServer.address();
-        if (address === null || typeof address === 'string') {
-          reject(new Error('无法读取服务监听地址'));
-          return;
-        }
-        resolvePromise({
-          host,
-          port: address.port,
-          httpUrl: `http://${host}:${address.port}`,
-          webSocketUrl: `ws://${host}:${address.port}/ws`,
+    listen: () =>
+      new Promise((resolvePromise, reject) => {
+        const onError = (error: Error) => reject(error);
+        httpServer.once('error', onError);
+        httpServer.listen(port, host, () => {
+          httpServer.off('error', onError);
+          const address = httpServer.address();
+          if (address === null || typeof address === 'string') {
+            reject(new Error('无法读取服务监听地址'));
+            return;
+          }
+          resolvePromise({
+            host,
+            port: address.port,
+            httpUrl: `http://${host}:${address.port}`,
+            webSocketUrl: `ws://${host}:${address.port}/ws`,
+          });
         });
-      });
-    }),
+      }),
     close: async () => {
       shuttingDown = true;
       clearInterval(interval);
@@ -214,7 +228,7 @@ export async function createMahjongServer(options: MahjongServerOptions = {}): P
       for (const socket of connections.keys()) socket.close();
       await new Promise<void>((resolvePromise) => webSockets.close(() => resolvePromise()));
       await new Promise<void>((resolvePromise, reject) => {
-        httpServer.close((error) => error === undefined ? resolvePromise() : reject(error));
+        httpServer.close((error) => (error === undefined ? resolvePromise() : reject(error)));
       });
     },
   };

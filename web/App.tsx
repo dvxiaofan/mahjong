@@ -16,8 +16,24 @@ export default function App() {
           <p className="app-subtitle">自定义麻将 · 规则权威牌桌</p>
         </div>
         <div className="mode-switch" role="tablist" aria-label="游戏模式">
-          <button aria-selected={mode === 'local'} className={mode === 'local' ? 'is-active' : ''} onClick={() => setMode('local')} role="tab" type="button">本地对局</button>
-          <button aria-selected={mode === 'online'} className={mode === 'online' ? 'is-active' : ''} onClick={() => setMode('online')} role="tab" type="button">联网对战</button>
+          <button
+            aria-selected={mode === 'local'}
+            className={mode === 'local' ? 'is-active' : ''}
+            onClick={() => setMode('local')}
+            role="tab"
+            type="button"
+          >
+            本地对局
+          </button>
+          <button
+            aria-selected={mode === 'online'}
+            className={mode === 'online' ? 'is-active' : ''}
+            onClick={() => setMode('online')}
+            role="tab"
+            type="button"
+          >
+            联网对战
+          </button>
         </div>
       </header>
 

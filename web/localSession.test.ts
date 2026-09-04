@@ -35,8 +35,9 @@ describe('本地牌局会话', () => {
     session = appendRecordedAction(session, firstAction, 'human');
 
     expect(session.records).toEqual([{ action: firstAction, source: 'human' }]);
-    expect(replayRecordedActions(session.seed, session.records, 0).events)
-      .toEqual(createLocalGameSession(session.seed).state.events);
+    expect(replayRecordedActions(session.seed, session.records, 0).events).toEqual(
+      createLocalGameSession(session.seed).state.events,
+    );
     expect(replayRecordedActions(session.seed, session.records, 1)).toEqual(session.state);
   });
 
@@ -62,11 +63,14 @@ describe('本地牌局会话', () => {
     storage.setItem(LOCAL_SESSION_STORAGE_KEY, '{broken');
     expect(loadLocalGameSession(storage, 4).restored).toBe(false);
 
-    storage.setItem(LOCAL_SESSION_STORAGE_KEY, JSON.stringify({
-      version: 1,
-      seed: 9,
-      records: [],
-    }));
+    storage.setItem(
+      LOCAL_SESSION_STORAGE_KEY,
+      JSON.stringify({
+        version: 1,
+        seed: 9,
+        records: [],
+      }),
+    );
     const loaded = loadLocalGameSession(storage, 4);
     expect(loaded.restored).toBe(false);
     expect(loaded.session.seed).toBe(4);
