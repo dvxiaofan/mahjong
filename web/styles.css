@@ -150,7 +150,7 @@ h1 {
 .felt-table {
   position: relative;
   min-height: 690px;
-  overflow: hidden;
+  overflow: clip;
   border: 1px solid rgba(190, 225, 202, 0.2);
   border-radius: 34px;
   background:
@@ -245,12 +245,29 @@ h1 {
   background: rgba(5, 31, 27, 0.5);
   box-shadow: 0 12px 30px rgba(0, 0, 0, 0.13);
   backdrop-filter: blur(8px);
+  transition: border-color 180ms ease, box-shadow 180ms ease, background 180ms ease;
 }
 
 .player-seat--self {
   border-color: rgba(229, 189, 104, 0.48);
   background: rgba(7, 37, 31, 0.86);
   box-shadow: 0 18px 45px rgba(0, 0, 0, 0.22), 0 0 0 1px rgba(229, 189, 104, 0.08);
+}
+
+.player-seat--active {
+  border-color: rgba(123, 224, 162, 0.7);
+  background: rgba(7, 48, 38, 0.86);
+  box-shadow: 0 0 0 2px rgba(123, 224, 162, 0.12), 0 18px 45px rgba(0, 0, 0, 0.22);
+}
+
+.player-seat--waiting {
+  border-color: rgba(237, 141, 118, 0.62);
+  box-shadow: 0 0 0 2px rgba(237, 141, 118, 0.1), 0 18px 40px rgba(0, 0, 0, 0.18);
+}
+
+.player-seat--responded,
+.player-seat--discarder {
+  opacity: 0.8;
 }
 
 .player-heading,
@@ -308,6 +325,32 @@ h1 {
   font-size: 0.78rem;
   font-weight: 800;
   white-space: nowrap;
+}
+
+.seat-heading-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.seat-state {
+  border-radius: 999px;
+  padding: 3px 7px;
+  color: var(--muted);
+  background: rgba(255, 255, 255, 0.06);
+  font-size: 0.58rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.seat-state--active {
+  color: #baf1cc;
+  background: rgba(123, 224, 162, 0.12);
+}
+
+.seat-state--waiting {
+  color: #ffc5b5;
+  background: rgba(237, 141, 118, 0.12);
 }
 
 .player-status-row {
@@ -408,6 +451,58 @@ h1 {
   font-family: "Songti SC", "STSong", serif;
   font-size: 0.88rem;
   font-weight: 800;
+  padding: 0;
+}
+
+.mahjong-tile--interactive {
+  cursor: pointer;
+  transition: box-shadow 150ms ease, filter 150ms ease, transform 150ms ease;
+}
+
+.mahjong-tile--interactive:hover,
+.mahjong-tile--interactive:focus-visible {
+  z-index: 2;
+  box-shadow: 0 3px 0 #c5bd9f, 0 10px 18px rgba(0, 0, 0, 0.28), 0 0 0 3px rgba(229, 189, 104, 0.3);
+  filter: brightness(1.04);
+  outline: none;
+  transform: translateY(-7px);
+}
+
+.mahjong-tile--drawn {
+  margin-left: 8px;
+  box-shadow: 0 3px 0 #c5bd9f, 0 5px 9px rgba(0, 0, 0, 0.2), 0 0 0 2px rgba(229, 189, 104, 0.46);
+}
+
+.mahjong-tile--drawn::after {
+  position: absolute;
+  top: -7px;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--gold);
+  box-shadow: 0 0 0 3px rgba(229, 189, 104, 0.14);
+  content: "";
+}
+
+.mahjong-tile--drawn {
+  position: relative;
+}
+
+.mahjong-tile[data-tile^="m"],
+.mahjong-tile[data-tile="red"] {
+  color: #a44737;
+}
+
+.mahjong-tile[data-tile^="p"] {
+  color: #275f83;
+}
+
+.mahjong-tile[data-tile^="s"] {
+  color: #24704d;
+}
+
+.mahjong-tile[data-tile="white"] {
+  color: #415b67;
 }
 
 .player-seat--self .mahjong-tile:not(.mahjong-tile--compact) {
@@ -562,6 +657,55 @@ h1 {
   gap: 18px;
 }
 
+.table-status-strip {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 11px;
+  border: 1px solid rgba(229, 189, 104, 0.2);
+  border-radius: 15px;
+  padding: 11px 14px;
+  color: var(--ink);
+  background: linear-gradient(90deg, rgba(229, 189, 104, 0.1), rgba(12, 36, 32, 0.88) 38%);
+}
+
+.status-icon {
+  display: grid;
+  width: 32px;
+  height: 32px;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 1px solid rgba(229, 189, 104, 0.4);
+  border-radius: 9px;
+  color: var(--gold-soft);
+  background: rgba(229, 189, 104, 0.12);
+  font-family: "Songti SC", "STSong", serif;
+  font-weight: 900;
+}
+
+.status-copy {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.status-copy strong,
+.status-copy small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.status-copy strong {
+  font-size: 0.82rem;
+}
+
+.status-copy small {
+  color: var(--muted-deep);
+  font-size: 0.68rem;
+}
+
 .panel {
   min-width: 0;
   border: 1px solid var(--panel-border);
@@ -597,6 +741,52 @@ h1 {
   min-height: 44px;
   overflow-x: auto;
   padding: 2px 1px 7px;
+}
+
+.interaction-prompt {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin: -2px 0 13px;
+  border-left: 2px solid rgba(229, 189, 104, 0.5);
+  padding: 6px 9px;
+  color: #dce9df;
+  background: rgba(255, 255, 255, 0.025);
+  font-size: 0.78rem;
+}
+
+.prompt-dot,
+.prompt-pulse {
+  width: 7px;
+  height: 7px;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  background: var(--gold);
+}
+
+.prompt-pulse {
+  background: #7be0a2;
+  animation: prompt-pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes prompt-pulse {
+  50% {
+    opacity: 0.35;
+    transform: scale(0.72);
+  }
+}
+
+.hand-action-callout {
+  display: inline-flex;
+  align-items: center;
+  border: 1px dashed rgba(229, 189, 104, 0.34);
+  border-radius: 10px;
+  padding: 10px 13px;
+  color: var(--gold-soft);
+  background: rgba(229, 189, 104, 0.06);
+  font-size: 0.75rem;
+  font-weight: 700;
+  white-space: nowrap;
 }
 
 .action-button {
@@ -639,6 +829,17 @@ h1 {
   background: rgba(229, 189, 104, 0.1);
 }
 
+.action-button--meld {
+  border-color: rgba(113, 183, 221, 0.32);
+  color: #bfe1f2;
+  background: rgba(113, 183, 221, 0.09);
+}
+
+.action-button--pass {
+  color: var(--muted);
+  background: rgba(255, 255, 255, 0.035);
+}
+
 .action-button:disabled {
   cursor: not-allowed;
   opacity: 0.72;
@@ -678,6 +879,129 @@ h1 {
   gap: 9px;
   color: #c9d9ce;
   font-size: 0.73rem;
+}
+
+.event-item--latest {
+  border-radius: 8px;
+  padding: 5px 6px;
+  background: rgba(229, 189, 104, 0.065);
+}
+
+.result-panel {
+  display: grid;
+  grid-template-columns: minmax(210px, 1.05fr) minmax(190px, 0.65fr) minmax(230px, 1fr) auto;
+  align-items: center;
+  gap: 18px;
+  border: 1px solid rgba(229, 189, 104, 0.42);
+  border-radius: 20px;
+  padding: 20px;
+  background:
+    radial-gradient(circle at 12% 50%, rgba(229, 189, 104, 0.13), transparent 40%),
+    rgba(8, 39, 33, 0.96);
+  box-shadow: 0 18px 45px rgba(0, 0, 0, 0.2);
+}
+
+.result-copy h2 {
+  margin-bottom: 6px;
+  color: var(--gold-soft);
+  font-size: 1.45rem;
+}
+
+.result-copy p:last-child {
+  margin-bottom: 0;
+  color: var(--muted);
+  font-size: 0.76rem;
+}
+
+.result-block {
+  display: grid;
+  gap: 7px;
+  min-width: 0;
+}
+
+.result-label {
+  color: var(--muted-deep);
+  font-size: 0.63rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+}
+
+.result-total {
+  color: var(--gold-soft);
+  font-size: 1.45rem;
+}
+
+.fan-list {
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+}
+
+.fan-chip {
+  border-radius: 6px;
+  padding: 4px 6px;
+  color: #e9dfbd;
+  background: rgba(229, 189, 104, 0.1);
+  font-size: 0.63rem;
+}
+
+.score-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(52px, 1fr));
+  gap: 6px;
+}
+
+.score-grid > span {
+  display: grid;
+  gap: 3px;
+  border-radius: 8px;
+  padding: 7px;
+  background: rgba(255, 255, 255, 0.035);
+}
+
+.score-grid small {
+  overflow: hidden;
+  color: var(--muted-deep);
+  font-size: 0.57rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.score-grid strong {
+  font-size: 0.82rem;
+}
+
+.score-positive {
+  color: #8ce2aa;
+}
+
+.score-negative {
+  color: #f3aa96;
+}
+
+.payment-summary {
+  max-height: 92px;
+  overflow-y: auto;
+  color: #c6d8cc;
+  font-size: 0.64rem;
+}
+
+.result-button {
+  border: 1px solid rgba(229, 189, 104, 0.48);
+  border-radius: 11px;
+  padding: 11px 15px;
+  color: #17382f;
+  background: var(--gold-soft);
+  cursor: pointer;
+  font-weight: 850;
+  white-space: nowrap;
+}
+
+.result-button:hover,
+.result-button:focus-visible {
+  background: #ffe7a9;
+  outline: none;
+  transform: translateY(-1px);
 }
 
 .event-tag {
@@ -722,6 +1046,15 @@ h1 {
 
   .seat-slot--south {
     width: 64%;
+  }
+
+  .result-panel {
+    grid-template-columns: 1fr 0.65fr 1fr;
+  }
+
+  .result-button {
+    grid-column: 1 / -1;
+    justify-self: start;
   }
 }
 
@@ -777,6 +1110,14 @@ h1 {
   .table-lower-grid {
     grid-template-columns: 1fr;
   }
+
+  .result-panel {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .payment-summary {
+    grid-column: 1 / -1;
+  }
 }
 
 @media (max-width: 520px) {
@@ -823,6 +1164,15 @@ h1 {
 
   .seat-slot--south {
     width: calc(100% - 20px);
+  }
+
+  .result-panel {
+    grid-template-columns: 1fr;
+  }
+
+  .payment-summary,
+  .result-button {
+    grid-column: auto;
   }
 
   .self-hand {

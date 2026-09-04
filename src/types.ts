@@ -210,6 +210,7 @@ export interface GameView {
   viewerSeat: Seat;
   players: readonly PlayerViewEntry[];
   wallRemaining: number;
+  dealerSeat: Seat;
   currentSeat: Seat;
   phase: GamePhase;
   drawMode: DrawMode | null;

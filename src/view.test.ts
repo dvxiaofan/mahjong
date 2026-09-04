@@ -103,6 +103,7 @@ describe('UI 视图契约', () => {
 
       expect(view.lastDrawnTile).toBe(seat === 0 ? state.lastDrawnTile : null);
       expect(view.wallRemaining).toBe(state.wall.replacementIndex - state.wall.drawIndex + 1);
+      expect(view.dealerSeat).toBe(state.dealerSeat);
       expect('wall' in view).toBe(false);
       expect(view.pendingDiscard).toEqual({
         tile: 'p1',

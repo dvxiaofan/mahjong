@@ -148,6 +148,7 @@ export function projectStateForSeat(state: GameState, viewerSeat: Seat): GameVie
     viewerSeat,
     players,
     wallRemaining: remainingWallTiles(state.wall),
+    dealerSeat: state.dealerSeat,
     currentSeat: state.currentSeat,
     phase: state.phase,
     drawMode: state.drawMode,

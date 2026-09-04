@@ -10,7 +10,7 @@ export default function App() {
     <div className="app-shell">
       <header className="app-header">
         <div>
-          <p className="eyebrow">M2.4 · LOCAL PLAY</p>
+          <p className="eyebrow">M2.5 · PLAY EXPERIENCE</p>
           <h1>嗨！搓麻呀！</h1>
           <p className="app-subtitle">自定义麻将 · 单局演示牌桌</p>
         </div>
@@ -26,7 +26,12 @@ export default function App() {
       </header>
 
       <main>
-        <MahjongTable view={view} botThinking={botThinking} onAction={dispatch} />
+        <MahjongTable
+          view={view}
+          botThinking={botThinking}
+          onAction={dispatch}
+          onReset={reset}
+        />
       </main>
 
       <footer className="app-footer">

@@ -1,8 +1,11 @@
 import { tileLabel } from '../../src/tiles.ts';
 import type { GameAction } from '../../src/types.ts';
+import { nonDiscardActions } from '../uiModel';
 
 interface ActionBarProps {
   actions: readonly GameAction[];
+  botThinking: boolean;
+  prompt: string;
   onAction: (action: GameAction) => void;
 }
 
@@ -28,11 +31,16 @@ function actionText(action: GameAction): string {
 function actionClass(action: GameAction): string {
   if (action.type === 'win') return 'action-button action-button--win';
   if (action.type === 'declare-mouth') return 'action-button action-button--mouth';
+  if (action.type === 'pass') return 'action-button action-button--pass';
+  if (action.type === 'pong' || action.type.includes('kong')) return 'action-button action-button--meld';
   if (action.type === 'discard') return 'action-button action-button--discard';
   return 'action-button';
 }
 
-export function ActionBar({ actions, onAction }: ActionBarProps) {
+export function ActionBar({ actions, botThinking, prompt, onAction }: ActionBarProps) {
+  const controlActions = nonDiscardActions(actions);
+  const canDiscard = actions.some((action) => action.type === 'discard');
+
   return (
     <section className="panel action-panel">
       <div className="panel-heading">
@@ -42,9 +50,12 @@ export function ActionBar({ actions, onAction }: ActionBarProps) {
         </div>
         <span className="count-badge">{actions.length}</span>
       </div>
+      <div className="interaction-prompt" aria-live="polite">
+        <span className={botThinking && actions.length === 0 ? 'prompt-pulse' : 'prompt-dot'} />
+        {prompt}
+      </div>
       <div className="action-list">
-        {actions.length > 0
-          ? actions.map((action, index) => (
+        {controlActions.length > 0 && controlActions.map((action, index) => (
               <button
                 className={actionClass(action)}
                 key={`${action.type}-${'tile' in action ? action.tile : 'none'}-${index}`}
@@ -54,10 +65,17 @@ export function ActionBar({ actions, onAction }: ActionBarProps) {
               >
                 {actionText(action)}
               </button>
-            ))
-          : <span className="empty-panel-note">当前没有可用动作</span>}
+            ))}
+        {canDiscard && (
+          <span className="hand-action-callout">点击手牌即可出牌</span>
+        )}
+        {actions.length === 0 && (
+          <span className="empty-panel-note">
+            {botThinking ? '对手正在完成当前动作' : '当前没有可用动作'}
+          </span>
+        )}
       </div>
-      <p className="panel-hint">动作由同一套规则引擎校验，对手会自动完成合法响应。</p>
+      <p className="panel-hint">只显示规则引擎允许的动作；高亮牌可直接点击。</p>
     </section>
   );
 }

@@ -34,7 +34,10 @@ export function EventFeed({ events }: EventFeedProps) {
       <div className="event-list">
         {recentEvents.length > 0
           ? recentEvents.map((event, index) => (
-              <div className="event-item" key={`${event.type}-${event.seat}-${index}`}>
+              <div
+                className={`event-item ${index === 0 ? 'event-item--latest' : ''}`}
+                key={`${event.type}-${event.seat}-${index}`}
+              >
                 <span className="event-tag">{eventLabels[event.type]}</span>
                 <span className="event-message">{event.message}</span>
               </div>
