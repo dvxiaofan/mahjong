@@ -2,6 +2,21 @@
 
 All notable changes to this project are documented in this file.
 
+## [Unreleased]
+
+### Added
+
+- Visible four-player opening dice, tie-break rolls, dealer result and wall-opening details in local and online tables;
+- A dedicated green `發` tile face and physical-tile layouts for circle and bamboo suits;
+- Automatic local draw when `draw` is the player's only legal action, including replay-source metadata.
+
+### Changed
+
+- Local restarts and following rounds now use fresh seeds while persisted games and replay retain their actual seed;
+- Local first dealer is selected by four-player dice rolls; the previous winner deals next and a draw keeps the dealer;
+- Local session persistence is versioned as v2 to retain the round number and dealer source;
+- Multiplayer projections now include the public initial-dealer dice result.
+
 ## [1.0.0] - 2026-09-05
 
 ### Added
