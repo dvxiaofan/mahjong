@@ -4,6 +4,7 @@ import {
   createMatch,
   startNextRound as startNextMatchRound,
   type CreateMatchOptions,
+  type DealerSelection,
   type MatchRoundRecord,
   type MatchState,
   type WallOpening,
@@ -27,6 +28,7 @@ export interface MatchView {
   roundNumber: number;
   maxRounds: number;
   dealerSeat: Seat;
+  dealerSelection: DealerSelection | null;
   opening: WallOpening;
   cumulativeScores: readonly number[];
   history: readonly MatchRoundView[];
@@ -144,6 +146,7 @@ export function projectMatchForSeat(match: MatchState, seat: Seat): MatchView {
     roundNumber: match.roundNumber,
     maxRounds: match.maxRounds,
     dealerSeat: match.dealerSeat,
+    dealerSelection: cloneJson(match.dealerSelection),
     opening: cloneJson(match.opening),
     cumulativeScores: [...match.cumulativeScores],
     history: match.history.map(projectRound),
@@ -157,6 +160,7 @@ export function projectMatchForSpectator(match: MatchState): SpectatorMatchView 
     roundNumber: match.roundNumber,
     maxRounds: match.maxRounds,
     dealerSeat: match.dealerSeat,
+    dealerSelection: cloneJson(match.dealerSelection),
     opening: cloneJson(match.opening),
     cumulativeScores: [...match.cumulativeScores],
     history: match.history.map(projectRound),

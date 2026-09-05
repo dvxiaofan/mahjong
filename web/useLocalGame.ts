@@ -13,15 +13,18 @@ import {
   clearLocalGameSession,
   createFreshLocalSeed,
   createLocalGameSession,
+  createNextLocalRoundSession,
   getOnlyDrawAction,
   getOnlyPassAction,
   loadLocalGameSession,
-  replayRecordedActions,
+  replayLocalGameSession,
   saveLocalGameSession,
   type LocalGameSession,
+  type LocalDealerSource,
   type RecordedAction,
   type StorageLike,
 } from './localSession';
+import type { DealerSelection, WallOpening } from '../src/match.ts';
 
 export const LOCAL_VIEWER_SEAT = 0 as const;
 export const BOT_TURN_DELAY_MS = 280;
@@ -30,6 +33,10 @@ export const AUTO_VIEWER_ACTION_DELAY_MS = 120;
 export interface LocalGameController {
   state: GameState;
   view: GameView;
+  roundNumber: number;
+  dealerSource: LocalDealerSource;
+  dealerSelection: DealerSelection | null;
+  opening: WallOpening;
   botThinking: boolean;
   restored: boolean;
   records: readonly RecordedAction[];
@@ -37,6 +44,7 @@ export interface LocalGameController {
   isReplaying: boolean;
   dispatch: (action: GameAction) => void;
   reset: () => void;
+  startNextRound: () => void;
   showReplayStep: (step: number) => void;
   resumeLive: () => void;
 }
@@ -95,11 +103,8 @@ export function useLocalGame(
   );
 
   const displayedState = useMemo(
-    () =>
-      replayStep === null
-        ? session.state
-        : replayRecordedActions(session.seed, session.records, replayStep),
-    [replayStep, session.records, session.seed, session.state],
+    () => (replayStep === null ? session.state : replayLocalGameSession(session, replayStep)),
+    [replayStep, session],
   );
 
   const view = useMemo(() => {
@@ -126,6 +131,13 @@ export function useLocalGame(
     setReplayStep(null);
     setRestored(false);
   }, [session.seed]);
+
+  const startNextRound = useCallback(() => {
+    if (session.state.result === null) return;
+    setSession(createNextLocalRoundSession(session));
+    setReplayStep(null);
+    setRestored(false);
+  }, [session]);
 
   const showReplayStep = useCallback(
     (step: number) => {
@@ -185,6 +197,10 @@ export function useLocalGame(
   return {
     state: session.state,
     view,
+    roundNumber: session.roundNumber,
+    dealerSource: session.dealerSource,
+    dealerSelection: session.dealerSelection,
+    opening: session.opening,
     botThinking: botDecision !== null,
     restored,
     records: session.records,
@@ -192,6 +208,7 @@ export function useLocalGame(
     isReplaying,
     dispatch,
     reset,
+    startNextRound,
     showReplayStep,
     resumeLive,
   };

@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { applyMatchAction, calculateWallOpening, createMatch, startNextRound } from './match.js';
+import {
+  applyMatchAction,
+  calculateWallOpening,
+  createMatch,
+  selectInitialDealer,
+  startNextRound,
+} from './match.js';
 
 const winningBeforeSelfDraw = [
   'm1',
@@ -38,6 +44,18 @@ describe('多局会话层', () => {
     expect(second.dealerSelection).toEqual(first.dealerSelection);
     expect(second.opening).toEqual(first.opening);
     expect(second.game.wall.tiles).toEqual(first.game.wall.tiles);
+  });
+
+  it('首局四家比骰，并列最高时只由并列者继续加赛', () => {
+    const dice = [6, 6, 6, 6, 2, 2, 1, 1, 3, 3, 5, 5];
+    let index = 0;
+    const selection = selectInitialDealer(() => ((dice[index++] ?? 1) - 0.5) / 6);
+
+    expect(selection.dealerSeat).toBe(1);
+    expect(selection.winningRoll).toEqual([5, 5]);
+    expect(selection.rounds).toHaveLength(2);
+    expect(selection.rounds[0]?.candidates).toEqual([0, 1, 2, 3]);
+    expect(selection.rounds[1]?.candidates).toEqual([0, 1]);
   });
 
   it('骰子按每边15墩映射到确定开门偏移', () => {

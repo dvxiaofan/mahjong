@@ -38,6 +38,7 @@ export function LocalMode() {
           <span className="demo-dot" />
           {game.restored ? '已恢复本地牌局' : '自动保存已开启'}
         </span>
+        <span className="replay-badge">第 {game.roundNumber} 局</span>
         {game.isReplaying && (
           <span className="replay-badge">
             回放 {game.replayStep}/{game.records.length}
@@ -47,7 +48,7 @@ export function LocalMode() {
           牌局记录 · {game.records.length}
         </button>
         <button className="ghost-button" type="button" onClick={game.reset}>
-          重新发牌
+          重新开赛
         </button>
       </section>
 
@@ -56,7 +57,14 @@ export function LocalMode() {
         botThinking={game.botThinking}
         isReplaying={game.isReplaying}
         onAction={game.dispatch}
-        onReset={game.reset}
+        onReset={game.startNextRound}
+        resetLabel="开始下一局"
+        roundSetup={{
+          roundNumber: game.roundNumber,
+          dealerReason: game.dealerSource,
+          dealerSelection: game.dealerSelection,
+          opening: game.opening,
+        }}
       />
 
       <HistoryDrawer

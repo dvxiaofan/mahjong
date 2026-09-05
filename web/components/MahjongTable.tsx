@@ -4,6 +4,7 @@ import { ActionBar } from './ActionBar';
 import { EventFeed } from './EventFeed';
 import { PlayerSeat } from './PlayerSeat';
 import { ResultPanel } from './ResultPanel';
+import { RoundSetupPanel, type RoundSetupView } from './RoundSetupPanel';
 import { formatEventForViewer, getInteractionPrompt, getSeatActivity, seatLabel } from '../uiModel';
 
 interface MahjongTableProps {
@@ -14,6 +15,7 @@ interface MahjongTableProps {
   onReset: () => void;
   resetLabel?: string;
   resetDisabled?: boolean;
+  roundSetup?: RoundSetupView;
 }
 
 type TablePosition = 'north' | 'west' | 'east' | 'south';
@@ -46,6 +48,7 @@ export function MahjongTable({
   onReset,
   resetLabel,
   resetDisabled,
+  roundSetup,
 }: MahjongTableProps) {
   const prompt = isReplaying
     ? '正在查看历史局面，返回实时牌局后才能操作'
@@ -56,6 +59,7 @@ export function MahjongTable({
 
   return (
     <div className="table-layout">
+      {roundSetup !== undefined && <RoundSetupPanel {...roundSetup} viewerSeat={view.viewerSeat} />}
       <section className="felt-table" aria-label="麻将牌桌">
         <div className="felt-highlight felt-highlight--one" />
         <div className="felt-highlight felt-highlight--two" />

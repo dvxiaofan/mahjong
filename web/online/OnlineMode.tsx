@@ -1,10 +1,28 @@
 import { useMemo, useState, type FormEvent } from 'react';
+import type { MatchView, SpectatorMatchView } from '../../src/room.ts';
 import type { GameAudienceView } from '../../src/types.ts';
 import { MahjongTable } from '../components/MahjongTable';
+import type { RoundDealerReason } from '../components/RoundSetupPanel';
 import { useOnlineGame } from './useOnlineGame';
 
 function withoutActions(view: GameAudienceView): GameAudienceView {
   return { ...view, legalActions: [] } as GameAudienceView;
+}
+
+export function getOnlineDealerReason(match: MatchView | SpectatorMatchView): RoundDealerReason {
+  if (match.roundNumber === 1) {
+    return match.dealerSelection === null ? 'assigned' : 'initial-dice';
+  }
+  const previousRound = match.history.find(
+    (record) => record.roundNumber === match.roundNumber - 1,
+  );
+  if (previousRound?.result.winner !== null && previousRound?.result.winner !== undefined) {
+    return 'previous-winner';
+  }
+  if (previousRound !== undefined) {
+    return previousRound.dealerSeat === match.dealerSeat ? 'draw-stay' : 'draw-rotate';
+  }
+  return 'assigned';
 }
 
 export function OnlineMode() {
@@ -232,6 +250,12 @@ export function OnlineMode() {
           onReset={online.startNextRound}
           resetDisabled={online.snapshot?.match.phase === 'finished'}
           resetLabel={online.snapshot?.match.phase === 'finished' ? '比赛已结束' : '开始下一局'}
+          roundSetup={{
+            roundNumber: online.snapshot!.match.roundNumber,
+            dealerReason: getOnlineDealerReason(online.snapshot!.match),
+            dealerSelection: online.snapshot!.match.dealerSelection,
+            opening: online.snapshot!.match.opening,
+          }}
         />
       )}
     </section>

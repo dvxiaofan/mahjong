@@ -5,6 +5,7 @@ import {
   appendRecordedAction,
   createFreshLocalSeed,
   createLocalGameSession,
+  createNextLocalRoundSession,
   getOnlyDrawAction,
   getOnlyPassAction,
   loadLocalGameSession,
@@ -32,7 +33,7 @@ class MemoryStorage implements StorageLike {
 describe('本地牌局会话', () => {
   it('记录动作并可以重建任意回放步骤', () => {
     let session = createLocalGameSession(20260904);
-    const firstAction = getLegalActions(session.state, 0)[0];
+    const firstAction = getLegalActions(session.state, session.state.currentSeat)[0];
     if (firstAction === undefined) throw new Error('开局没有动作');
     session = appendRecordedAction(session, firstAction, 'human');
 
@@ -46,7 +47,7 @@ describe('本地牌局会话', () => {
   it('保存后可以从动作轨迹恢复当前局面', () => {
     const storage = new MemoryStorage();
     let session = createLocalGameSession(17);
-    const action = getLegalActions(session.state, 0)[0];
+    const action = getLegalActions(session.state, session.state.currentSeat)[0];
     if (action === undefined) throw new Error('开局没有动作');
     session = appendRecordedAction(session, action, 'human', {
       reason: '测试选择原因',
@@ -71,7 +72,7 @@ describe('本地牌局会话', () => {
     );
   });
 
-  it('损坏数据安全回退，而有效存档使用自身实际种子恢复', () => {
+  it('损坏或旧版数据安全回退，而有效存档使用自身实际种子恢复', () => {
     const storage = new MemoryStorage();
     storage.setItem(LOCAL_SESSION_STORAGE_KEY, '{broken');
     expect(loadLocalGameSession(storage, 4).restored).toBe(false);
@@ -84,10 +85,55 @@ describe('本地牌局会话', () => {
         records: [],
       }),
     );
+    const legacy = loadLocalGameSession(storage, 4);
+    expect(legacy.restored).toBe(false);
+    expect(legacy.session.seed).toBe(4);
+
+    const stored = createLocalGameSession(9);
+    expect(saveLocalGameSession(storage, stored)).toBe(true);
     const loaded = loadLocalGameSession(storage, 4);
     expect(loaded.restored).toBe(true);
     expect(loaded.session.seed).toBe(9);
-    expect(loaded.session.state).toEqual(createLocalGameSession(9).state);
+    expect(loaded.session).toEqual(stored);
+  });
+
+  it('首局四家掷骰定庄，后续赢家接庄且荒庄留庄', () => {
+    const initial = createLocalGameSession(23);
+    expect(initial.dealerSource).toBe('initial-dice');
+    expect(initial.dealerSelection?.dealerSeat).toBe(initial.state.dealerSeat);
+    expect(initial.dealerSelection?.rounds[0]?.candidates).toEqual([0, 1, 2, 3]);
+
+    initial.state.phase = 'finished';
+    initial.state.result = {
+      outcome: 'win',
+      winner: 2,
+      winType: 'self-draw',
+      winningTile: 'm1',
+      fan: { total: 0, items: [] },
+      payments: [],
+      reason: 'normal',
+    };
+    const winnerRound = createNextLocalRoundSession(initial, 24);
+    expect(winnerRound.roundNumber).toBe(2);
+    expect(winnerRound.dealerSource).toBe('previous-winner');
+    expect(winnerRound.state.dealerSeat).toBe(2);
+    expect(winnerRound.dealerSelection).toBeNull();
+    expect(winnerRound.opening.rollerSeat).toBe(2);
+
+    winnerRound.state.phase = 'drawn';
+    winnerRound.state.result = {
+      outcome: 'draw',
+      winner: null,
+      winType: null,
+      winningTile: null,
+      fan: null,
+      payments: [],
+      reason: 'wall-exhausted',
+    };
+    const drawRound = createNextLocalRoundSession(winnerRound, 25);
+    expect(drawRound.roundNumber).toBe(3);
+    expect(drawRound.dealerSource).toBe('draw-stay');
+    expect(drawRound.state.dealerSeat).toBe(2);
   });
 
   it('我方仅有过牌动作时自动过，有其他选择时等待用户', () => {

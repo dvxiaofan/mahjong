@@ -1,12 +1,14 @@
-import { applyAction, createGame, getLegalActions } from '../src/game.ts';
+import { applyAction, getLegalActions } from '../src/game.ts';
+import { createMatch, type DealerSelection, type WallOpening } from '../src/match.ts';
 import { isNormalTile } from '../src/rules.ts';
 import type { AiDecisionCandidate } from '../src/ai.ts';
 import { SEATS, type GameAction, type GameState, type Seat } from '../src/types.ts';
 
-export const LOCAL_SESSION_STORAGE_KEY = 'play-mahjong.local-session.v1';
-export const LOCAL_SESSION_VERSION = 1 as const;
+export const LOCAL_SESSION_STORAGE_KEY = 'play-mahjong.local-session.v2';
+export const LOCAL_SESSION_VERSION = 2 as const;
 
 export type ActionSource = 'human' | 'bot' | 'auto-pass' | 'auto-draw';
+export type LocalDealerSource = 'initial-dice' | 'previous-winner' | 'draw-stay' | 'assigned';
 
 export interface RecordedAction {
   action: GameAction;
@@ -22,8 +24,18 @@ export interface RecordedActionMetadata {
 
 export interface LocalGameSession {
   seed: number;
+  roundNumber: number;
+  dealerSource: LocalDealerSource;
+  dealerSelection: DealerSelection | null;
+  opening: WallOpening;
   state: GameState;
   records: RecordedAction[];
+}
+
+export interface CreateLocalGameSessionOptions {
+  roundNumber?: number;
+  dealerSeat?: Seat;
+  dealerSource?: Exclude<LocalDealerSource, 'initial-dice'>;
 }
 
 export interface SessionLoadResult {
@@ -40,6 +52,9 @@ export interface StorageLike {
 interface StoredSession {
   version: typeof LOCAL_SESSION_VERSION;
   seed: number;
+  roundNumber: number;
+  dealerSeat: Seat;
+  dealerSource: LocalDealerSource;
   records: RecordedAction[];
 }
 
@@ -73,6 +88,15 @@ function sameAction(left: GameAction, right: GameAction): boolean {
 
 function isSeat(value: unknown): value is Seat {
   return typeof value === 'number' && SEATS.includes(value as Seat);
+}
+
+function isLocalDealerSource(value: unknown): value is LocalDealerSource {
+  return (
+    value === 'initial-dice' ||
+    value === 'previous-winner' ||
+    value === 'draw-stay' ||
+    value === 'assigned'
+  );
 }
 
 function isGameAction(value: unknown): value is GameAction {
@@ -121,7 +145,12 @@ function parseStoredSession(value: string): StoredSession | null {
     candidate.version !== LOCAL_SESSION_VERSION ||
     typeof candidate.seed !== 'number' ||
     !Number.isSafeInteger(candidate.seed) ||
-    candidate.seed < 0
+    candidate.seed < 0 ||
+    typeof candidate.roundNumber !== 'number' ||
+    !Number.isInteger(candidate.roundNumber) ||
+    candidate.roundNumber <= 0 ||
+    !isSeat(candidate.dealerSeat) ||
+    !isLocalDealerSource(candidate.dealerSource)
   ) {
     return null;
   }
@@ -129,14 +158,37 @@ function parseStoredSession(value: string): StoredSession | null {
   return {
     version: LOCAL_SESSION_VERSION,
     seed: candidate.seed,
+    roundNumber: candidate.roundNumber,
+    dealerSeat: candidate.dealerSeat,
+    dealerSource: candidate.dealerSource,
     records: candidate.records,
   };
 }
 
-export function createLocalGameSession(seed: number): LocalGameSession {
+export function createLocalGameSession(
+  seed: number,
+  options: CreateLocalGameSessionOptions = {},
+): LocalGameSession {
+  const roundNumber = options.roundNumber ?? 1;
+  if (!Number.isInteger(roundNumber) || roundNumber <= 0) {
+    throw new Error('本地局数必须是正整数');
+  }
+  if (options.dealerSeat === undefined && options.dealerSource !== undefined) {
+    throw new Error('指定庄家来源时必须同时指定庄家座位');
+  }
+  const match = createMatch({
+    seed,
+    maxRounds: 1,
+    ...(options.dealerSeat === undefined ? {} : { dealerSeat: options.dealerSeat }),
+  });
   return {
     seed,
-    state: createGame({ seed }),
+    roundNumber,
+    dealerSource:
+      options.dealerSeat === undefined ? 'initial-dice' : (options.dealerSource ?? 'assigned'),
+    dealerSelection: match.dealerSelection,
+    opening: match.opening,
+    state: match.game,
     records: [],
   };
 }
@@ -145,13 +197,37 @@ export function replayRecordedActions(
   seed: number,
   records: readonly RecordedAction[],
   step = records.length,
+  options: CreateLocalGameSessionOptions = {},
 ): GameState {
   const target = Math.max(0, Math.min(step, records.length));
-  let state = createGame({ seed });
+  let state = createLocalGameSession(seed, options).state;
   for (const record of records.slice(0, target)) {
     state = applyAction(state, record.action);
   }
   return state;
+}
+
+export function replayLocalGameSession(session: LocalGameSession, step = session.records.length) {
+  return replayRecordedActions(session.seed, session.records, step, {
+    roundNumber: session.roundNumber,
+    ...(session.dealerSource === 'initial-dice'
+      ? {}
+      : { dealerSeat: session.state.dealerSeat, dealerSource: session.dealerSource }),
+  });
+}
+
+export function createNextLocalRoundSession(
+  session: LocalGameSession,
+  seed = createFreshLocalSeed(session.seed),
+): LocalGameSession {
+  const result = session.state.result;
+  if (result === null) throw new Error('本局尚未结束，不能开始下一局');
+  const dealerSeat = result.winner ?? session.state.dealerSeat;
+  return createLocalGameSession(seed, {
+    roundNumber: session.roundNumber + 1,
+    dealerSeat,
+    dealerSource: result.winner === null ? 'draw-stay' : 'previous-winner',
+  });
 }
 
 export function appendRecordedAction(
@@ -204,6 +280,9 @@ export function saveLocalGameSession(storage: StorageLike, session: LocalGameSes
   const stored: StoredSession = {
     version: LOCAL_SESSION_VERSION,
     seed: session.seed,
+    roundNumber: session.roundNumber,
+    dealerSeat: session.state.dealerSeat,
+    dealerSource: session.dealerSource,
     records: session.records,
   };
   try {
@@ -220,12 +299,17 @@ export function loadLocalGameSession(storage: StorageLike, seed: number): Sessio
     if (raw === null) return { session: createLocalGameSession(seed), restored: false };
     const stored = parseStoredSession(raw);
     if (stored === null) return { session: createLocalGameSession(seed), restored: false };
-    const restoredSession = createLocalGameSession(stored.seed);
+    const restoredSession = createLocalGameSession(stored.seed, {
+      roundNumber: stored.roundNumber,
+      ...(stored.dealerSource === 'initial-dice'
+        ? {}
+        : { dealerSeat: stored.dealerSeat, dealerSource: stored.dealerSource }),
+    });
     return {
       session: {
         ...restoredSession,
         records: stored.records,
-        state: replayRecordedActions(stored.seed, stored.records),
+        state: replayLocalGameSession({ ...restoredSession, records: stored.records }),
       },
       restored: true,
     };

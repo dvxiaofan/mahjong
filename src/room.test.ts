@@ -6,6 +6,16 @@ function createRoom() {
 }
 
 describe('服务端权威房间', () => {
+  it('玩家和观战快照公开同一份首局定庄骰子结果', () => {
+    const room = new AuthoritativeRoom({ roomId: 'dice-room', seed: 31 });
+    const playerSelection = room.getSnapshot(0).match.dealerSelection;
+    const spectatorSelection = room.getSpectatorSnapshot().match.dealerSelection;
+
+    expect(playerSelection?.dealerSeat).toBe(room.getSnapshot(0).match.dealerSeat);
+    expect(playerSelection?.rounds[0]?.candidates).toEqual([0, 1, 2, 3]);
+    expect(spectatorSelection).toEqual(playerSelection);
+  });
+
   it('每个座位只收到自己的暗手和合法动作', () => {
     const room = createRoom();
     for (const seat of [0, 1, 2, 3] as const) {
