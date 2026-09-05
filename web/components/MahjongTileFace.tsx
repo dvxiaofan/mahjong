@@ -22,8 +22,8 @@ const chineseRanks: Record<Rank, string> = {
 const circleLayouts: Record<Rank, readonly Point[]> = {
   1: [[18, 25]],
   2: [
-    [10, 13],
-    [26, 37],
+    [18, 13],
+    [18, 37],
   ],
   3: [
     [10, 13],
@@ -89,9 +89,9 @@ const bambooLayouts: Record<Exclude<Rank, 1>, readonly Point[]> = {
     [18, 36],
   ],
   3: [
-    [10, 13],
-    [18, 25],
-    [26, 37],
+    [18, 10],
+    [10, 36],
+    [26, 36],
   ],
   4: [
     [11, 14],
@@ -115,13 +115,13 @@ const bambooLayouts: Record<Exclude<Rank, 1>, readonly Point[]> = {
     [25, 40],
   ],
   7: [
-    [8, 10],
-    [18, 10],
-    [28, 10],
-    [11, 27],
-    [25, 27],
-    [11, 41],
-    [25, 41],
+    [18, 7],
+    [9, 24],
+    [18, 24],
+    [27, 24],
+    [9, 40],
+    [18, 40],
+    [27, 40],
   ],
   8: [
     [11, 8],
@@ -152,25 +152,25 @@ const tileBlue = '#2b6382';
 
 const circleColors: Record<Rank, readonly string[]> = {
   1: [tileGreen],
-  2: [tileGreen, tileBlue],
+  2: [tileBlue, tileGreen],
   3: [tileBlue, tileRed, tileGreen],
-  4: [tileBlue, tileGreen, tileGreen, tileBlue],
+  4: [tileGreen, tileBlue, tileBlue, tileGreen],
   5: [tileGreen, tileBlue, tileRed, tileBlue, tileGreen],
-  6: [tileRed, tileRed, tileGreen, tileGreen, tileGreen, tileGreen],
-  7: [tileRed, tileRed, tileRed, tileGreen, tileGreen, tileGreen, tileGreen],
-  8: [tileBlue, tileBlue, tileGreen, tileGreen, tileGreen, tileGreen, tileBlue, tileBlue],
+  6: [tileGreen, tileGreen, tileRed, tileRed, tileRed, tileRed],
+  7: [tileGreen, tileGreen, tileGreen, tileRed, tileRed, tileRed, tileRed],
+  8: [tileBlue, tileBlue, tileBlue, tileBlue, tileBlue, tileBlue, tileBlue, tileBlue],
   9: [tileBlue, tileBlue, tileBlue, tileRed, tileRed, tileRed, tileGreen, tileGreen, tileGreen],
 };
 
 const bambooColors: Record<Exclude<Rank, 1>, readonly string[]> = {
-  2: [tileGreen, tileBlue],
-  3: [tileGreen, tileRed, tileBlue],
-  4: [tileGreen, tileBlue, tileBlue, tileGreen],
-  5: [tileGreen, tileBlue, tileRed, tileBlue, tileGreen],
-  6: [tileGreen, tileGreen, tileRed, tileRed, tileBlue, tileBlue],
-  7: [tileRed, tileGreen, tileRed, tileGreen, tileBlue, tileBlue, tileGreen],
-  8: [tileGreen, tileBlue, tileGreen, tileBlue, tileGreen, tileBlue, tileGreen, tileBlue],
-  9: [tileGreen, tileGreen, tileGreen, tileRed, tileRed, tileRed, tileBlue, tileBlue, tileBlue],
+  2: [tileGreen, tileGreen],
+  3: [tileGreen, tileGreen, tileGreen],
+  4: [tileGreen, tileGreen, tileGreen, tileGreen],
+  5: [tileGreen, tileGreen, tileRed, tileGreen, tileGreen],
+  6: [tileGreen, tileGreen, tileGreen, tileGreen, tileGreen, tileGreen],
+  7: [tileRed, tileGreen, tileBlue, tileGreen, tileGreen, tileBlue, tileGreen],
+  8: [tileGreen, tileGreen, tileGreen, tileGreen, tileGreen, tileGreen, tileGreen, tileGreen],
+  9: [tileGreen, tileRed, tileGreen, tileGreen, tileRed, tileGreen, tileGreen, tileRed, tileGreen],
 };
 
 function CharacterFace({ rank }: { rank: Rank }) {
@@ -236,14 +236,16 @@ function BambooStick({
   y,
   color,
   index,
+  rotation,
 }: {
   x: number;
   y: number;
   color: string;
   index: number;
+  rotation?: number;
 }) {
   return (
-    <g transform={`translate(${x} ${y}) rotate(${index % 2 === 0 ? -3 : 3})`}>
+    <g transform={`translate(${x} ${y}) rotate(${rotation ?? (index % 2 === 0 ? -3 : 3)})`}>
       <path d="M-1.7 -5.2 Q0 -6 1.7 -5.2 L1.45 5.2 Q0 6 -1.45 5.2 Z" fill={color} />
       <path
         d="M-2.2 -1.8 Q0 -0.9 2.2 -1.8 M-2.2 1.8 Q0 0.9 2.2 1.8"
@@ -282,8 +284,34 @@ function OneBambooBird() {
   );
 }
 
+function EightBambooFace() {
+  const pairCenters: readonly Point[] = [
+    [11, 13],
+    [25, 13],
+    [11, 37],
+    [25, 37],
+  ];
+  return (
+    <g data-bamboo-layout="rank-8-crossed-pairs">
+      {pairCenters.flatMap(([x, y], pairIndex) =>
+        [-28, 28].map((rotation, stickIndex) => (
+          <BambooStick
+            color={tileGreen}
+            index={pairIndex * 2 + stickIndex}
+            key={`${x}-${y}-${rotation}`}
+            rotation={rotation}
+            x={x + (stickIndex === 0 ? -1.8 : 1.8)}
+            y={y}
+          />
+        )),
+      )}
+    </g>
+  );
+}
+
 function BambooFace({ rank }: { rank: Rank }) {
   if (rank === 1) return <OneBambooBird />;
+  if (rank === 8) return <EightBambooFace />;
   return (
     <g data-bamboo-layout={`rank-${rank}`}>
       {bambooLayouts[rank].map(([x, y], index) => (

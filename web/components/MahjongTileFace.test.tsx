@@ -12,6 +12,8 @@ describe('矢量麻将牌面', () => {
   it('筒牌按照点数绘制圆形图案', () => {
     const html = renderToStaticMarkup(<MahjongTileFace tile="p9" />);
     expect(html.match(/<circle/g)).toHaveLength(18);
+    const twoCircle = renderToStaticMarkup(<MahjongTileFace tile="p2" />);
+    expect(twoCircle.match(/cx="18"/g)).toHaveLength(4);
   });
 
   it('七筒使用上方三点斜排、下方四点方阵的常见牌面', () => {
@@ -20,12 +22,14 @@ describe('矢量麻将牌面', () => {
     expect(html.match(/<circle/g)).toHaveLength(14);
     expect(html).toContain('cx="8" cy="8"');
     expect(html).toContain('cx="26" cy="42"');
+    expect(html.match(/stroke="#267052"/g)).toHaveLength(3);
+    expect(html.match(/stroke="#ba4338"/g)).toHaveLength(4);
   });
 
   it('一条绘制鸟形标记，其余条牌绘制竹节', () => {
     expect(renderToStaticMarkup(<MahjongTileFace tile="s1" />)).toContain('<path');
     const eightBamboo = renderToStaticMarkup(<MahjongTileFace tile="s8" />);
-    expect(eightBamboo).toContain('data-bamboo-layout="rank-8"');
+    expect(eightBamboo).toContain('data-bamboo-layout="rank-8-crossed-pairs"');
     expect(eightBamboo.match(/translate\(/g)).toHaveLength(8);
   });
 
