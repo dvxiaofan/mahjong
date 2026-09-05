@@ -3,6 +3,7 @@ import { getLegalActions } from '../src/game.js';
 import {
   LOCAL_SESSION_STORAGE_KEY,
   appendRecordedAction,
+  createFreshLocalSeed,
   createLocalGameSession,
   getOnlyPassAction,
   loadLocalGameSession,
@@ -58,7 +59,18 @@ describe('本地牌局会话', () => {
     expect(loaded.session.records[0]?.reason).toBe('测试选择原因');
   });
 
-  it('损坏或不同种子的本地数据会安全回退到新局', () => {
+  it('每次新开局生成不同种子和牌墙', () => {
+    const previousSeed = 17;
+    const nextSeed = createFreshLocalSeed(previousSeed, previousSeed);
+
+    expect(nextSeed).not.toBe(previousSeed);
+    expect(createFreshLocalSeed(undefined, 0)).not.toBe(0);
+    expect(createLocalGameSession(nextSeed).state.wall.tiles).not.toEqual(
+      createLocalGameSession(previousSeed).state.wall.tiles,
+    );
+  });
+
+  it('损坏数据安全回退，而有效存档使用自身实际种子恢复', () => {
     const storage = new MemoryStorage();
     storage.setItem(LOCAL_SESSION_STORAGE_KEY, '{broken');
     expect(loadLocalGameSession(storage, 4).restored).toBe(false);
@@ -72,8 +84,9 @@ describe('本地牌局会话', () => {
       }),
     );
     const loaded = loadLocalGameSession(storage, 4);
-    expect(loaded.restored).toBe(false);
-    expect(loaded.session.seed).toBe(4);
+    expect(loaded.restored).toBe(true);
+    expect(loaded.session.seed).toBe(9);
+    expect(loaded.session.state).toEqual(createLocalGameSession(9).state);
   });
 
   it('我方仅有过牌动作时自动过，有其他选择时等待用户', () => {

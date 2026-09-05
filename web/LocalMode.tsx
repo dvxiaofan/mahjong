@@ -2,9 +2,8 @@ import { useState } from 'react';
 import type { AiDifficulty } from '../src/ai-difficulty.ts';
 import { HistoryDrawer } from './components/HistoryDrawer';
 import { MahjongTable } from './components/MahjongTable';
+import { createFreshLocalSeed } from './localSession';
 import { useLocalGame } from './useLocalGame';
-
-const DEMO_SEED = 20260904;
 
 const difficultyLabels: Record<AiDifficulty, string> = {
   casual: '休闲',
@@ -15,7 +14,8 @@ const difficultyLabels: Record<AiDifficulty, string> = {
 export function LocalMode() {
   const [historyOpen, setHistoryOpen] = useState(false);
   const [difficulty, setDifficulty] = useState<AiDifficulty>('standard');
-  const game = useLocalGame(DEMO_SEED, difficulty);
+  const [initialSeed] = useState(() => createFreshLocalSeed());
+  const game = useLocalGame(initialSeed, difficulty);
 
   return (
     <>

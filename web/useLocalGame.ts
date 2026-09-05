@@ -11,6 +11,7 @@ import { findNextBotDecision } from './basicBot';
 import {
   appendRecordedAction,
   clearLocalGameSession,
+  createFreshLocalSeed,
   createLocalGameSession,
   getOnlyPassAction,
   loadLocalGameSession,
@@ -79,9 +80,9 @@ export function useLocalGame(
         : findNextBotDecision(
             session.state,
             difficulty,
-            decisionRandom(seed, session.records.length),
+            decisionRandom(session.seed, session.records.length),
           ),
-    [difficulty, isReplaying, seed, session.records.length, session.state],
+    [difficulty, isReplaying, session.records.length, session.seed, session.state],
   );
   const autoPassAction = useMemo(
     () => (isReplaying ? null : getOnlyPassAction(session.state, LOCAL_VIEWER_SEAT)),
@@ -92,8 +93,8 @@ export function useLocalGame(
     () =>
       replayStep === null
         ? session.state
-        : replayRecordedActions(seed, session.records, replayStep),
-    [replayStep, seed, session.records, session.state],
+        : replayRecordedActions(session.seed, session.records, replayStep),
+    [replayStep, session.records, session.seed, session.state],
   );
 
   const view = useMemo(() => {
@@ -116,10 +117,10 @@ export function useLocalGame(
   const reset = useCallback(() => {
     const storage = browserStorage();
     if (storage !== null) clearLocalGameSession(storage);
-    setSession(createLocalGameSession(seed));
+    setSession(createLocalGameSession(createFreshLocalSeed(session.seed)));
     setReplayStep(null);
     setRestored(false);
-  }, [seed]);
+  }, [session.seed]);
 
   const showReplayStep = useCallback(
     (step: number) => {
@@ -151,7 +152,7 @@ export function useLocalGame(
           const nextBotDecision = findNextBotDecision(
             previous.state,
             difficulty,
-            decisionRandom(seed, previous.records.length),
+            decisionRandom(previous.seed, previous.records.length),
           );
           return nextBotDecision === null
             ? previous
@@ -165,7 +166,7 @@ export function useLocalGame(
     );
 
     return () => window.clearTimeout(timer);
-  }, [autoPassAction, botDecision, difficulty, isReplaying, seed]);
+  }, [autoPassAction, botDecision, difficulty, isReplaying]);
 
   return {
     state: session.state,

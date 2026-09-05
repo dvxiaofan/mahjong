@@ -43,6 +43,26 @@ interface StoredSession {
   records: RecordedAction[];
 }
 
+function defaultSeedEntropy(): number {
+  const timeBits = Date.now() >>> 0;
+  const randomBits = Math.floor(Math.random() * 0x1_0000_0000) >>> 0;
+  return (timeBits ^ randomBits) >>> 0;
+}
+
+/** Create a non-zero seed that never intentionally repeats the preceding local round. */
+export function createFreshLocalSeed(
+  previousSeed?: number,
+  entropy: number = defaultSeedEntropy(),
+): number {
+  let candidate = entropy >>> 0;
+  if (candidate === 0) candidate = 0x9e3779b9;
+  if (previousSeed !== undefined && candidate === previousSeed >>> 0) {
+    candidate = (candidate + 0x6d2b79f5) >>> 0;
+    if (candidate === 0) candidate = 0x9e3779b9;
+  }
+  return candidate;
+}
+
 function sameAction(left: GameAction, right: GameAction): boolean {
   if (left.type !== right.type || left.seat !== right.seat) return false;
   if ('tile' in left || 'tile' in right) {
@@ -90,15 +110,22 @@ function isRecordedAction(value: unknown): value is RecordedAction {
   return sourceValid && reasonValid && candidatesValid && isGameAction(candidate.action);
 }
 
-function parseStoredSession(value: string, expectedSeed: number): StoredSession | null {
+function parseStoredSession(value: string): StoredSession | null {
   const parsed: unknown = JSON.parse(value);
   if (parsed === null || typeof parsed !== 'object') return null;
   const candidate = parsed as Record<string, unknown>;
-  if (candidate.version !== LOCAL_SESSION_VERSION || candidate.seed !== expectedSeed) return null;
+  if (
+    candidate.version !== LOCAL_SESSION_VERSION ||
+    typeof candidate.seed !== 'number' ||
+    !Number.isSafeInteger(candidate.seed) ||
+    candidate.seed < 0
+  ) {
+    return null;
+  }
   if (!Array.isArray(candidate.records) || !candidate.records.every(isRecordedAction)) return null;
   return {
     version: LOCAL_SESSION_VERSION,
-    seed: expectedSeed,
+    seed: candidate.seed,
     records: candidate.records,
   };
 }
@@ -182,15 +209,16 @@ export function loadLocalGameSession(storage: StorageLike, seed: number): Sessio
   try {
     const raw = storage.getItem(LOCAL_SESSION_STORAGE_KEY);
     if (raw === null) return { session: createLocalGameSession(seed), restored: false };
-    const stored = parseStoredSession(raw, seed);
+    const stored = parseStoredSession(raw);
     if (stored === null) return { session: createLocalGameSession(seed), restored: false };
+    const restoredSession = createLocalGameSession(stored.seed);
     return {
       session: {
-        seed,
+        ...restoredSession,
         records: stored.records,
-        state: replayRecordedActions(seed, stored.records),
+        state: replayRecordedActions(stored.seed, stored.records),
       },
-      restored: stored.records.length > 0,
+      restored: true,
     };
   } catch {
     return { session: createLocalGameSession(seed), restored: false };
