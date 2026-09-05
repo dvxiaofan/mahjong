@@ -13,6 +13,7 @@ import {
   clearLocalGameSession,
   createFreshLocalSeed,
   createLocalGameSession,
+  getOnlyDrawAction,
   getOnlyPassAction,
   loadLocalGameSession,
   replayRecordedActions,
@@ -24,7 +25,7 @@ import {
 
 export const LOCAL_VIEWER_SEAT = 0 as const;
 export const BOT_TURN_DELAY_MS = 280;
-export const AUTO_PASS_DELAY_MS = 120;
+export const AUTO_VIEWER_ACTION_DELAY_MS = 120;
 
 export interface LocalGameController {
   state: GameState;
@@ -88,6 +89,10 @@ export function useLocalGame(
     () => (isReplaying ? null : getOnlyPassAction(session.state, LOCAL_VIEWER_SEAT)),
     [isReplaying, session.state],
   );
+  const autoDrawAction = useMemo(
+    () => (isReplaying ? null : getOnlyDrawAction(session.state, LOCAL_VIEWER_SEAT)),
+    [isReplaying, session.state],
+  );
 
   const displayedState = useMemo(
     () =>
@@ -137,17 +142,26 @@ export function useLocalGame(
   }, [session]);
 
   useEffect(() => {
-    const automaticAction = autoPassAction ?? botDecision?.action ?? null;
+    const viewerAutomaticAction = autoPassAction ?? autoDrawAction;
+    const automaticAction = viewerAutomaticAction ?? botDecision?.action ?? null;
     if (automaticAction === null || isReplaying) return undefined;
 
     const timer = window.setTimeout(
       () => {
         setSession((previous) => {
-          const nextAutoPass = getOnlyPassAction(previous.state, LOCAL_VIEWER_SEAT);
-          if (nextAutoPass !== null) {
-            return appendRecordedAction(previous, nextAutoPass, 'auto-pass', {
-              reason: '唯一合法响应，自动过牌',
-            });
+          const nextViewerAction =
+            getOnlyPassAction(previous.state, LOCAL_VIEWER_SEAT) ??
+            getOnlyDrawAction(previous.state, LOCAL_VIEWER_SEAT);
+          if (nextViewerAction !== null) {
+            const isPass = nextViewerAction.type === 'pass';
+            return appendRecordedAction(
+              previous,
+              nextViewerAction,
+              isPass ? 'auto-pass' : 'auto-draw',
+              {
+                reason: isPass ? '唯一合法响应，自动过牌' : '唯一合法动作，自动摸牌',
+              },
+            );
           }
           const nextBotDecision = findNextBotDecision(
             previous.state,
@@ -162,11 +176,11 @@ export function useLocalGame(
               });
         });
       },
-      autoPassAction === null ? BOT_TURN_DELAY_MS : AUTO_PASS_DELAY_MS,
+      viewerAutomaticAction === null ? BOT_TURN_DELAY_MS : AUTO_VIEWER_ACTION_DELAY_MS,
     );
 
     return () => window.clearTimeout(timer);
-  }, [autoPassAction, botDecision, difficulty, isReplaying]);
+  }, [autoDrawAction, autoPassAction, botDecision, difficulty, isReplaying]);
 
   return {
     state: session.state,

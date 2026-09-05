@@ -5,6 +5,7 @@ import {
   appendRecordedAction,
   createFreshLocalSeed,
   createLocalGameSession,
+  getOnlyDrawAction,
   getOnlyPassAction,
   loadLocalGameSession,
   replayRecordedActions,
@@ -98,5 +99,20 @@ describe('本地牌局会话', () => {
 
     session.state.players[0]!.concealedTiles = ['m1', 'm1'];
     expect(getOnlyPassAction(session.state, 0)).toBeNull();
+  });
+
+  it('我方仅有摸牌动作时自动摸，有暗杠等选择时等待用户', () => {
+    const session = createLocalGameSession(6);
+    session.state.currentSeat = 0;
+    session.state.phase = 'awaiting-draw';
+    session.state.drawMode = 'normal';
+    session.state.players[0]!.concealedTiles = [];
+    session.state.players[0]!.fortuneCount = 0;
+    session.state.players[0]!.mouthDeclared = false;
+
+    expect(getOnlyDrawAction(session.state, 0)).toEqual({ type: 'draw', seat: 0 });
+
+    session.state.players[0]!.concealedTiles = ['m1', 'm1', 'm1', 'm1'];
+    expect(getOnlyDrawAction(session.state, 0)).toBeNull();
   });
 });

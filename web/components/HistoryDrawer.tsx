@@ -32,6 +32,7 @@ const sourceLabels: Record<ActionSource, string> = {
   human: '你的选择',
   bot: 'Bot',
   'auto-pass': '自动过牌',
+  'auto-draw': '自动摸牌',
 };
 
 export function HistoryDrawer({

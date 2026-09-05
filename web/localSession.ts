@@ -6,7 +6,7 @@ import { SEATS, type GameAction, type GameState, type Seat } from '../src/types.
 export const LOCAL_SESSION_STORAGE_KEY = 'play-mahjong.local-session.v1';
 export const LOCAL_SESSION_VERSION = 1 as const;
 
-export type ActionSource = 'human' | 'bot' | 'auto-pass';
+export type ActionSource = 'human' | 'bot' | 'auto-pass' | 'auto-draw';
 
 export interface RecordedAction {
   action: GameAction;
@@ -92,7 +92,10 @@ function isRecordedAction(value: unknown): value is RecordedAction {
   if (value === null || typeof value !== 'object') return false;
   const candidate = value as Record<string, unknown>;
   const sourceValid =
-    candidate.source === 'human' || candidate.source === 'bot' || candidate.source === 'auto-pass';
+    candidate.source === 'human' ||
+    candidate.source === 'bot' ||
+    candidate.source === 'auto-pass' ||
+    candidate.source === 'auto-draw';
   const reasonValid = candidate.reason === undefined || typeof candidate.reason === 'string';
   const candidatesValid =
     candidate.candidates === undefined ||
@@ -189,6 +192,12 @@ export function appendRecordedAction(
 export function getOnlyPassAction(state: GameState, seat: Seat): GameAction | null {
   const actions = getLegalActions(state, seat);
   return actions.length === 1 && actions[0]?.type === 'pass' ? actions[0] : null;
+}
+
+/** Auto-draw only when draw is literally the viewer's sole legal turn action. */
+export function getOnlyDrawAction(state: GameState, seat: Seat): GameAction | null {
+  const actions = getLegalActions(state, seat);
+  return actions.length === 1 && actions[0]?.type === 'draw' ? actions[0] : null;
 }
 
 export function saveLocalGameSession(storage: StorageLike, session: LocalGameSession): boolean {
