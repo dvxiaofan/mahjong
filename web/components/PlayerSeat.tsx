@@ -1,4 +1,4 @@
-import { tileLabel, type NormalTile } from '../../src/tiles.ts';
+import { tileLabel, type NormalTile, type Tile } from '../../src/tiles.ts';
 import type {
   GameAction,
   Meld,
@@ -58,7 +58,7 @@ function tileClassName(compact: boolean, interactive = false, drawn = false): st
 }
 
 interface TileFaceProps {
-  tile: NormalTile;
+  tile: Tile;
   compact?: boolean;
   drawn?: boolean;
   onClick?: () => void;
@@ -110,6 +110,24 @@ function renderPublicHand(player: PublicPlayerView) {
       {player.concealedTileCount > backCount && (
         <span className="hidden-more">+{player.concealedTileCount - backCount}</span>
       )}
+    </div>
+  );
+}
+
+function renderFortunes(count: number) {
+  return (
+    <div className="fortune-zone" aria-label={`发财区，共${count}张`}>
+      <span className="fortune-zone-label">发财区</span>
+      <span className="fortune-tiles">
+        {count > 0 ? (
+          Array.from({ length: count }, (_, index) => (
+            <TileFace compact key={`fortune-${index}`} tile="fortune" />
+          ))
+        ) : (
+          <span className="fortune-empty">未亮牌</span>
+        )}
+      </span>
+      <span className="fortune-count">× {count}</span>
     </div>
   );
 }
@@ -182,7 +200,7 @@ export function PlayerSeat({
       </div>
 
       <div className="player-status-row">
-        <span className="fortune-label">发财 × {player.fortuneCount}</span>
+        {renderFortunes(player.fortuneCount)}
         {player.mouthDeclared && <span className="status-pill">已报嘴</span>}
         {isSelf && player.mouthRequired && (
           <span className="status-pill status-pill--warn">待报嘴</span>

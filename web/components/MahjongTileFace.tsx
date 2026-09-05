@@ -1,8 +1,8 @@
 import { memo } from 'react';
-import { isSuitedTile, tileRank, type NormalTile, type Rank } from '../../src/tiles.ts';
+import { isSuitedTile, tileRank, type HonorTile, type Rank, type Tile } from '../../src/tiles.ts';
 
 interface MahjongTileFaceProps {
-  tile: NormalTile;
+  tile: Tile;
 }
 
 type Point = readonly [x: number, y: number];
@@ -19,7 +19,7 @@ const chineseRanks: Record<Rank, string> = {
   9: '九',
 };
 
-const pipLayouts: Record<Rank, readonly Point[]> = {
+const circleLayouts: Record<Rank, readonly Point[]> = {
   1: [[18, 25]],
   2: [
     [10, 13],
@@ -52,13 +52,13 @@ const pipLayouts: Record<Rank, readonly Point[]> = {
     [26, 39],
   ],
   7: [
-    [10, 10],
-    [26, 10],
-    [10, 25],
-    [18, 25],
-    [26, 25],
-    [10, 40],
-    [26, 40],
+    [8, 8],
+    [15, 15],
+    [22, 22],
+    [10, 31],
+    [26, 31],
+    [10, 42],
+    [26, 42],
   ],
   8: [
     [10, 8],
@@ -83,7 +83,95 @@ const pipLayouts: Record<Rank, readonly Point[]> = {
   ],
 };
 
-const pipColors = ['#267052', '#ba4338', '#2b6382'] as const;
+const bambooLayouts: Record<Exclude<Rank, 1>, readonly Point[]> = {
+  2: [
+    [18, 14],
+    [18, 36],
+  ],
+  3: [
+    [10, 13],
+    [18, 25],
+    [26, 37],
+  ],
+  4: [
+    [11, 14],
+    [25, 14],
+    [11, 36],
+    [25, 36],
+  ],
+  5: [
+    [11, 12],
+    [25, 12],
+    [18, 25],
+    [11, 38],
+    [25, 38],
+  ],
+  6: [
+    [11, 10],
+    [25, 10],
+    [11, 25],
+    [25, 25],
+    [11, 40],
+    [25, 40],
+  ],
+  7: [
+    [8, 10],
+    [18, 10],
+    [28, 10],
+    [11, 27],
+    [25, 27],
+    [11, 41],
+    [25, 41],
+  ],
+  8: [
+    [11, 8],
+    [25, 8],
+    [11, 19],
+    [25, 19],
+    [11, 31],
+    [25, 31],
+    [11, 42],
+    [25, 42],
+  ],
+  9: [
+    [8, 10],
+    [18, 10],
+    [28, 10],
+    [8, 25],
+    [18, 25],
+    [28, 25],
+    [8, 40],
+    [18, 40],
+    [28, 40],
+  ],
+};
+
+const tileGreen = '#267052';
+const tileRed = '#ba4338';
+const tileBlue = '#2b6382';
+
+const circleColors: Record<Rank, readonly string[]> = {
+  1: [tileGreen],
+  2: [tileGreen, tileBlue],
+  3: [tileBlue, tileRed, tileGreen],
+  4: [tileBlue, tileGreen, tileGreen, tileBlue],
+  5: [tileGreen, tileBlue, tileRed, tileBlue, tileGreen],
+  6: [tileRed, tileRed, tileGreen, tileGreen, tileGreen, tileGreen],
+  7: [tileRed, tileRed, tileRed, tileGreen, tileGreen, tileGreen, tileGreen],
+  8: [tileBlue, tileBlue, tileGreen, tileGreen, tileGreen, tileGreen, tileBlue, tileBlue],
+  9: [tileBlue, tileBlue, tileBlue, tileRed, tileRed, tileRed, tileGreen, tileGreen, tileGreen],
+};
+
+const bambooColors: Record<Exclude<Rank, 1>, readonly string[]> = {
+  2: [tileGreen, tileBlue],
+  3: [tileGreen, tileRed, tileBlue],
+  4: [tileGreen, tileBlue, tileBlue, tileGreen],
+  5: [tileGreen, tileBlue, tileRed, tileBlue, tileGreen],
+  6: [tileGreen, tileGreen, tileRed, tileRed, tileBlue, tileBlue],
+  7: [tileRed, tileGreen, tileRed, tileGreen, tileBlue, tileBlue, tileGreen],
+  8: [tileGreen, tileBlue, tileGreen, tileBlue, tileGreen, tileBlue, tileGreen, tileBlue],
+  9: [tileGreen, tileGreen, tileGreen, tileRed, tileRed, tileRed, tileBlue, tileBlue, tileBlue],
+};
 
 function CharacterFace({ rank }: { rank: Rank }) {
   return (
@@ -100,11 +188,11 @@ function CharacterFace({ rank }: { rank: Rank }) {
 
 function CircleFace({ rank }: { rank: Rank }) {
   return (
-    <>
-      {pipLayouts[rank].map(([x, y], index) => {
-        const color = pipColors[index % pipColors.length];
-        const outerRadius = rank === 1 ? 8.6 : 4.1;
-        const innerRadius = rank === 1 ? 4.1 : 1.45;
+    <g data-circle-layout={rank === 7 ? 'diagonal-three-square-four' : `rank-${rank}`}>
+      {circleLayouts[rank].map(([x, y], index) => {
+        const color = circleColors[rank][index] ?? tileGreen;
+        const outerRadius = rank === 1 ? 8.6 : 3.85;
+        const innerRadius = rank === 1 ? 4.1 : 1.35;
         return (
           <g key={`${x}-${y}`}>
             <circle
@@ -117,31 +205,55 @@ function CircleFace({ rank }: { rank: Rank }) {
             />
             <circle cx={x} cy={y} fill={color} opacity="0.82" r={innerRadius} />
             {rank === 1 && (
-              <circle
-                cx={x}
-                cy={y}
-                fill="none"
-                opacity="0.5"
-                r="6.1"
-                stroke="#d09b38"
-                strokeWidth="1"
-              />
+              <>
+                <circle
+                  cx={x}
+                  cy={y}
+                  fill="none"
+                  opacity="0.65"
+                  r="6.1"
+                  stroke="#d09b38"
+                  strokeWidth="1"
+                />
+                <path
+                  d="M18 17.4 V32.6 M10.4 25 H25.6 M12.6 19.6 L23.4 30.4 M23.4 19.6 L12.6 30.4"
+                  opacity="0.52"
+                  stroke={tileRed}
+                  strokeLinecap="round"
+                  strokeWidth="0.7"
+                />
+              </>
             )}
           </g>
         );
       })}
-    </>
+    </g>
   );
 }
 
-function BambooStick({ x, y, index }: { x: number; y: number; index: number }) {
-  const color = pipColors[index % pipColors.length];
+function BambooStick({
+  x,
+  y,
+  color,
+  index,
+}: {
+  x: number;
+  y: number;
+  color: string;
+  index: number;
+}) {
   return (
     <g transform={`translate(${x} ${y}) rotate(${index % 2 === 0 ? -3 : 3})`}>
-      <rect fill={color} height="10" rx="1.5" width="3.4" x="-1.7" y="-5" />
-      <path d="M-2.2 -1.7 H2.2 M-2.2 1.7 H2.2" opacity="0.7" stroke="#f7f0da" strokeWidth="0.8" />
+      <path d="M-1.7 -5.2 Q0 -6 1.7 -5.2 L1.45 5.2 Q0 6 -1.45 5.2 Z" fill={color} />
       <path
-        d="M0 -5 L-2.8 -7 M0 5 L2.8 7"
+        d="M-2.2 -1.8 Q0 -0.9 2.2 -1.8 M-2.2 1.8 Q0 0.9 2.2 1.8"
+        fill="none"
+        opacity="0.78"
+        stroke="#f7f0da"
+        strokeWidth="0.85"
+      />
+      <path
+        d="M0 -5 L-2.6 -7 M0 5 L2.6 7"
         fill="none"
         opacity="0.7"
         stroke={color}
@@ -173,20 +285,42 @@ function OneBambooBird() {
 function BambooFace({ rank }: { rank: Rank }) {
   if (rank === 1) return <OneBambooBird />;
   return (
-    <>
-      {pipLayouts[rank].map(([x, y], index) => (
-        <BambooStick index={index} key={`${x}-${y}`} x={x} y={y} />
+    <g data-bamboo-layout={`rank-${rank}`}>
+      {bambooLayouts[rank].map(([x, y], index) => (
+        <BambooStick
+          color={bambooColors[rank][index] ?? tileGreen}
+          index={index}
+          key={`${x}-${y}`}
+          x={x}
+          y={y}
+        />
       ))}
-    </>
+    </g>
   );
 }
 
-function HonorFace({ tile }: { tile: 'red' | 'white' }) {
+function HonorFace({ tile }: { tile: HonorTile | 'fortune' }) {
   if (tile === 'red') {
     return (
       <text className="tile-honor-red" x="18" y="34">
         中
       </text>
+    );
+  }
+  if (tile === 'fortune') {
+    return (
+      <g>
+        <path
+          d="M8 9 H28 M8 41 H28"
+          opacity="0.42"
+          stroke={tileGreen}
+          strokeLinecap="round"
+          strokeWidth="1.2"
+        />
+        <text className="tile-honor-fortune" x="18" y="35">
+          發
+        </text>
+      </g>
     );
   }
   return (
@@ -218,7 +352,7 @@ function HonorFace({ tile }: { tile: 'red' | 'white' }) {
 
 export const MahjongTileFace = memo(function MahjongTileFace({ tile }: MahjongTileFaceProps) {
   let content;
-  if (tile === 'red' || tile === 'white') {
+  if (tile === 'red' || tile === 'white' || tile === 'fortune') {
     content = <HonorFace tile={tile} />;
   } else if (isSuitedTile(tile)) {
     const rank = tileRank(tile);
