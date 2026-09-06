@@ -30,5 +30,8 @@ build/
 .idea/
 .vscode/
 
+# Local reference assets (source .ai + sprite sheet, too heavy for repo)
+local-docs/imges/
+
 # Logs
 *.log
