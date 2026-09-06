@@ -35,7 +35,7 @@ describe('玩家座位牌面', () => {
     );
 
     expect(html.match(/data-tile="fortune"/g)).toHaveLength(2);
-    expect(html.match(/>發</g)).toHaveLength(2);
+    expect(html.match(/src="\/tiles\/fortune\.png"/g)).toHaveLength(2);
     expect(html).toContain('× 2');
   });
 });

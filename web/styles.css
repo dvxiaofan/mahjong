@@ -1264,39 +1264,7 @@ h1 {
   display: block;
   width: 88%;
   height: 88%;
-  overflow: visible;
-}
-
-.tile-character-number,
-.tile-character-wan,
-.tile-honor-red,
-.tile-honor-fortune {
-  font-family: 'Kaiti SC', 'STKaiti', 'Songti SC', serif;
-  font-weight: 900;
-  paint-order: stroke;
-  stroke: rgba(255, 255, 255, 0.22);
-  stroke-width: 0.35px;
-  text-anchor: middle;
-}
-
-.tile-character-number {
-  fill: #235d73;
-  font-size: 18px;
-}
-
-.tile-character-wan {
-  fill: #a73f34;
-  font-size: 19px;
-}
-
-.tile-honor-red {
-  fill: #ae3f35;
-  font-size: 29px;
-}
-
-.tile-honor-fortune {
-  fill: #23704c;
-  font-size: 28px;
+  object-fit: contain;
 }
 
 .mahjong-tile--interactive {
