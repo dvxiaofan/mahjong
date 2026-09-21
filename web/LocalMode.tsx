@@ -56,6 +56,7 @@ export function LocalMode() {
         view={game.view}
         botThinking={game.botThinking}
         isReplaying={game.isReplaying}
+        roundKey={game.roundKey}
         onAction={game.dispatch}
         onReset={game.startNextRound}
         resetLabel="开始下一局"

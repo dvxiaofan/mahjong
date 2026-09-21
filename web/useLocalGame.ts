@@ -34,6 +34,7 @@ export interface LocalGameController {
   state: GameState;
   view: GameView;
   roundNumber: number;
+  roundKey: string;
   dealerSource: LocalDealerSource;
   dealerSelection: DealerSelection | null;
   opening: WallOpening;
@@ -198,6 +199,7 @@ export function useLocalGame(
     state: session.state,
     view,
     roundNumber: session.roundNumber,
+    roundKey: `${session.seed}:${session.roundNumber}`,
     dealerSource: session.dealerSource,
     dealerSelection: session.dealerSelection,
     opening: session.opening,

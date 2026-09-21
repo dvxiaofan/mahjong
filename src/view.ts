@@ -14,6 +14,7 @@ import type {
   PlayerView,
   PlayerViewEntry,
   PublicPlayerView,
+  RevealedPlayerView,
   RoundResult,
   Seat,
   SpectatorGameView,
@@ -80,6 +81,16 @@ export function toPlayerView(player: PlayerState): PlayerView {
   };
 }
 
+function projectOtherPlayer(
+  player: PlayerState,
+  state: GameState,
+): PublicPlayerView | RevealedPlayerView {
+  const publicView = toPublicPlayerView(player);
+  return state.phase === 'finished' && state.result?.outcome === 'win'
+    ? { ...publicView, visibility: 'revealed', concealedTiles: [...player.concealedTiles] }
+    : publicView;
+}
+
 function projectEvent(event: GameEvent, viewerSeat: Seat | null): GameEventView {
   const isOwnEvent = event.seat === viewerSeat;
   if (isOwnEvent || event.type === 'fortune') {
@@ -134,14 +145,14 @@ function projectPendingDiscard(
 
 /**
  * Project complete game state into the privacy-safe contract for one seat.
- * Opponent concealed hands, private waits and response choices are omitted.
+ * Opponent hands stay hidden until a win; private waits and response choices stay omitted.
  */
 export function projectStateForSeat(state: GameState, viewerSeat: Seat): GameView {
   const viewer = state.players[viewerSeat];
   if (viewer === undefined) throw new Error(`不存在 ${viewerSeat} 号玩家`);
 
   const players: PlayerViewEntry[] = state.players.map((player) =>
-    player.seat === viewerSeat ? toPlayerView(player) : toPublicPlayerView(player),
+    player.seat === viewerSeat ? toPlayerView(player) : projectOtherPlayer(player, state),
   );
 
   return {
@@ -165,7 +176,7 @@ export function projectStateForSeat(state: GameState, viewerSeat: Seat): GameVie
 export function projectStateForSpectator(state: GameState): SpectatorGameView {
   return {
     viewerSeat: null,
-    players: state.players.map(toPublicPlayerView),
+    players: state.players.map((player) => projectOtherPlayer(player, state)),
     wallRemaining: remainingWallTiles(state.wall),
     dealerSeat: state.dealerSeat,
     currentSeat: state.currentSeat,

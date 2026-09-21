@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { applyAction, createGame, getLegalActions } from './game.js';
-import type { GameAction, GameEventView } from './types.js';
+import { SEATS, type GameAction, type GameEventView, type WinType } from './types.js';
 import {
   projectStateForSeat,
   projectStateForSpectator,
@@ -9,6 +9,76 @@ import {
 } from './view.js';
 
 describe('UI 视图契约', () => {
+  it.each(
+    SEATS.flatMap((winner) =>
+      (['self-draw', 'discard'] as WinType[]).map((winType) => ({ winner, winType })),
+    ),
+  )('$winner 号玩家 $winType 后向四家与观战者亮出完整终局，胡牌张不重复', ({ winner, winType }) => {
+    const state = createGame({ seed: 42 });
+    const player = state.players[winner]!;
+    player.concealedTiles = [
+      'm1',
+      'm2',
+      'm3',
+      'm4',
+      'm5',
+      'm6',
+      'p1',
+      'p2',
+      'p3',
+      's7',
+      's8',
+      's9',
+      'red',
+    ];
+    player.fortuneCount = 1;
+    player.mouthRequired = false;
+    state.phase = winType === 'self-draw' ? 'awaiting-discard' : 'claiming';
+    state.currentSeat = winner;
+    state.lastDrawnTile = winType === 'self-draw' ? 'red' : null;
+    if (winType === 'self-draw') player.concealedTiles.push('red');
+    else {
+      const discarder = SEATS[(winner + 3) % 4]!;
+      state.currentSeat = discarder;
+      state.players[discarder]!.discards = ['red', 'red'];
+      state.pendingDiscard = { tile: 'red', discarder, responses: {} };
+      for (const seat of SEATS) {
+        if (seat !== discarder && seat !== winner)
+          state.pendingDiscard.responses[seat] = { type: 'pass' };
+      }
+    }
+    const before = projectStateForSpectator(state);
+    expect(before.players.every((entry) => !('concealedTiles' in entry))).toBe(true);
+    const finished = applyAction(state, { type: 'win', seat: winner });
+    expect(finished.phase).toBe('finished');
+    for (const view of [
+      ...SEATS.map((seat) => projectStateForSeat(finished, seat)),
+      projectStateForSpectator(finished),
+    ]) {
+      for (const entry of view.players) {
+        expect(entry.visibility).toBe(entry.seat === view.viewerSeat ? 'self' : 'revealed');
+        if (entry.visibility === 'public') throw new Error('终局仍有暗手');
+        expect(entry.concealedTiles).toEqual(finished.players[entry.seat]!.concealedTiles);
+        expect(entry.concealedTiles).not.toBe(finished.players[entry.seat]!.concealedTiles);
+        if (entry.visibility === 'revealed') {
+          expect('lockedWaits' in entry).toBe(false);
+          expect('mouthRequired' in entry).toBe(false);
+        }
+      }
+      expect(view.legalActions).toEqual([]);
+      const won = view.players[winner]!;
+      if (won.visibility === 'public') throw new Error('赢家手牌未公开');
+      expect(won.concealedTiles).toHaveLength(14);
+      expect(won.concealedTiles.filter((tile) => tile === 'red')).toHaveLength(2);
+    }
+    expect(before.players.every((entry) => !('concealedTiles' in entry))).toBe(true);
+    expect(
+      projectStateForSpectator(createGame({ seed: 43 })).players.every(
+        (entry) => entry.visibility === 'public',
+      ),
+    ).toBe(true);
+  });
+
   it('公开玩家视图不包含暗手私密字段，自身视图包含完整信息', () => {
     const state = createGame({ seed: 1 });
     const player = state.players[0]!;

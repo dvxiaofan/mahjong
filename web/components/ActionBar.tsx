@@ -1,12 +1,16 @@
-import { tileLabel } from '../../src/tiles.ts';
+import { tileLabel, type NormalTile } from '../../src/tiles.ts';
 import type { GameAction } from '../../src/types.ts';
 import { nonDiscardActions } from '../uiModel';
+import { MahjongTileFace } from './MahjongTileFace';
 
 interface ActionBarProps {
   actions: readonly GameAction[];
   botThinking: boolean;
   isReplaying: boolean;
+  busy: boolean;
+  pendingTile: NormalTile | null;
   prompt: string;
+  responding?: boolean;
   onAction: (action: GameAction) => void;
 }
 
@@ -39,48 +43,71 @@ function actionClass(action: GameAction): string {
   return 'action-button';
 }
 
-export function ActionBar({ actions, botThinking, isReplaying, prompt, onAction }: ActionBarProps) {
-  const controlActions = nonDiscardActions(actions);
-  const canDiscard = actions.some((action) => action.type === 'discard');
+export function ActionBar({
+  actions,
+  botThinking,
+  isReplaying,
+  busy,
+  pendingTile,
+  prompt,
+  responding = false,
+  onAction,
+}: ActionBarProps) {
+  const available = isReplaying || busy ? [] : actions;
+  const controlActions = nonDiscardActions(available);
+  const canAct = available.length > 0;
+  const responseTypes = ['win', 'pong', 'exposed-kong', 'declare-mouth', 'pass'] as const;
+
+  function button(action: GameAction, index = 0) {
+    return (
+      <button
+        className={actionClass(action)}
+        key={`${action.type}-${'tile' in action ? action.tile : 'none'}-${index}`}
+        onClick={() => onAction(action)}
+        title={actionText(action)}
+        type="button"
+      >
+        {actionText(action)}
+      </button>
+    );
+  }
 
   return (
-    <section className="panel action-panel">
-      <div className="panel-heading">
-        <div>
-          <p className="panel-eyebrow">ACTION QUEUE</p>
-          <h2>可用动作</h2>
-        </div>
-        <span className="count-badge">{actions.length}</span>
-      </div>
-      <div className="interaction-prompt" aria-live="polite">
-        <span className={botThinking && actions.length === 0 ? 'prompt-pulse' : 'prompt-dot'} />
-        {prompt}
-      </div>
-      <div className="action-list">
-        {controlActions.length > 0 &&
-          controlActions.map((action, index) => (
-            <button
-              className={actionClass(action)}
-              key={`${action.type}-${'tile' in action ? action.tile : 'none'}-${index}`}
-              onClick={() => onAction(action)}
-              title={actionText(action)}
-              type="button"
-            >
-              {actionText(action)}
-            </button>
-          ))}
-        {canDiscard && <span className="hand-action-callout">点击手牌即可出牌</span>}
-        {actions.length === 0 && (
-          <span className="empty-panel-note">
-            {isReplaying
-              ? '回放模式不能提交动作'
-              : botThinking
-                ? '对手正在完成当前动作'
-                : '当前没有可用动作'}
+    <section
+      className={`seat-actions${canAct ? ' seat-actions--ready' : ''}`}
+      aria-label="我方操作"
+      aria-busy={busy}
+    >
+      <div className="interaction-prompt main-action-prompt" role="status" aria-atomic="true">
+        {pendingTile !== null ? (
+          <span
+            className="mahjong-tile mahjong-tile--compact"
+            aria-label={`待响应牌 ${tileLabel(pendingTile)}`}
+          >
+            <MahjongTileFace tile={pendingTile} />
           </span>
+        ) : (
+          <span
+            aria-hidden="true"
+            className={botThinking && !canAct ? 'prompt-pulse' : 'prompt-dot'}
+          />
         )}
+        <strong>{prompt}</strong>
       </div>
-      <p className="panel-hint">只显示规则引擎允许的动作；高亮牌可直接点击。</p>
+      {responding ? (
+        <div className="response-actions" aria-label="弃牌响应动作">
+          {responseTypes.map((type) => {
+            const action = controlActions.find((candidate) => candidate.type === type);
+            return (
+              <div className="response-action-slot" data-response-action={type} key={type}>
+                {action === undefined ? <span aria-hidden="true" /> : button(action)}
+              </div>
+            );
+          })}
+        </div>
+      ) : controlActions.length > 0 ? (
+        <div className="action-list">{controlActions.map(button)}</div>
+      ) : null}
     </section>
   );
 }

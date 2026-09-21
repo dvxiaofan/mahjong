@@ -39,6 +39,7 @@ export interface OnlineGameController {
   snapshot: RoomSnapshot | SpectatorRoomSnapshot | null;
   rooms: readonly LobbyRoomView[];
   error: string | null;
+  actionPending: boolean;
   createRoom(input: CreateOnlineRoomInput): void;
   joinRoom(input: JoinOnlineRoomInput): void;
   leaveRoom(): void;
@@ -106,9 +107,19 @@ export function useOnlineGame(): OnlineGameController {
   const [snapshot, setSnapshot] = useState<RoomSnapshot | SpectatorRoomSnapshot | null>(null);
   const [rooms, setRooms] = useState<readonly LobbyRoomView[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [actionPending, setActionPending] = useState(false);
+  const pendingRequest = useRef<string | null>(null);
+  const pendingTimer = useRef<number | null>(null);
   const socketRef = useRef<WebSocket | null>(null);
   const requestSequence = useRef(0);
   const reconnectTimer = useRef<number | null>(null);
+
+  const clearPendingAction = useCallback(() => {
+    pendingRequest.current = null;
+    setActionPending(false);
+    if (pendingTimer.current !== null) window.clearTimeout(pendingTimer.current);
+    pendingTimer.current = null;
+  }, []);
 
   const url = useMemo(() => {
     if (typeof window === 'undefined') return 'ws://127.0.0.1:8787/ws';
@@ -124,9 +135,16 @@ export function useOnlineGame(): OnlineGameController {
     const socket = socketRef.current;
     if (socket?.readyState !== WebSocket.OPEN) {
       setError('尚未连接到联网服务');
-      return;
+      return false;
     }
-    socket.send(JSON.stringify({ protocolVersion: PROTOCOL_VERSION, ...message }));
+    try {
+      socket.send(JSON.stringify({ protocolVersion: PROTOCOL_VERSION, ...message }));
+      return true;
+    } catch {
+      setError('发送失败，请等待重新连接');
+      socket.close();
+      return false;
+    }
   }, []);
 
   useEffect(() => {
@@ -139,9 +157,10 @@ export function useOnlineGame(): OnlineGameController {
       socketRef.current = socket;
       socket.addEventListener('open', () => {
         if (!active) return;
-        setStatus('connected');
         setError(null);
         const stored = loadStoredSession();
+        // A resumed connection becomes interactive only after its fresh room snapshot arrives.
+        setStatus(stored === null ? 'connected' : 'connecting');
         if (stored !== null) {
           socket.send(
             JSON.stringify({
@@ -172,13 +191,21 @@ export function useOnlineGame(): OnlineGameController {
           setError('服务端返回了无法解析的消息');
           return;
         }
+        if (
+          (message.type === 'action-result' || message.type === 'error') &&
+          message.requestId === pendingRequest.current
+        )
+          clearPendingAction();
         if (message.type === 'room-joined') {
+          clearPendingAction();
+          setStatus('connected');
           setSession(message.session);
           setLobby(message.lobby);
           setSnapshot(message.snapshot);
           saveStoredSession(message.session);
           setError(null);
         } else if (message.type === 'room-left') {
+          clearPendingAction();
           setSession(null);
           setLobby(null);
           setSnapshot(null);
@@ -197,6 +224,7 @@ export function useOnlineGame(): OnlineGameController {
         } else if (message.type === 'error') {
           setError(message.message);
           if (message.code === 'invalid-resume-token' || message.code === 'room-not-found') {
+            setStatus('connected');
             saveStoredSession(null);
             setSession(null);
           }
@@ -204,6 +232,7 @@ export function useOnlineGame(): OnlineGameController {
       });
       socket.addEventListener('close', () => {
         if (!active) return;
+        clearPendingAction();
         setStatus('disconnected');
         socketRef.current = null;
         reconnectTimer.current = window.setTimeout(connect, 1000);
@@ -215,10 +244,11 @@ export function useOnlineGame(): OnlineGameController {
     return () => {
       active = false;
       if (reconnectTimer.current !== null) window.clearTimeout(reconnectTimer.current);
+      if (pendingTimer.current !== null) window.clearTimeout(pendingTimer.current);
       socketRef.current?.close();
       socketRef.current = null;
     };
-  }, [nextRequestId, url]);
+  }, [clearPendingAction, nextRequestId, url]);
 
   return {
     status,
@@ -227,6 +257,7 @@ export function useOnlineGame(): OnlineGameController {
     snapshot,
     rooms,
     error,
+    actionPending,
     createRoom: (input) =>
       send({
         requestId: nextRequestId(),
@@ -242,13 +273,33 @@ export function useOnlineGame(): OnlineGameController {
     leaveRoom: () => send({ requestId: nextRequestId(), type: 'leave-room' }),
     refreshRooms: () => send({ requestId: nextRequestId(), type: 'list-rooms' }),
     dispatch: (action) => {
-      if (snapshot === null || session?.seat === null || session === null) return;
-      send({
-        requestId: nextRequestId(),
+      if (
+        pendingRequest.current !== null ||
+        snapshot === null ||
+        session?.seat === null ||
+        session === null ||
+        status !== 'connected'
+      )
+        return;
+      const requestId = nextRequestId();
+      pendingRequest.current = requestId;
+      setActionPending(true);
+      setError(null);
+      const sent = send({
+        requestId,
         type: 'submit-action',
         expectedRevision: snapshot.revision,
         action: intentFromAction(action),
       });
+      if (!sent) {
+        clearPendingAction();
+        return;
+      }
+      pendingTimer.current = window.setTimeout(() => {
+        if (pendingRequest.current !== requestId) return;
+        setError('操作确认超时，正在重新连接以同步牌局');
+        socketRef.current?.close();
+      }, 10000);
     },
     startNextRound: () => {
       if (snapshot === null) return;

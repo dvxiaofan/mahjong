@@ -6,6 +6,62 @@ function createRoom() {
 }
 
 describe('服务端权威房间', () => {
+  it('胡牌确认与恢复快照亮出四家手牌，下一局重新隐藏暗牌', () => {
+    const saved = createRoom().exportState();
+    const game = saved.match.game;
+    game.currentSeat = 2;
+    game.phase = 'awaiting-discard';
+    game.lastDrawnTile = 'p7';
+    game.players[2]!.concealedTiles = [
+      'm1',
+      'm2',
+      'm3',
+      'm4',
+      'm5',
+      'm6',
+      's1',
+      's2',
+      's3',
+      's7',
+      's8',
+      's9',
+      'p7',
+      'p7',
+    ];
+    const room = AuthoritativeRoom.restore(saved);
+    const result = room.submitAction({
+      requestId: 'win',
+      expectedRevision: room.getRevision(),
+      seat: 2,
+      action: { type: 'win', seat: 2 },
+    });
+    expect(result.accepted).toBe(true);
+    expect(result.snapshot.match.game.result?.winner).toBe(2);
+    const resumed = AuthoritativeRoom.restore(room.exportState());
+    for (const snapshot of [
+      ...([0, 1, 2, 3] as const).map((seat) => resumed.getSnapshot(seat)),
+      resumed.getSpectatorSnapshot(),
+    ]) {
+      expect(snapshot.match.game.players.every((player) => 'concealedTiles' in player)).toBe(true);
+      expect(snapshot.match.game.legalActions).toEqual([]);
+    }
+    expect(
+      resumed.startNextRound({
+        requestId: 'next',
+        expectedRevision: resumed.getRevision(),
+        seat: 0,
+      }).accepted,
+    ).toBe(true);
+    expect(
+      resumed
+        .getSpectatorSnapshot()
+        .match.game.players.every((player) => !('concealedTiles' in player)),
+    ).toBe(true);
+    for (const player of resumed.getSnapshot(0).match.game.players) {
+      expect('concealedTiles' in player).toBe(player.seat === 0);
+    }
+  });
+
   it('玩家和观战快照公开同一份首局定庄骰子结果', () => {
     const room = new AuthoritativeRoom({ roomId: 'dice-room', seed: 31 });
     const playerSelection = room.getSnapshot(0).match.dealerSelection;

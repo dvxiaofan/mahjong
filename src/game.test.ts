@@ -80,6 +80,22 @@ function winningStateWithEndGang(kind: 'concealed' | 'exposed'): GameState {
 }
 
 describe('牌局状态机', () => {
+  it('普通摸牌、杠后补牌和发财补牌的事件文字与实际来源一致', () => {
+    for (const [mode, tiles, eventType, tile, message] of [
+      ['normal', ['m3', 'p5', 's7'], 'draw', 'm3', '0号玩家摸到3万'],
+      ['replacement', ['m3', 'p5', 's7'], 'replacement-draw', 's7', '0号玩家补摸7条'],
+      ['normal', ['fortune', 'p5', 's7'], 'replacement-draw', 's7', '0号玩家补摸7条'],
+    ] as const) {
+      const state = blankState();
+      state.phase = 'awaiting-draw';
+      state.drawMode = mode;
+      state.wall = { tiles: [...tiles], drawIndex: 0, replacementIndex: tiles.length - 1 };
+      const drawn = applyAction(state, { type: 'draw', seat: 0 });
+      expect(drawn.events.at(-1)).toEqual({ type: eventType, seat: 0, tile, message });
+      expect(drawn.players[0]!.concealedTiles).toEqual([tile]);
+    }
+  });
+
   it('按庄家开始逆时针发牌，庄家14张其余13张', () => {
     const state = createGame({
       dealerSeat: 2,

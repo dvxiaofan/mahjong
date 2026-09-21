@@ -1,10 +1,19 @@
 import { useState } from 'react';
 import { LocalMode } from './LocalMode';
 import { OnlineMode } from './online/OnlineMode';
+import { SoundToggle, TableAudioProvider } from './components/TableAudio';
 
 type AppMode = 'local' | 'online';
 
 export default function App() {
+  return (
+    <TableAudioProvider>
+      <Application />
+    </TableAudioProvider>
+  );
+}
+
+function Application() {
   const [mode, setMode] = useState<AppMode>('local');
 
   return (
@@ -14,28 +23,30 @@ export default function App() {
       </a>
       <header className="app-header">
         <div>
-          <p className="eyebrow">PLAY MAHJONG · LOCAL & ONLINE</p>
           <h1>嗨！搓麻呀！</h1>
-          <p className="app-subtitle">自定义麻将 · 规则权威牌桌</p>
+          <p className="app-subtitle">自定义玩法 · 和牌友搓一局</p>
         </div>
-        <nav className="mode-switch" aria-label="游戏模式">
-          <button
-            aria-pressed={mode === 'local'}
-            className={mode === 'local' ? 'is-active' : ''}
-            onClick={() => setMode('local')}
-            type="button"
-          >
-            本地对局
-          </button>
-          <button
-            aria-pressed={mode === 'online'}
-            className={mode === 'online' ? 'is-active' : ''}
-            onClick={() => setMode('online')}
-            type="button"
-          >
-            联网对战
-          </button>
-        </nav>
+        <div className="header-controls">
+          <SoundToggle />
+          <nav className="mode-switch" aria-label="游戏模式">
+            <button
+              aria-pressed={mode === 'local'}
+              className={mode === 'local' ? 'is-active' : ''}
+              onClick={() => setMode('local')}
+              type="button"
+            >
+              本地对局
+            </button>
+            <button
+              aria-pressed={mode === 'online'}
+              className={mode === 'online' ? 'is-active' : ''}
+              onClick={() => setMode('online')}
+              type="button"
+            >
+              联网对战
+            </button>
+          </nav>
+        </div>
       </header>
 
       <main id="main-content" tabIndex={-1}>
@@ -43,7 +54,7 @@ export default function App() {
       </main>
 
       <footer className="app-footer">
-        <span>规则引擎 · 可解释 AI · 自动存档 · 隐私联网</span>
+        <span>自动存档 · 熟人约局</span>
         <span>play-mahjong</span>
       </footer>
     </div>

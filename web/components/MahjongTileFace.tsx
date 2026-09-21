@@ -26,11 +26,12 @@ const tileImageMap: Record<Tile, string> = {
   p9: '/tiles/p9.png',
   s1: '/tiles/s1.png',
   s2: '/tiles/s2.png',
-  s3: '/tiles/s3.png',
+  // These crops were previously mismatched; bypass cached images after correcting them.
+  s3: '/tiles/s3.png?v=2',
   s4: '/tiles/s4.png',
-  s5: '/tiles/s5.png',
+  s5: '/tiles/s5.png?v=2',
   s6: '/tiles/s6.png',
-  s7: '/tiles/s7.png',
+  s7: '/tiles/s7.png?v=2',
   s8: '/tiles/s8.png',
   s9: '/tiles/s9.png',
   red: '/tiles/red.png',
@@ -40,12 +41,5 @@ const tileImageMap: Record<Tile, string> = {
 
 export const MahjongTileFace = memo(function MahjongTileFace({ tile }: MahjongTileFaceProps) {
   const src = tileImageMap[tile];
-  return (
-    <img
-      aria-hidden="true"
-      className="tile-art"
-      src={src}
-      draggable={false}
-    />
-  );
+  return <img aria-hidden="true" className="tile-art" src={src} draggable={false} />;
 });

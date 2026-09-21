@@ -20,8 +20,12 @@ describe('麻将牌面图片渲染', () => {
 
   it('红中、发财和白板使用对应的图片资源', () => {
     expect(renderToStaticMarkup(<MahjongTileFace tile="red" />)).toContain('src="/tiles/red.png"');
-    expect(renderToStaticMarkup(<MahjongTileFace tile="fortune" />)).toContain('src="/tiles/fortune.png"');
-    expect(renderToStaticMarkup(<MahjongTileFace tile="white" />)).toContain('src="/tiles/white.png"');
+    expect(renderToStaticMarkup(<MahjongTileFace tile="fortune" />)).toContain(
+      'src="/tiles/fortune.png"',
+    );
+    expect(renderToStaticMarkup(<MahjongTileFace tile="white" />)).toContain(
+      'src="/tiles/white.png"',
+    );
   });
 
   it('渲染为 img 元素', () => {

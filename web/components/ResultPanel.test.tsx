@@ -1,10 +1,53 @@
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it } from 'vitest';
 import { createGame } from '../../src/game.js';
-import { projectStateForSeat } from '../../src/view.js';
+import { projectStateForSeat, projectStateForSpectator } from '../../src/view.js';
+import { SEATS } from '../../src/types.js';
 import { ResultPanel } from './ResultPanel';
 
 describe('结算面板', () => {
+  it.each(SEATS)('%s号玩家胡牌后，四家和观战均可查看同一四面子一将拆分', (winner) => {
+    const state = createGame({ seed: 2 });
+    state.phase = 'finished';
+    state.players[winner]!.concealedTiles = [
+      'm4',
+      'm5',
+      'm6',
+      'm7',
+      'm7',
+      'p5',
+      'p6',
+      'p6',
+      'p7',
+      'p7',
+      'p8',
+      's7',
+      's8',
+      's9',
+    ];
+    state.result = {
+      outcome: 'win',
+      winner,
+      winType: 'self-draw',
+      winningTile: 'm7',
+      fan: { total: 0, items: [] },
+      payments: [],
+      reason: 'normal',
+    };
+    for (const view of [
+      ...SEATS.map((seat) => projectStateForSeat(state, seat)),
+      projectStateForSpectator(state),
+    ]) {
+      const html = renderToStaticMarkup(<ResultPanel view={view} onReset={() => undefined} />);
+      expect(html).toContain('胡牌牌型拆解');
+      expect(html).toContain('4 组面子 + 1 对将牌');
+      expect(html).toContain('将牌：7万、7万');
+      expect(html).toContain('顺子：5筒、6筒、7筒');
+      expect(html).toContain('顺子：6筒、7筒、8筒');
+      expect(html.match(/role="group"/g)).toHaveLength(5);
+    }
+  });
+
   it('显示胡牌类型、番数、得分和支付流水', () => {
     const state = createGame({ seed: 1 });
     state.phase = 'finished';

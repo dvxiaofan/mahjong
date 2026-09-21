@@ -214,18 +214,23 @@ function drawForPlayer(state: GameState, seat: Seat, mode: DrawMode): DrawResolv
 
   player.concealedTiles.push(resolved.tile);
   player.concealedTiles = sortTiles(player.concealedTiles);
+  const isReplacementDraw = resolved.fortunes > 0 || mode === 'replacement';
   addEvent(
     state,
-    resolved.fortunes > 0 || mode === 'replacement' ? 'replacement-draw' : 'draw',
+    isReplacementDraw ? 'replacement-draw' : 'draw',
     seat,
     resolved.tile,
-    `${seat}号玩家补摸${tileLabel(resolved.tile)}`,
+    `${seat}号玩家${isReplacementDraw ? '补摸' : '摸到'}${tileLabel(resolved.tile)}`,
   );
-  state.lastDrawnTile = resolved.tile;
-  state.phase = 'awaiting-discard';
-  state.drawMode = null;
+  // A kong declared before the normal draw still leaves that draw due after replacement.
+  const needsNormalDraw =
+    mode === 'replacement' && player.concealedTiles.length + player.melds.length * 3 === 13;
+  state.lastDrawnTile = needsNormalDraw ? null : resolved.tile;
+  state.phase = needsNormalDraw ? 'awaiting-draw' : 'awaiting-discard';
+  state.drawMode = needsNormalDraw ? 'normal' : null;
+  if (needsNormalDraw) state.drawAfterGang = false;
   const candidateTiles = [...player.concealedTiles];
-  removeTile(candidateTiles, resolved.tile);
+  if (!needsNormalDraw) removeTile(candidateTiles, resolved.tile);
   updateMouthRequirement(player, candidateTiles);
   return resolved;
 }

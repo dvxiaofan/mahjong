@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { NORMAL_TILE_TYPES, SUITS, type NormalTile } from './tiles.js';
 import {
   calculateFan,
   canDeclareMouth,
@@ -26,6 +27,61 @@ const pungsWithPair = [
   's1',
   's1',
 ] as const;
+
+function sequencesAwayFrom(tile: NormalTile): NormalTile[] {
+  const suits = SUITS.filter((suit) => suit !== tile[0]);
+  return [
+    ...[1, 2, 3, 4, 5, 6].map((rank) => `${suits[0]}${rank}` as NormalTile),
+    ...[7, 8, 9].map((rank) => `${suits[1]}${rank}` as NormalTile),
+  ];
+}
+
+describe('每种牌最多四张的胡牌与听牌约束', () => {
+  it.each(NORMAL_TILE_TYPES)('%s 暗手已有四张时不能听第五张或据此报嘴', (tile) => {
+    const before = [tile, tile, tile, tile, ...sequencesAwayFrom(tile)];
+    expect(isWinningHand([...before, tile])).toBe(false);
+    expect(getWaitingTiles(before)).toEqual([]);
+    expect(canDeclareMouth(before, [], 3, false)).toBe(false);
+  });
+
+  it.each(NORMAL_TILE_TYPES)('%s 碰牌加暗手共四张时不能把第五张算作将牌', (tile) => {
+    const before = [tile, ...sequencesAwayFrom(tile)];
+    const melds = [{ kind: 'pong' as const, tile, fromSeat: 1 as const }];
+    expect(isWinningHand([...before, tile], melds)).toBe(false);
+    expect(getWaitingTiles(before, melds)).toEqual([]);
+    expect(canDeclareMouth(before, melds, 3, false)).toBe(false);
+  });
+
+  it('杠中的四张也计入上限，但合法第四张仍可组成顺子', () => {
+    const before = ['m1', 'm3', 'p1', 'p2', 'p3', 's7', 's8', 's9', 'white', 'white'] as const;
+    expect(getWaitingTiles(before, [{ kind: 'concealed-kong', tile: 'm2' }])).toEqual([]);
+    expect(getWaitingTiles(before, [{ kind: 'pong', tile: 'm2', fromSeat: 1 }])).toEqual(['m2']);
+    expect(isWinningHand([...before, 'm2'], [{ kind: 'pong', tile: 'm2', fromSeat: 1 }])).toBe(
+      true,
+    );
+  });
+
+  it('截图中的三条和七条按真实牌值区分，不把三八九条算作顺子', () => {
+    const common = [
+      'm4',
+      'm5',
+      'm6',
+      'm7',
+      'p5',
+      'p6',
+      'p6',
+      'p7',
+      'p7',
+      'p8',
+      's8',
+      's9',
+    ] as const;
+    expect(getWaitingTiles([...common, 's3'])).toEqual([]);
+    expect(getWaitingTiles([...common, 's7'])).toEqual(['m4', 'm7']);
+    expect(isWinningHand([...common, 's3', 'm7'])).toBe(false);
+    expect(isWinningHand([...common, 's7', 'm7'])).toBe(true);
+  });
+});
 
 describe('胡牌、番种与报嘴判定', () => {
   it('支持标准牌型、碰碰胡和红中/白板刻子', () => {

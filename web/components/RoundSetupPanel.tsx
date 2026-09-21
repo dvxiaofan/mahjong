@@ -55,63 +55,74 @@ export function RoundSetupPanel({
   const dealerName = seatLabel(opening.rollerSeat, viewerSeat);
 
   return (
-    <section className="round-setup-panel" aria-label="本局定庄与开门信息">
-      <header className="round-setup-heading">
-        <div>
-          <p className="panel-eyebrow">ROUND SETUP</p>
-          <h2>{roundNumber === 1 ? '首局定庄' : `第 ${roundNumber} 局`}</h2>
-        </div>
-        <span className="dealer-result">
-          <b>庄</b>
-          {dealerName}
-        </span>
-      </header>
+    <details className="table-disclosure round-disclosure">
+      <summary>
+        <strong>
+          第 {roundNumber} 局 · {dealerName}坐庄
+        </strong>
+        <span>定庄与开门</span>
+      </summary>
+      <section className="round-setup-panel" aria-label="本局定庄与开门信息">
+        <header className="round-setup-heading">
+          <div>
+            <p className="panel-eyebrow">ROUND SETUP</p>
+            <h2>{roundNumber === 1 ? '首局定庄' : `第 ${roundNumber} 局`}</h2>
+          </div>
+          <span className="dealer-result">
+            <b>庄</b>
+            {dealerName}
+          </span>
+        </header>
 
-      {showDealerRolls ? (
-        <div className="dealer-rolls">
-          {dealerSelection.rounds.map((round, roundIndex) => (
-            <div className="dealer-roll-round" key={roundIndex}>
-              <span className="dice-round-label">
-                {roundIndex === 0 ? '首轮比骰' : `第 ${roundIndex + 1} 轮 · 并列加赛`}
-              </span>
-              <div className="dealer-roll-grid">
-                {round.candidates.map((seat) => {
-                  const dice = round.rolls[seat];
-                  if (dice === undefined) return null;
-                  const isWinner =
-                    roundIndex === dealerSelection.rounds.length - 1 &&
-                    seat === dealerSelection.dealerSeat;
-                  return (
-                    <span className={isWinner ? 'dealer-roll is-winner' : 'dealer-roll'} key={seat}>
-                      <small>{seatLabel(seat, viewerSeat)}</small>
-                      <DicePairView dice={dice} />
-                    </span>
-                  );
-                })}
+        {showDealerRolls ? (
+          <div className="dealer-rolls">
+            {dealerSelection.rounds.map((round, roundIndex) => (
+              <div className="dealer-roll-round" key={roundIndex}>
+                <span className="dice-round-label">
+                  {roundIndex === 0 ? '首轮比骰' : `第 ${roundIndex + 1} 轮 · 并列加赛`}
+                </span>
+                <div className="dealer-roll-grid">
+                  {round.candidates.map((seat) => {
+                    const dice = round.rolls[seat];
+                    if (dice === undefined) return null;
+                    const isWinner =
+                      roundIndex === dealerSelection.rounds.length - 1 &&
+                      seat === dealerSelection.dealerSeat;
+                    return (
+                      <span
+                        className={isWinner ? 'dealer-roll is-winner' : 'dealer-roll'}
+                        key={seat}
+                      >
+                        <small>{seatLabel(seat, viewerSeat)}</small>
+                        <DicePairView dice={dice} />
+                      </span>
+                    );
+                  })}
+                </div>
               </div>
-            </div>
-          ))}
-        </div>
-      ) : (
-        <p className="dealer-reason-copy">{dealerReasonLabels[dealerReason]}</p>
-      )}
+            ))}
+          </div>
+        ) : (
+          <p className="dealer-reason-copy">{dealerReasonLabels[dealerReason]}</p>
+        )}
 
-      <div className="opening-summary">
-        <span>
-          <small>{dealerReasonLabels[dealerReason]}</small>
-          <strong>{dealerName}坐庄</strong>
-        </span>
-        <span className="opening-dice">
-          <small>本局开门骰</small>
-          <DicePairView dice={opening.dice} />
-        </span>
-        <span>
-          <small>开门位置</small>
-          <strong>
-            {seatLabel(opening.wallSeat, viewerSeat)}牌墙 · 第 {opening.stack + 1} 墩
-          </strong>
-        </span>
-      </div>
-    </section>
+        <div className="opening-summary">
+          <span>
+            <small>{dealerReasonLabels[dealerReason]}</small>
+            <strong>{dealerName}坐庄</strong>
+          </span>
+          <span className="opening-dice">
+            <small>本局开门骰</small>
+            <DicePairView dice={opening.dice} />
+          </span>
+          <span>
+            <small>开门位置</small>
+            <strong>
+              {seatLabel(opening.wallSeat, viewerSeat)}牌墙 · 第 {opening.stack + 1} 墩
+            </strong>
+          </span>
+        </div>
+      </section>
+    </details>
   );
 }

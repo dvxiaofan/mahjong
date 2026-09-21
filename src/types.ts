@@ -172,6 +172,12 @@ export interface PublicPlayerView extends CommonPlayerView {
   visibility: 'public';
 }
 
+/** Final hand made public after a win; private waits and decisions stay omitted. */
+export interface RevealedPlayerView extends CommonPlayerView {
+  visibility: 'revealed';
+  concealedTiles: readonly NormalTile[];
+}
+
 /** Full information for the viewer's own player. */
 export interface PlayerView extends CommonPlayerView {
   visibility: 'self';
@@ -180,7 +186,7 @@ export interface PlayerView extends CommonPlayerView {
   mouthRequired: boolean;
 }
 
-export type PlayerViewEntry = PlayerView | PublicPlayerView;
+export type PlayerViewEntry = PlayerView | PublicPlayerView | RevealedPlayerView;
 
 /** Safe representation of a pending discard; individual response choices stay private. */
 export interface PendingDiscardView {
@@ -197,7 +203,7 @@ export interface GameEventView {
   message: string;
 }
 
-/** UI-facing contract. It contains one full player entry and public entries for everyone else. */
+/** One full player entry; opponents reveal their final hands only after a win. */
 export interface GameView {
   viewerSeat: Seat;
   players: readonly PlayerViewEntry[];
@@ -216,10 +222,10 @@ export interface GameView {
   legalActions: readonly GameAction[];
 }
 
-/** Spectator contract: all four players are public and no private action data exists. */
+/** Spectators receive public play and revealed final hands, never private action data. */
 export interface SpectatorGameView {
   viewerSeat: null;
-  players: readonly PublicPlayerView[];
+  players: readonly (PublicPlayerView | RevealedPlayerView)[];
   wallRemaining: number;
   dealerSeat: Seat;
   currentSeat: Seat;

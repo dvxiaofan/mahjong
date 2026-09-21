@@ -1,0 +1,396 @@
+{
+  "reviewedAt": "2026-09-12",
+  "note": "图案经逐张视觉核对后固定内容指纹；更换素材需重新核对图案与牌值，不能仅按新文件自动更新指纹。",
+  "tiles": [
+    {
+      "tile": "m1",
+      "label": "1万",
+      "suit": "m",
+      "rank": 1,
+      "sha256": "98ecd75dda6c5d4b2411bd722e9cae00b6b4006f3c8376c1bafa6cdfadc8b022",
+      "crop": {
+        "x": 0,
+        "y": 1384,
+        "w": 180,
+        "h": 236
+      }
+    },
+    {
+      "tile": "m2",
+      "label": "2万",
+      "suit": "m",
+      "rank": 2,
+      "sha256": "12173cf5d900d533ca212e72e472f71e49136fa6e04e92f2dbb6f0be1bf6ec03",
+      "crop": {
+        "x": 194,
+        "y": 1384,
+        "w": 180,
+        "h": 236
+      }
+    },
+    {
+      "tile": "m3",
+      "label": "3万",
+      "suit": "m",
+      "rank": 3,
+      "sha256": "62d391f24d461831726259ac42d2d6085ac63e6fe67a17b05e3baaface436ac7",
+      "crop": {
+        "x": 387,
+        "y": 1384,
+        "w": 180,
+        "h": 236
+      }
+    },
+    {
+      "tile": "m4",
+      "label": "4万",
+      "suit": "m",
+      "rank": 4,
+      "sha256": "9435adbcce1a019cb4940de5bdf920b7be0ee1bd7364c97b7457f3965b760885",
+      "crop": {
+        "x": 580,
+        "y": 1384,
+        "w": 180,
+        "h": 236
+      }
+    },
+    {
+      "tile": "m5",
+      "label": "5万",
+      "suit": "m",
+      "rank": 5,
+      "sha256": "c25d76e9f52122b85837c82dca09cf1bf53eeb9f94865f117f62867ca19c7554",
+      "crop": {
+        "x": 774,
+        "y": 1384,
+        "w": 180,
+        "h": 236
+      }
+    },
+    {
+      "tile": "m6",
+      "label": "6万",
+      "suit": "m",
+      "rank": 6,
+      "sha256": "cf8da2942a9baa222d81bfbdf565b95641c0604e8bb3ef86ae7af557ce6679bc",
+      "crop": {
+        "x": 0,
+        "y": 1640,
+        "w": 180,
+        "h": 238
+      }
+    },
+    {
+      "tile": "m7",
+      "label": "7万",
+      "suit": "m",
+      "rank": 7,
+      "sha256": "1d4a55c6243fddfa620811d65674bd8e2a5ab01ba96137a82a3902255e144c71",
+      "crop": {
+        "x": 194,
+        "y": 1640,
+        "w": 180,
+        "h": 238
+      }
+    },
+    {
+      "tile": "m8",
+      "label": "8万",
+      "suit": "m",
+      "rank": 8,
+      "sha256": "300b63871b002f4968186597d1d02ac452f82e8115be53d274db7ac608b43309",
+      "crop": {
+        "x": 387,
+        "y": 1640,
+        "w": 180,
+        "h": 238
+      }
+    },
+    {
+      "tile": "m9",
+      "label": "9万",
+      "suit": "m",
+      "rank": 9,
+      "sha256": "e70b7ec2fde5efa342691e344ed5e9d0281fdc7c1a28834006c0310224a824fa",
+      "crop": {
+        "x": 578,
+        "y": 1640,
+        "w": 180,
+        "h": 238
+      }
+    },
+    {
+      "tile": "p1",
+      "label": "1筒",
+      "suit": "p",
+      "rank": 1,
+      "sha256": "f0802007250f1e24f8a6fd1313a8b1ef76b3e486b325753b4e9d0258ab2559b0",
+      "crop": {
+        "x": 0,
+        "y": 0,
+        "w": 183,
+        "h": 236
+      }
+    },
+    {
+      "tile": "p2",
+      "label": "2筒",
+      "suit": "p",
+      "rank": 2,
+      "sha256": "1f4aae98121eb50a3ff4ea665a95f1b9b2a5a39f6ddef571817c10b7f819e890",
+      "crop": {
+        "x": 197,
+        "y": 0,
+        "w": 180,
+        "h": 236
+      }
+    },
+    {
+      "tile": "p3",
+      "label": "3筒",
+      "suit": "p",
+      "rank": 3,
+      "sha256": "1053966bb779a1fe623904cbc7b20e0bf44145df79231d4c53f78a1bd865dfdc",
+      "crop": {
+        "x": 392,
+        "y": 0,
+        "w": 180,
+        "h": 236
+      }
+    },
+    {
+      "tile": "p4",
+      "label": "4筒",
+      "suit": "p",
+      "rank": 4,
+      "sha256": "e16c953314ffd30aa2104c46d47dd758a5b705c23f3a7906c7b5e25812e724a3",
+      "crop": {
+        "x": 587,
+        "y": 0,
+        "w": 180,
+        "h": 236
+      }
+    },
+    {
+      "tile": "p5",
+      "label": "5筒",
+      "suit": "p",
+      "rank": 5,
+      "sha256": "c7958658d9e59680444171f55e646ae17988ad96e8554b032de5cb3c0e6168ed",
+      "crop": {
+        "x": 781,
+        "y": 0,
+        "w": 180,
+        "h": 236
+      }
+    },
+    {
+      "tile": "p6",
+      "label": "6筒",
+      "suit": "p",
+      "rank": 6,
+      "sha256": "57729963eb9db1342ff24cb53a8702bb78d79a1a6454c496a5a8d395d8a60be7",
+      "crop": {
+        "x": 0,
+        "y": 255,
+        "w": 183,
+        "h": 236
+      }
+    },
+    {
+      "tile": "p7",
+      "label": "7筒",
+      "suit": "p",
+      "rank": 7,
+      "sha256": "ed1bac647b343dc9e203504e95f48252004113b30c016e2fde04ba1993ac86aa",
+      "crop": {
+        "x": 197,
+        "y": 255,
+        "w": 180,
+        "h": 236
+      }
+    },
+    {
+      "tile": "p8",
+      "label": "8筒",
+      "suit": "p",
+      "rank": 8,
+      "sha256": "cbb7b8e512f092c0200f0f398249e0583aef6271af4d49880d830666ad1a0ba2",
+      "crop": {
+        "x": 392,
+        "y": 255,
+        "w": 180,
+        "h": 236
+      }
+    },
+    {
+      "tile": "p9",
+      "label": "9筒",
+      "suit": "p",
+      "rank": 9,
+      "sha256": "2a99d69c838cba323c0ac4a24ada3d78be84ba9130bf1e98108d63d909279cc0",
+      "crop": {
+        "x": 587,
+        "y": 255,
+        "w": 180,
+        "h": 236
+      }
+    },
+    {
+      "tile": "s1",
+      "label": "1条",
+      "suit": "s",
+      "rank": 1,
+      "sha256": "a54f1d1396165ebcd8446a8e181f130d8c53798e009f7ac5e03ab4c4a8806f02",
+      "crop": {
+        "x": 590,
+        "y": 817,
+        "w": 180,
+        "h": 239
+      }
+    },
+    {
+      "tile": "s2",
+      "label": "2条",
+      "suit": "s",
+      "rank": 2,
+      "sha256": "97f64ca2608697a416bbfcb923dccd60b4ecc2c91105034219c10752845a249c",
+      "crop": {
+        "x": 392,
+        "y": 543,
+        "w": 180,
+        "h": 237
+      }
+    },
+    {
+      "tile": "s3",
+      "label": "3条",
+      "suit": "s",
+      "rank": 3,
+      "sha256": "ee6fe9ff87142148a258cffb07b75e7ee2a65ea44d58a493dccc179f45179b58",
+      "crop": {
+        "x": 793,
+        "y": 543,
+        "w": 180,
+        "h": 237
+      }
+    },
+    {
+      "tile": "s4",
+      "label": "4条",
+      "suit": "s",
+      "rank": 4,
+      "sha256": "e786e8b7724fd42c0d059b3c66a24f3a93290f0c48ee2ba08b8da9248cfb8746",
+      "crop": {
+        "x": 590,
+        "y": 543,
+        "w": 180,
+        "h": 237
+      }
+    },
+    {
+      "tile": "s5",
+      "label": "5条",
+      "suit": "s",
+      "rank": 5,
+      "sha256": "ce2829aa849d3fb9fbf768d3bf335e1233c4bdd121761f98328669fa63066e8d",
+      "crop": {
+        "x": 0,
+        "y": 817,
+        "w": 180,
+        "h": 239
+      }
+    },
+    {
+      "tile": "s6",
+      "label": "6条",
+      "suit": "s",
+      "rank": 6,
+      "sha256": "deccd0aa6a753422a3f960fa8f42e91e569850214f727405d140caf4e670854e",
+      "crop": {
+        "x": 197,
+        "y": 817,
+        "w": 180,
+        "h": 239
+      }
+    },
+    {
+      "tile": "s7",
+      "label": "7条",
+      "suit": "s",
+      "rank": 7,
+      "sha256": "4f84fd4a41ee6d8db4707cb91b4389a57d6b755b925b4aa0541af954a4f21035",
+      "crop": {
+        "x": 396,
+        "y": 817,
+        "w": 180,
+        "h": 239
+      }
+    },
+    {
+      "tile": "s8",
+      "label": "8条",
+      "suit": "s",
+      "rank": 8,
+      "sha256": "ba9a37fe00b2fb075d18f2fc9dd5531244d0c5898bb53e4ac7ad53a1606cc01f",
+      "crop": {
+        "x": 197,
+        "y": 543,
+        "w": 180,
+        "h": 237
+      }
+    },
+    {
+      "tile": "s9",
+      "label": "9条",
+      "suit": "s",
+      "rank": 9,
+      "sha256": "f8f16806a18110f8d4f934ad7b970523fe490aa4cbcb7a038bd3777b0c73e63f",
+      "crop": {
+        "x": 0,
+        "y": 543,
+        "w": 183,
+        "h": 237
+      }
+    },
+    {
+      "tile": "red",
+      "label": "红中",
+      "suit": null,
+      "rank": null,
+      "sha256": "5cfbb588b95c13d91be2251befc86205bb73d899d6d2752dbef3f0712a83a5f9",
+      "crop": {
+        "x": 0,
+        "y": 1118,
+        "w": 180,
+        "h": 239
+      }
+    },
+    {
+      "tile": "white",
+      "label": "白板",
+      "suit": null,
+      "rank": null,
+      "sha256": "129ef34a637a60d7805c35089e19a63cb88ab541f86d778cfd5cb503cfc2d94b",
+      "crop": {
+        "x": 1290,
+        "y": 1118,
+        "w": 180,
+        "h": 239
+      }
+    },
+    {
+      "tile": "fortune",
+      "label": "发财",
+      "suit": null,
+      "rank": null,
+      "sha256": "5bbbdf5f7284fd5adee4638c9de25b37a9fdf1eb1c4751225e826682c5252d69",
+      "crop": {
+        "x": 209,
+        "y": 1118,
+        "w": 180,
+        "h": 239
+      }
+    }
+  ]
+}

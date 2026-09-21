@@ -1,5 +1,5 @@
 import { tileLabel, type NormalTile } from '../src/tiles.ts';
-import type { GameAction, GameAudienceView, GameEventView, GameView, Seat } from '../src/types.ts';
+import type { GameAction, GameAudienceView, GameEventView, Seat } from '../src/types.ts';
 
 export type SeatActivity = 'active' | 'waiting' | 'responded' | 'discarder' | 'idle';
 export type EventFilter = 'all' | 'flow' | 'special' | 'settlement';
@@ -101,14 +101,77 @@ export function getSeatActivity(view: GameAudienceView, seat: Seat): SeatActivit
   return view.currentSeat === seat ? 'active' : 'idle';
 }
 
-export function getInteractionPrompt(view: GameView, botThinking: boolean): string {
+export function getSeatActivityLabel(
+  view: GameAudienceView,
+  seat: Seat,
+  isReplaying = false,
+): string | undefined {
+  const activity = getSeatActivity(view, seat);
+  if (activity === 'active') return view.phase === 'awaiting-draw' ? '待摸牌' : '待出牌';
+  if (activity === 'discarder') return '出牌者';
+  if (activity === 'responded') return '已响应';
+  if (activity === 'waiting') {
+    return seat === view.viewerSeat && !isReplaying && view.legalActions.length > 0
+      ? '等你响应'
+      : '待响应';
+  }
+  return undefined;
+}
+
+export interface LatestDiscard {
+  seat: Seat;
+  tile: NormalTile;
+  eventIndex: number;
+}
+
+/** Only public discard events may supply the most recent played tile. */
+export function getLatestDiscard(view: GameAudienceView): LatestDiscard | null {
+  let latest: LatestDiscard | null = null;
+  for (let eventIndex = view.events.length - 1; eventIndex >= 0; eventIndex -= 1) {
+    const event = view.events[eventIndex]!;
+    if (event.type === 'discard' && event.seat !== null && event.tile !== null) {
+      latest = { seat: event.seat, tile: event.tile, eventIndex };
+      break;
+    }
+  }
+  const pending = view.phase === 'claiming' ? view.pendingDiscard : null;
+  if (pending !== null) {
+    return {
+      seat: pending.discarder,
+      tile: pending.tile,
+      eventIndex:
+        latest?.seat === pending.discarder && latest.tile === pending.tile ? latest.eventIndex : -1,
+    };
+  }
+  return latest;
+}
+
+export function getTurnLabel(view: GameAudienceView): string {
+  if (view.phase === 'finished') return '本局已结束';
+  if (view.phase === 'drawn') return '本局荒庄';
+  if (view.phase === 'claiming') return '等待各家响应';
+  return `${seatLabel(view.currentSeat, view.viewerSeat)}${view.phase === 'awaiting-draw' ? '摸牌' : '出牌'}`;
+}
+
+export function getInteractionPrompt(
+  view: GameAudienceView,
+  botThinking: boolean,
+  confirmDiscard = false,
+): string {
+  if (view.viewerSeat === null) return `正在观战 · ${getTurnLabel(view)}`;
   if (view.phase === 'finished') return '本局已经结束，可查看结算或重新发牌';
   if (view.phase === 'drawn') return '牌墙耗尽，本局荒庄';
 
+  if (view.phase === 'claiming' && view.pendingDiscard !== null) {
+    const pending = view.pendingDiscard;
+    const source = `${seatLabel(pending.discarder, view.viewerSeat)}打出的 ${tileLabel(pending.tile)}`;
+    if (view.legalActions.length > 0) return `请响应${source}`;
+    if (pending.discarder === view.viewerSeat) return '你已出牌，等待其他玩家响应';
+    if (pending.respondedSeats.includes(view.viewerSeat)) return '你已响应，等待其他玩家';
+    return `等待各家响应${source}`;
+  }
+
   if (view.legalActions.length > 0) {
-    if (view.phase === 'claiming' && view.pendingDiscard !== null) {
-      return `请响应 ${tileLabel(view.pendingDiscard.tile)}`;
-    }
     if (view.legalActions.some((action) => action.type === 'win')) {
       return '可以胡牌，请选择胡牌或继续当前操作';
     }
@@ -116,14 +179,12 @@ export function getInteractionPrompt(view: GameView, botThinking: boolean): stri
       return '轮到你摸牌';
     }
     if (view.legalActions.some((action) => action.type === 'discard')) {
-      return '轮到你出牌，直接点击一张手牌';
+      return confirmDiscard ? '轮到你出牌，选牌后按“打出”确认' : '轮到你出牌，直接点击一张手牌';
     }
     return '请选择一个可用动作';
   }
 
-  if (botThinking) return '对手正在思考…';
-  if (view.phase === 'claiming') return '等待其他玩家响应…';
-  return `等待 ${view.currentSeat + 1} 号玩家行动`;
+  return `等待${getTurnLabel(view)}${botThinking ? '…' : ''}`;
 }
 
 export function nonDiscardActions(actions: readonly GameAction[]): GameAction[] {

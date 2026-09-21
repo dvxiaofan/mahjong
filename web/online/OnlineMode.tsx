@@ -1,13 +1,8 @@
-import { useMemo, useState, type FormEvent } from 'react';
+import { useState, type FormEvent } from 'react';
 import type { MatchView, SpectatorMatchView } from '../../src/room.ts';
-import type { GameAudienceView } from '../../src/types.ts';
 import { MahjongTable } from '../components/MahjongTable';
 import type { RoundDealerReason } from '../components/RoundSetupPanel';
 import { useOnlineGame } from './useOnlineGame';
-
-function withoutActions(view: GameAudienceView): GameAudienceView {
-  return { ...view, legalActions: [] } as GameAudienceView;
-}
 
 export function getOnlineDealerReason(match: MatchView | SpectatorMatchView): RoundDealerReason {
   if (match.roundNumber === 1) {
@@ -37,10 +32,15 @@ export function OnlineMode() {
   );
   const waitingForPlayers =
     online.session?.role === 'player' && (online.lobby?.playerCount ?? 0) < 4;
-  const gameView = useMemo(() => {
-    const view = online.snapshot?.match.game ?? null;
-    return view !== null && waitingForPlayers ? withoutActions(view) : view;
-  }, [online.snapshot, waitingForPlayers]);
+  const gameView = online.snapshot?.match.game ?? null;
+  const actionDisabledReason =
+    online.status !== 'connected'
+      ? '连接已断开，重连后继续操作'
+      : waitingForPlayers
+        ? '等待四位玩家入座后开始'
+        : participant?.trustee
+          ? '当前由托管代打，取消托管后可操作'
+          : undefined;
 
   function createRoom(event: FormEvent) {
     event.preventDefault();
@@ -246,6 +246,10 @@ export function OnlineMode() {
           view={gameView}
           botThinking={false}
           isReplaying={false}
+          actionPending={online.actionPending}
+          actionDisabledReason={actionDisabledReason}
+          roundKey={`${online.session.roomId}:${online.snapshot!.match.roundNumber}`}
+          animateDiscards={online.status === 'connected'}
           onAction={online.dispatch}
           onReset={online.startNextRound}
           resetDisabled={online.snapshot?.match.phase === 'finished'}
