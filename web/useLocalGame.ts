@@ -74,9 +74,15 @@ function decisionRandom(seed: number, actionCount: number) {
  * Local single-player controller. The React layer owns only the current state;
  * all legality and transitions remain inside the shared mahjong engine.
  */
+export interface LocalGameOptions {
+  /** While false the table is frozen: no bot move, auto-draw or auto-pass is scheduled. */
+  active?: boolean;
+}
+
 export function useLocalGame(
   seed: number,
   difficulty: AiDifficulty = 'standard',
+  { active = true }: LocalGameOptions = {},
 ): LocalGameController {
   const [loaded] = useState(() => initialSession(seed));
   const [session, setSession] = useState<LocalGameSession>(loaded.session);
@@ -157,7 +163,7 @@ export function useLocalGame(
   useEffect(() => {
     const viewerAutomaticAction = autoPassAction ?? autoDrawAction;
     const automaticAction = viewerAutomaticAction ?? botDecision?.action ?? null;
-    if (automaticAction === null || isReplaying) return undefined;
+    if (automaticAction === null || isReplaying || !active) return undefined;
 
     const timer = window.setTimeout(
       () => {
@@ -193,7 +199,7 @@ export function useLocalGame(
     );
 
     return () => window.clearTimeout(timer);
-  }, [autoDrawAction, autoPassAction, botDecision, difficulty, isReplaying]);
+  }, [active, autoDrawAction, autoPassAction, botDecision, difficulty, isReplaying]);
 
   return {
     state: session.state,
@@ -203,7 +209,7 @@ export function useLocalGame(
     dealerSource: session.dealerSource,
     dealerSelection: session.dealerSelection,
     opening: session.opening,
-    botThinking: botDecision !== null,
+    botThinking: active && botDecision !== null,
     restored,
     records: session.records,
     replayStep,

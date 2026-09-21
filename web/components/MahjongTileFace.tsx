@@ -39,6 +39,72 @@ const tileImageMap: Record<Tile, string> = {
   fortune: '/tiles/fortune.png',
 };
 
+/** Every image the table can show, in a stable order, so all of them can be fetched up front. */
+export const TILE_FACE_SOURCES: readonly string[] = Object.values(tileImageMap);
+
+type ImageFactory = () => HTMLImageElement;
+type PreloadRegistry = Map<string, Promise<void>>;
+
+const preloaded: PreloadRegistry = new Map();
+
+function defaultImageFactory(): ImageFactory | undefined {
+  return typeof Image === 'undefined' ? undefined : () => new Image();
+}
+
+/**
+ * Request every tile face once so a tile's first appearance never waits on the network.
+ * Over a slow link (e.g. a tunnel with ~1s round trips) an on-demand image would still be
+ * loading when the 800 ms discard highlight is already over, leaving a blank tile.
+ * Returns how many new requests were started.
+ */
+export function preloadTileFaces(
+  createImage: ImageFactory | undefined = defaultImageFactory(),
+  registry: PreloadRegistry = preloaded,
+): number {
+  if (createImage === undefined) return 0;
+  let started = 0;
+  for (const src of TILE_FACE_SOURCES) {
+    if (registry.has(src)) continue;
+    const image = createImage();
+    image.src = src;
+    // A failed decode must not block the table forever; the timeout in tileFacesReady covers it.
+    const decoded =
+      typeof image.decode === 'function'
+        ? image.decode().catch(() => undefined)
+        : Promise.resolve();
+    registry.set(src, decoded);
+    started += 1;
+  }
+  return started;
+}
+
+export const TILE_FACES_READY_TIMEOUT_MS = 5000;
+
+interface TileFacesReadyOptions {
+  createImage?: ImageFactory | undefined;
+  registry?: PreloadRegistry;
+  timeoutMs?: number;
+}
+
+/**
+ * Resolves once every tile face is decoded and can be painted synchronously, or after the
+ * timeout so a broken image or an offline CDN never leaves the player staring at a spinner.
+ */
+export function tileFacesReady({
+  createImage = defaultImageFactory(),
+  registry = preloaded,
+  timeoutMs = TILE_FACES_READY_TIMEOUT_MS,
+}: TileFacesReadyOptions = {}): Promise<'loaded' | 'timeout'> {
+  preloadTileFaces(createImage, registry);
+  if (registry.size === 0) return Promise.resolve('loaded');
+  const loaded = Promise.all(registry.values()).then(() => 'loaded' as const);
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const expired = new Promise<'timeout'>((resolve) => {
+    timer = setTimeout(() => resolve('timeout'), timeoutMs);
+  });
+  return Promise.race([loaded, expired]).finally(() => clearTimeout(timer));
+}
+
 export const MahjongTileFace = memo(function MahjongTileFace({ tile }: MahjongTileFaceProps) {
   const src = tileImageMap[tile];
   return <img aria-hidden="true" className="tile-art" src={src} draggable={false} />;

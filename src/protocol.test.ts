@@ -177,4 +177,24 @@ describe('联网消息协议', () => {
       result: { accepted: false, code: 'round-not-ready' },
     });
   });
+
+  it('解析房主控制消息并拒绝缺少机器人 ID 的移除请求', () => {
+    for (const type of ['start-match', 'add-bot'] as const) {
+      expect(parseClientMessage({ protocolVersion: 1, requestId: 'h', type })).toMatchObject({
+        success: true,
+        message: { type },
+      });
+    }
+    expect(
+      parseClientMessage({
+        protocolVersion: 1,
+        requestId: 'h',
+        type: 'remove-bot',
+        participantId: 'bot_1',
+      }),
+    ).toMatchObject({ success: true, message: { type: 'remove-bot', participantId: 'bot_1' } });
+    expect(
+      parseClientMessage({ protocolVersion: 1, requestId: 'h', type: 'remove-bot' }),
+    ).toMatchObject({ success: false, code: 'invalid-message' });
+  });
 });

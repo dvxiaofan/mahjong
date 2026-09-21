@@ -56,6 +56,9 @@ describe('M4 联网端到端验收', () => {
       );
       resumeTokens[seat] = joined.session.resumeToken;
     }
+    expect(
+      await gateway.handle('seat-0', { ...envelope, requestId: 'start', type: 'start-match' }),
+    ).toMatchObject([{ type: 'lobby-updated', lobby: { started: true } }]);
     joinedMessage(
       await gateway.handle('spectator', {
         ...envelope,

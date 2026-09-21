@@ -104,6 +104,7 @@ describe('联网安全守卫', () => {
         seatPreference: seat,
       });
     }
+    expect(gateway.registry.startMatch('player').ok).toBe(true);
     for (let index = 0; index < 3; index += 1) {
       await gateway.handle('player', {
         protocolVersion: 1,

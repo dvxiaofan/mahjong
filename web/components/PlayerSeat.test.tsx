@@ -103,3 +103,37 @@ describe('玩家座位牌面', () => {
     expect(html).toContain('× 2');
   });
 });
+
+describe('联网座位身份角标', () => {
+  function render(decoration: { name?: string; host?: boolean; bot?: boolean } | undefined) {
+    return renderToStaticMarkup(
+      <PlayerSeat
+        activity="idle"
+        dealer={false}
+        decoration={decoration}
+        lastDrawnTile={null}
+        legalActions={[]}
+        onAction={() => undefined}
+        player={playerWithFortunes(0)}
+        position="south"
+      />,
+    );
+  }
+
+  it('房主座位显示皇冠角标和昵称，机器人座位显示机器人角标', () => {
+    const host = render({ name: '玩家甲', host: true });
+    expect(host).toContain('seat-badge--host');
+    expect(host).toContain('房主');
+    expect(host).toContain('玩家甲');
+    expect(host).not.toContain('seat-badge--bot');
+    const bot = render({ name: '机器人甲', bot: true });
+    expect(bot).toContain('seat-badge--bot');
+    expect(bot).not.toContain('seat-badge--host');
+  });
+
+  it('本地对局没有装饰信息时不渲染任何角标', () => {
+    const html = render(undefined);
+    expect(html).not.toContain('seat-badge');
+    expect(html).not.toContain('seat-name');
+  });
+});

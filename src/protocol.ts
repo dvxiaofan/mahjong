@@ -58,6 +58,9 @@ export type ClientMessage =
   | (ClientEnvelope & { type: 'list-rooms' })
   | (ClientEnvelope & { type: 'leave-room' })
   | (ClientEnvelope & { type: 'set-trustee'; enabled: boolean })
+  | (ClientEnvelope & { type: 'start-match' })
+  | (ClientEnvelope & { type: 'add-bot' })
+  | (ClientEnvelope & { type: 'remove-bot'; participantId: string })
   | (ClientEnvelope & {
       type: 'submit-action';
       expectedRevision: number;
@@ -195,8 +198,23 @@ export function parseClientMessage(payload: string | unknown): ClientMessagePars
   if (value.type === 'get-snapshot') {
     return { success: true, message: { ...base, type: 'get-snapshot' } };
   }
-  if (value.type === 'list-rooms' || value.type === 'leave-room') {
+  if (
+    value.type === 'list-rooms' ||
+    value.type === 'leave-room' ||
+    value.type === 'start-match' ||
+    value.type === 'add-bot'
+  ) {
     return { success: true, message: { ...base, type: value.type } };
+  }
+  if (value.type === 'remove-bot') {
+    return typeof value.participantId === 'string' &&
+      value.participantId.length > 0 &&
+      value.participantId.length <= 128
+      ? {
+          success: true,
+          message: { ...base, type: 'remove-bot', participantId: value.participantId },
+        }
+      : invalid('invalid-message', '机器人 ID 无效', requestId);
   }
   if (value.type === 'set-trustee') {
     return typeof value.enabled === 'boolean'
@@ -335,7 +353,10 @@ export function handleRoomProtocolMessage(
     message.type === 'create-room' ||
     message.type === 'list-rooms' ||
     message.type === 'leave-room' ||
-    message.type === 'set-trustee'
+    message.type === 'set-trustee' ||
+    message.type === 'start-match' ||
+    message.type === 'add-bot' ||
+    message.type === 'remove-bot'
   ) {
     return [
       createServerErrorMessage(

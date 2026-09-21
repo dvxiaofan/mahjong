@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { LocalMode } from './LocalMode';
+import { tileFacesReady } from './components/MahjongTileFace';
 import { OnlineMode } from './online/OnlineMode';
 import { SoundToggle, TableAudioProvider } from './components/TableAudio';
 
@@ -13,8 +14,25 @@ export default function App() {
   );
 }
 
+/** Hold the table back until every tile face can paint synchronously; see tileFacesReady. */
+function useTileFacesReady(): boolean {
+  const [ready, setReady] = useState(() => typeof Image === 'undefined');
+  useEffect(() => {
+    if (ready) return undefined;
+    let active = true;
+    void tileFacesReady().then(() => {
+      if (active) setReady(true);
+    });
+    return () => {
+      active = false;
+    };
+  }, [ready]);
+  return ready;
+}
+
 function Application() {
   const [mode, setMode] = useState<AppMode>('local');
+  const tilesReady = useTileFacesReady();
 
   return (
     <div className="app-shell">
@@ -50,7 +68,15 @@ function Application() {
       </header>
 
       <main id="main-content" tabIndex={-1}>
-        {mode === 'local' ? <LocalMode /> : <OnlineMode />}
+        {!tilesReady ? (
+          <div aria-busy="true" className="app-loading" role="status">
+            正在加载牌面…
+          </div>
+        ) : mode === 'local' ? (
+          <LocalMode />
+        ) : (
+          <OnlineMode />
+        )}
       </main>
 
       <footer className="app-footer">

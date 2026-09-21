@@ -18,6 +18,8 @@ const contentTypes: Record<string, string> = {
   '.ico': 'image/x-icon',
 };
 
+const mediaExtensions = new Set(['.png', '.svg', '.ico', '.mp3', '.ogg', '.wav', '.webp']);
+
 export interface MahjongServerOptions {
   host?: string;
   port?: number;
@@ -76,6 +78,18 @@ async function staticResponse(
   }
 }
 
+/**
+ * HTML is always revalidated; Vite-hashed bundles never change; tile and audio media are
+ * versioned by query string when replaced, so browsers and CDNs may keep them for a week.
+ */
+function cacheControlFor(requestPath: string): string {
+  const extension = extname(requestPath);
+  if (requestPath === '/' || extension === '' || extension === '.html') return 'no-cache';
+  if (requestPath.startsWith('/assets/')) return 'public, max-age=31536000, immutable';
+  if (mediaExtensions.has(extension)) return 'public, max-age=604800';
+  return 'public, max-age=3600';
+}
+
 export async function createMahjongServer(
   options: MahjongServerOptions = {},
 ): Promise<MahjongServer> {
@@ -130,10 +144,7 @@ export async function createMahjongServer(
       'content-security-policy':
         "default-src 'self'; connect-src 'self' ws: wss:; img-src 'self' data:; style-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'",
       'cross-origin-opener-policy': 'same-origin',
-      'cache-control':
-        requestPath === '/' || extname(requestPath) === '' || extname(requestPath) === '.html'
-          ? 'no-cache'
-          : 'public, max-age=3600',
+      'cache-control': cacheControlFor(requestPath),
     });
     response.end(request.method === 'HEAD' ? undefined : asset.body);
   });
@@ -199,6 +210,7 @@ export async function createMahjongServer(
           message.type === 'room-joined' ||
           message.type === 'room-left' ||
           message.type === 'trustee-updated' ||
+          message.type === 'lobby-updated' ||
           (message.type === 'action-result' && message.result.accepted),
       );
       if (changed) {

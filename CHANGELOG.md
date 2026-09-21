@@ -6,6 +6,11 @@ All notable changes to this project are documented in this file.
 
 ### Added
 
+- Local play now opens on a start panel: nothing is dealt and no AI moves until the player clicks 开始对局 (or 继续对局 for a saved game, with an option to discard the save);
+- Online rooms now wait for an explicit host start: the room is created in a lobby state, the host sees a "开始牌局" button once four seats are filled, and no action or turn timer runs before it;
+- Host-controlled bot seats: the host can fill empty seats with server-played bots (and remove them before the start); a joining human always takes over the newest bot's seat, and bots can also patch a seat vacated mid-match;
+- New rooms get a random mahjong-flavoured Chinese name (e.g. 清一色茶楼, 杠上开花雀庄) with a one-click reshuffle, instead of the fixed `mahjong-room`; the nickname likewise defaults to a random tile or table-role alias (幺鸡, 红中, 杠精…) instead of `玩家`;
+- The host is now visible everywhere: a crown badge and name on the seat, a "房主" line in the room bar, and a highlighted chip in the participant strip;
 - Persistent hand preferences with touch-first selection and explicit discard confirmation, optional direct clicking and wrapped or scrollable hands;
 - Bundled Mandarin announcements for public discards and table actions, with private draws/waits excluded and stale playback cancelled;
 - Persistent master mute, separate voice/effect switches and volumes, preview and three generated table effects;
@@ -22,6 +27,8 @@ All notable changes to this project are documented in this file.
 
 ### Changed
 
+- All 30 tile faces are fetched and decoded before the table is shown (with a 5 s fallback), so no tile ever appears blank while its image loads over a slow link;
+- Static caching is tiered: hashed bundles are immutable for a year, tile and audio media are cached for a week, HTML is always revalidated;
 - Compact table spacing with dealer details, response progress and recent events available on demand;
 - A single main action prompt and stable win/pong/kong/mouth/pass positions, with replay events clearly marked as historical;
 - Action controls and response prompts now sit below the player's own hand, with wrapping buttons and read-only replay/spectator views;

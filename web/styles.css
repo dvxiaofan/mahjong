@@ -977,6 +977,66 @@ h1 {
   min-height: 140px;
 }
 
+.input-with-action {
+  display: flex;
+  gap: 6px;
+  align-items: stretch;
+}
+
+.input-with-action input {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.input-with-action .ghost-button {
+  flex: 0 0 auto;
+  padding-inline: 10px;
+  white-space: nowrap;
+}
+
+.local-start {
+  display: grid;
+  gap: 12px;
+  max-width: 520px;
+  margin: 24px auto;
+  border: 1px solid rgba(229, 189, 104, 0.25);
+  border-radius: 16px;
+  padding: 22px 24px;
+  background: var(--panel);
+}
+
+.local-start h2 {
+  margin: 0;
+  color: var(--gold-soft);
+  font-size: 1.15rem;
+}
+
+.local-start-hint {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.8rem;
+  line-height: 1.6;
+}
+
+.local-start-actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.app-loading {
+  display: grid;
+  place-items: center;
+  min-height: 240px;
+  border: 1px dashed rgba(229, 189, 104, 0.3);
+  border-radius: 14px;
+  color: var(--gold-soft);
+  background: rgba(229, 189, 104, 0.05);
+  font-size: 0.85rem;
+  letter-spacing: 0.04em;
+}
+
 .room-list {
   display: grid;
   gap: 7px;
@@ -1057,6 +1117,58 @@ h1 {
   color: #bad8c5;
   background: rgba(123, 224, 162, 0.05);
   font-size: 0.63rem;
+}
+
+.participant-strip > span.is-host {
+  border-color: rgba(229, 189, 104, 0.55);
+  color: var(--gold-soft);
+  background: rgba(229, 189, 104, 0.12);
+}
+
+.participant-strip > span.is-bot {
+  border-style: dashed;
+}
+
+.participant-remove {
+  margin-left: 6px;
+  border: 0;
+  border-radius: 999px;
+  padding: 0 6px;
+  color: inherit;
+  background: rgba(255, 255, 255, 0.08);
+  font: inherit;
+  cursor: pointer;
+}
+
+.room-host-label {
+  color: var(--gold-soft) !important;
+  font-weight: 700;
+}
+
+.seat-name {
+  margin-left: 6px;
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 500;
+}
+
+.seat-badge {
+  border-radius: 999px;
+  padding: 3px 7px;
+  font-size: 0.62rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.seat-badge--host {
+  border: 1px solid rgba(229, 189, 104, 0.6);
+  color: #ffe6a6;
+  background: rgba(229, 189, 104, 0.16);
+}
+
+.seat-badge--bot {
+  border: 1px dashed rgba(159, 182, 173, 0.5);
+  color: var(--muted);
 }
 
 .participant-strip > span.is-offline {

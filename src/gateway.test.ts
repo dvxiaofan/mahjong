@@ -7,7 +7,12 @@ function gateway() {
   return new MultiplayerGateway(new RoomRegistry({ tokenSource: () => `${++token}` }));
 }
 
-async function fillPlayerSeats(target: MultiplayerGateway, roomId: string, prefix: string) {
+async function fillPlayerSeats(
+  target: MultiplayerGateway,
+  roomId: string,
+  prefix: string,
+  hostConnectionId = 'player',
+) {
   for (const seat of [1, 2, 3] as const) {
     await target.registry.joinRoom({
       roomId,
@@ -17,6 +22,8 @@ async function fillPlayerSeats(target: MultiplayerGateway, roomId: string, prefi
       seatPreference: seat,
     });
   }
+  const started = target.registry.startMatch(hostConnectionId);
+  if (!started.ok) throw new Error(`开局失败：${started.code}`);
 }
 
 const base = { protocolVersion: 1 as const };
@@ -186,4 +193,67 @@ describe('多人连接网关', () => {
     expect(updated[0]).toMatchObject({ type: 'trustee-updated', enabled: true });
     expect(target.tick()[0]).toMatchObject({ seat: 0, reason: 'trustee', accepted: true });
   }, 10_000);
+
+  it('房主通过协议补机器人、开局；未开局前动作被拒绝', async () => {
+    const target = gateway();
+    await target.handle('host', {
+      ...base,
+      requestId: 'create',
+      type: 'create-room',
+      roomId: 'bot-room',
+      displayName: '房主',
+    });
+    await target.handle('guest', {
+      ...base,
+      requestId: 'join',
+      type: 'join-room',
+      roomId: 'bot-room',
+      displayName: '客人',
+    });
+    expect(await target.handle('guest', { ...base, requestId: 'g-bot', type: 'add-bot' })).toEqual([
+      expect.objectContaining({ type: 'error', code: 'host-required' }),
+    ]);
+    expect(
+      await target.handle('host', { ...base, requestId: 'early', type: 'start-match' }),
+    ).toEqual([expect.objectContaining({ type: 'error', code: 'room-not-ready' })]);
+
+    const first = await target.handle('host', { ...base, requestId: 'bot-1', type: 'add-bot' });
+    expect(first[0]).toMatchObject({
+      type: 'lobby-updated',
+      lobby: { playerCount: 3, readyToStart: false },
+    });
+    if (first[0]?.type !== 'lobby-updated') return;
+    const bot = first[0].lobby.participants.find((participant) => participant.bot)!;
+    expect(
+      await target.handle('host', {
+        ...base,
+        requestId: 'bot-x',
+        type: 'remove-bot',
+        participantId: bot.participantId,
+      }),
+    ).toMatchObject([{ type: 'lobby-updated', lobby: { playerCount: 2 } }]);
+    await target.handle('host', { ...base, requestId: 'bot-2', type: 'add-bot' });
+    const full = await target.handle('host', { ...base, requestId: 'bot-3', type: 'add-bot' });
+    expect(full[0]).toMatchObject({ type: 'lobby-updated', lobby: { readyToStart: true } });
+
+    expect(
+      await target.handle('host', {
+        ...base,
+        requestId: 'too-early',
+        type: 'submit-action',
+        expectedRevision: 0,
+        action: { type: 'pass' },
+      }),
+    ).toEqual([expect.objectContaining({ type: 'error', code: 'room-not-ready' })]);
+    expect(target.tick()).toEqual([]);
+
+    const started = await target.handle('host', { ...base, requestId: 'go', type: 'start-match' });
+    expect(started[0]).toMatchObject({ type: 'lobby-updated', lobby: { started: true } });
+    expect(
+      await target.handle('host', { ...base, requestId: 'again', type: 'start-match' }),
+    ).toEqual([expect.objectContaining({ type: 'error', code: 'match-already-started' })]);
+    expect(
+      await target.handle('anon', { ...base, requestId: 'anon-go', type: 'start-match' }),
+    ).toEqual([expect.objectContaining({ type: 'error', code: 'not-joined' })]);
+  });
 });

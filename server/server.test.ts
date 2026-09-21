@@ -1,4 +1,4 @@
-import { mkdtemp, rm, stat } from 'node:fs/promises';
+import { mkdir, mkdtemp, rm, stat, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { WebSocket } from 'ws';
@@ -52,6 +52,23 @@ async function request(
 }
 
 describe('HTTP + WebSocket 服务', () => {
+  it('哈希打包产物长期缓存，页面与目录路径始终重新校验', async () => {
+    const directory = await mkdtemp(join(tmpdir(), 'mahjong-static-'));
+    directories.push(directory);
+    await mkdir(join(directory, 'assets'));
+    await writeFile(join(directory, 'index.html'), '<title>嗨！搓麻呀！</title>');
+    await writeFile(join(directory, 'assets', 'index-abc123.js'), 'export {};');
+    const server = await createMahjongServer({ port: 0, staticDir: directory });
+    servers.push(server);
+    const address = await server.listen();
+    const bundle = await fetch(`${address.httpUrl}/assets/index-abc123.js`);
+    expect(bundle.status).toBe(200);
+    expect(bundle.headers.get('cache-control')).toBe('public, max-age=31536000, immutable');
+    const fallback = await fetch(`${address.httpUrl}/room/abc`);
+    expect(fallback.status).toBe(200);
+    expect(fallback.headers.get('cache-control')).toBe('no-cache');
+  });
+
   it('托管页面、处理真实连接广播，并从磁盘恢复房间', async () => {
     const directory = await mkdtemp(join(tmpdir(), 'mahjong-server-'));
     directories.push(directory);
@@ -72,6 +89,12 @@ describe('HTTP + WebSocket 服务', () => {
     const health = await fetch(`${address.httpUrl}/healthz`);
     expect(health.status).toBe(200);
     expect(await health.json()).toMatchObject({ status: 'ok', protocolVersion: 1, rooms: 0 });
+    const tile = await fetch(`${address.httpUrl}/public/tiles/red.png?v=2`);
+    expect(tile.status).toBe(200);
+    expect(tile.headers.get('content-type')).toBe('image/png');
+    expect(tile.headers.get('cache-control')).toBe('public, max-age=604800');
+    const source = await fetch(`${address.httpUrl}/main.tsx`);
+    expect(source.headers.get('cache-control')).toBe('public, max-age=3600');
 
     const firstPlayer = await connect(address.webSocketUrl);
     const created = await request(firstPlayer, {

@@ -15,12 +15,20 @@ import type { DiscardPresentation } from '../discardPresentation';
 
 type SeatPosition = 'north' | 'west' | 'east' | 'south';
 
+/** Online-room identity shown on a seat: who sits there, whether they host, whether it's a bot. */
+export interface SeatDecoration {
+  name?: string | undefined;
+  host?: boolean | undefined;
+  bot?: boolean | undefined;
+}
+
 interface PlayerSeatProps {
   player: PlayerViewEntry;
   position: SeatPosition;
   activity: SeatActivity;
   activityLabel?: string | undefined;
   label?: string | undefined;
+  decoration?: SeatDecoration | undefined;
   controls?: ReactNode;
   handInteraction?: HandInteraction | undefined;
   discardHighlight?:
@@ -182,6 +190,7 @@ export function PlayerSeat({
   activity,
   activityLabel: suppliedActivityLabel,
   label,
+  decoration,
   controls,
   handInteraction,
   discardHighlight,
@@ -217,7 +226,12 @@ export function PlayerSeat({
         <div className="player-identity">
           <span className="seat-number">{player.seat + 1}</span>
           <span>
-            <strong>{label ?? positionLabels[position]}</strong>
+            <strong>
+              {label ?? positionLabels[position]}
+              {decoration?.name !== undefined && (
+                <span className="seat-name">{decoration.name}</span>
+              )}
+            </strong>
             <small>
               {revealed ? '本局亮牌' : dealer ? '庄家' : `${player.concealedTileCount}张手牌`}
               {revealed && dealer ? ' · 庄家' : ''}
@@ -225,6 +239,12 @@ export function PlayerSeat({
           </span>
         </div>
         <div className="seat-heading-status">
+          {decoration?.host === true && (
+            <span className="seat-badge seat-badge--host" title="房主">
+              👑 房主
+            </span>
+          )}
+          {decoration?.bot === true && <span className="seat-badge seat-badge--bot">机器人</span>}
           {winningTile !== null && <span className="seat-state seat-state--winner">胡牌</span>}
           {activityLabel !== undefined && (
             <span className={`seat-state seat-state--${activity}`}>{activityLabel}</span>

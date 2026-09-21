@@ -17,6 +17,8 @@ export interface PublicParticipant {
   connected: boolean;
   trustee: boolean;
   isHost: boolean;
+  /** Server-driven seat filler added by the host; always played by the trustee AI. */
+  bot: boolean;
 }
 
 export interface LobbyRoomView {
@@ -27,6 +29,10 @@ export interface LobbyRoomView {
   participants: readonly PublicParticipant[];
   playerCount: number;
   spectatorCount: number;
+  /** The host has started the match; before this no action or timeout runs. */
+  started: boolean;
+  /** Four seats are filled and the host may start. */
+  readyToStart: boolean;
 }
 
 export interface ParticipantSession {
@@ -62,7 +68,16 @@ export type LifecycleErrorCode =
   | 'seat-unavailable'
   | 'room-full'
   | 'spectator-limit'
-  | 'invalid-resume-token';
+  | 'invalid-resume-token'
+  | 'not-joined'
+  | 'host-required'
+  | 'room-not-ready'
+  | 'match-already-started'
+  | 'participant-not-found';
+
+/** Result of a host-only room control such as starting the match or managing bots. */
+export type HostActionResult =
+  { ok: true; lobby: LobbyRoomView } | { ok: false; code: LifecycleErrorCode; message: string };
 
 export type LifecycleResult =
   | {
@@ -123,6 +138,8 @@ export interface PersistedParticipant {
   trustee: boolean;
   resumeToken: string;
   joinOrder: number;
+  /** Absent in files written before bots existed. */
+  bot?: boolean;
 }
 
 export interface PersistedLobbyRoom {
@@ -133,6 +150,8 @@ export interface PersistedLobbyRoom {
   participants: readonly PersistedParticipant[];
   hostParticipantId: string | null;
   emptySince: number | null;
+  /** Absent in files written before explicit starts existed; those rooms were always live. */
+  started?: boolean;
 }
 
 /** Sensitive server-side persistence; never send this structure to clients. */
@@ -158,6 +177,7 @@ interface ManagedParticipant {
   disconnectedAt: number | null;
   resumeToken: string;
   joinOrder: number;
+  bot: boolean;
 }
 
 interface ManagedRoom {
@@ -168,6 +188,21 @@ interface ManagedRoom {
   hostParticipantId: string | null;
   emptySince: number | null;
   actionDeadlineAt: number;
+  started: boolean;
+}
+
+const BOT_NAMES = ['机器人甲', '机器人乙', '机器人丙', '机器人丁'] as const;
+
+function seatedPlayers(room: ManagedRoom): ManagedParticipant[] {
+  return [...room.participants.values()].filter(
+    (participant) => participant.role === 'player' && participant.seat !== null,
+  );
+}
+
+function humanHostCandidate(room: ManagedRoom): ManagedParticipant | undefined {
+  return [...room.participants.values()]
+    .filter((participant) => !participant.bot)
+    .sort((left, right) => left.joinOrder - right.joinOrder)[0];
 }
 
 function secureToken(): string {
@@ -245,12 +280,15 @@ export class RoomRegistry {
     for (const persisted of persistence.rooms) {
       const participants = new Map<string, ManagedParticipant>();
       for (const participant of persisted.participants) {
+        const bot = participant.bot ?? false;
         participants.set(participant.participantId, {
           ...participant,
-          connected: false,
-          trustee: participant.role === 'player' ? true : participant.trustee,
+          bot,
+          // Bots never had a connection, so they are neither offline nor subject to the grace sweep.
+          connected: bot,
+          trustee: bot || participant.role === 'player' ? true : participant.trustee,
           connectionId: null,
-          disconnectedAt: restoredAt,
+          disconnectedAt: bot ? null : restoredAt,
         });
       }
       registry.rooms.set(persisted.roomId, {
@@ -261,6 +299,7 @@ export class RoomRegistry {
         hostParticipantId: persisted.hostParticipantId,
         emptySince: participants.size === 0 ? (persisted.emptySince ?? restoredAt) : null,
         actionDeadlineAt: restoredAt + registry.turnTimeoutMs,
+        started: persisted.started ?? true,
       });
     }
     return registry;
@@ -288,9 +327,11 @@ export class RoomRegistry {
           trustee: participant.trustee,
           resumeToken: participant.resumeToken,
           joinOrder: participant.joinOrder,
+          bot: participant.bot,
         })),
         hostParticipantId: room.hostParticipantId,
         emptySince: room.emptySince,
+        started: room.started,
       })),
     };
   }
@@ -317,6 +358,7 @@ export class RoomRegistry {
       connected: participant.connected,
       trustee: participant.trustee,
       isHost: participant.participantId === room.hostParticipantId,
+      bot: participant.bot,
     };
   }
 
@@ -325,14 +367,17 @@ export class RoomRegistry {
       .sort((left, right) => left.joinOrder - right.joinOrder)
       .map((participant) => this.publicParticipant(room, participant));
     const spectator = room.engine.getSpectatorSnapshot();
+    const playerCount = participants.filter((participant) => participant.role === 'player').length;
     return {
       roomId,
       passwordProtected: room.passwordDigest !== null,
       revision: room.engine.getRevision(),
       matchPhase: spectator.match.phase,
       participants,
-      playerCount: participants.filter((participant) => participant.role === 'player').length,
+      playerCount,
       spectatorCount: participants.filter((participant) => participant.role === 'spectator').length,
+      started: room.started,
+      readyToStart: !room.started && playerCount === 4,
     };
   }
 
@@ -377,6 +422,7 @@ export class RoomRegistry {
       disconnectedAt: null,
       resumeToken: this.uniqueToken('resume'),
       joinOrder: this.joinSequence,
+      bot: false,
     };
     this.joinSequence += 1;
     room.participants.set(participant.participantId, participant);
@@ -413,6 +459,7 @@ export class RoomRegistry {
       hostParticipantId: null,
       emptySince: null,
       actionDeadlineAt: this.now() + this.turnTimeoutMs,
+      started: false,
     };
     this.rooms.set(input.roomId, room);
     return this.addParticipant(
@@ -455,17 +502,98 @@ export class RoomRegistry {
       return this.addParticipant(input.roomId, room, input, null);
     }
 
-    const occupied = new Set(
-      [...room.participants.values()]
-        .filter((participant) => participant.role === 'player' && participant.seat !== null)
-        .map((participant) => participant.seat),
-    );
-    if (input.seatPreference !== undefined && occupied.has(input.seatPreference)) {
+    const seated = seatedPlayers(room);
+    const humanSeats = new Set(seated.filter((p) => !p.bot).map((p) => p.seat));
+    const bots = seated.filter((p) => p.bot).sort((l, r) => r.joinOrder - l.joinOrder);
+    const occupied = new Set(seated.map((participant) => participant.seat));
+    if (input.seatPreference !== undefined && humanSeats.has(input.seatPreference)) {
       return { ok: false, code: 'seat-unavailable', message: '指定座位已被占用' };
     }
-    const seat = input.seatPreference ?? SEATS.find((candidate) => !occupied.has(candidate));
+    let seat = input.seatPreference ?? SEATS.find((candidate) => !occupied.has(candidate));
+    // A human always outranks a bot: the newest bot gives up its seat.
+    const evicted = seat === undefined ? bots[0] : bots.find((bot) => bot.seat === seat);
+    if (evicted !== undefined) {
+      this.removeParticipant(room, evicted);
+      seat = evicted.seat!;
+    }
     if (seat === undefined) return { ok: false, code: 'room-full', message: '四个玩家座位已满' };
     return this.addParticipant(input.roomId, room, input, seat);
+  }
+
+  private hostRoom(
+    connectionId: string,
+  ): { ok: true; roomId: string; room: ManagedRoom } | Extract<HostActionResult, { ok: false }> {
+    const connection = this.connections.get(connectionId);
+    const room = connection === undefined ? undefined : this.rooms.get(connection.roomId);
+    if (connection === undefined || room === undefined) {
+      return { ok: false, code: 'not-joined', message: '连接尚未加入房间' };
+    }
+    if (room.hostParticipantId !== connection.participantId) {
+      return { ok: false, code: 'host-required', message: '只有房主可以执行此操作' };
+    }
+    return { ok: true, roomId: connection.roomId, room };
+  }
+
+  /** Host-only: deal the first round's clock in once four seats are filled. */
+  startMatch(connectionId: string): HostActionResult {
+    const access = this.hostRoom(connectionId);
+    if (!access.ok) return access;
+    const { roomId, room } = access;
+    if (room.started) {
+      return { ok: false, code: 'match-already-started', message: '牌局已经开始' };
+    }
+    if (seatedPlayers(room).length < 4) {
+      return { ok: false, code: 'room-not-ready', message: '需要四名玩家入座后才能开局' };
+    }
+    room.started = true;
+    this.noteRoomActivity(roomId);
+    return { ok: true, lobby: this.roomView(roomId, room) };
+  }
+
+  /** Host-only: fill the lowest free seat with a server-played bot. */
+  addBot(connectionId: string): HostActionResult {
+    const access = this.hostRoom(connectionId);
+    if (!access.ok) return access;
+    const { roomId, room } = access;
+    const occupied = new Set(seatedPlayers(room).map((participant) => participant.seat));
+    const seat = SEATS.find((candidate) => !occupied.has(candidate));
+    if (seat === undefined) return { ok: false, code: 'room-full', message: '四个玩家座位已满' };
+    const usedNames = new Set(
+      [...room.participants.values()].filter((p) => p.bot).map((p) => p.displayName),
+    );
+    const bot: ManagedParticipant = {
+      participantId: this.uniqueToken('bot'),
+      displayName: BOT_NAMES.find((name) => !usedNames.has(name)) ?? BOT_NAMES[0],
+      role: 'player',
+      seat,
+      connected: true,
+      trustee: true,
+      connectionId: null,
+      disconnectedAt: null,
+      resumeToken: this.uniqueToken('resume'),
+      joinOrder: this.joinSequence,
+      bot: true,
+    };
+    this.joinSequence += 1;
+    room.participants.set(bot.participantId, bot);
+    room.emptySince = null;
+    return { ok: true, lobby: this.roomView(roomId, room) };
+  }
+
+  /** Host-only: remove a bot before the match starts. */
+  removeBot(connectionId: string, participantId: string): HostActionResult {
+    const access = this.hostRoom(connectionId);
+    if (!access.ok) return access;
+    const { roomId, room } = access;
+    const bot = room.participants.get(participantId);
+    if (bot === undefined || !bot.bot) {
+      return { ok: false, code: 'participant-not-found', message: '没有这个机器人' };
+    }
+    if (room.started) {
+      return { ok: false, code: 'match-already-started', message: '开局后不能移走机器人' };
+    }
+    this.removeParticipant(room, bot);
+    return { ok: true, lobby: this.roomView(roomId, room) };
   }
 
   resumeRoom(input: ResumeRoomInput): LifecycleResult {
@@ -528,11 +656,9 @@ export class RoomRegistry {
     room.participants.delete(participant.participantId);
     if (participant.connectionId !== null) this.connections.delete(participant.connectionId);
     if (room.hostParticipantId === participant.participantId) {
-      room.hostParticipantId =
-        [...room.participants.values()].sort((left, right) => left.joinOrder - right.joinOrder)[0]
-          ?.participantId ?? null;
+      room.hostParticipantId = humanHostCandidate(room)?.participantId ?? null;
     }
-    if (room.participants.size === 0) room.emptySince = this.now();
+    if (humanHostCandidate(room) === undefined) room.emptySince = this.now();
   }
 
   leaveRoom(connectionId: string): LobbyRoomView | null {
@@ -557,10 +683,7 @@ export class RoomRegistry {
   processTimeouts(now = this.now()): TrusteeTickResult[] {
     const processed: TrusteeTickResult[] = [];
     for (const [roomId, room] of this.rooms) {
-      const playerCount = [...room.participants.values()].filter(
-        (participant) => participant.role === 'player' && participant.seat !== null,
-      ).length;
-      if (playerCount < 4) continue;
+      if (!room.started || seatedPlayers(room).length < 4) continue;
       for (let attempt = 0; attempt < 16; attempt += 1) {
         const publicSnapshot = room.engine.getSpectatorSnapshot();
         if (publicSnapshot.match.phase !== 'playing') break;

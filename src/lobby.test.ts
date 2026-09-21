@@ -276,6 +276,7 @@ describe('房间注册表与生命周期', () => {
       displayName: 'P3',
       role: 'player',
     });
+    expect(rooms.startMatch('c0').ok).toBe(true);
 
     now = 100;
     const turn = rooms.processTimeouts();
@@ -303,6 +304,7 @@ describe('房间注册表与生命周期', () => {
         seatPreference: seat,
       });
     }
+    expect(rooms.startMatch('c0').ok).toBe(true);
     rooms.setTrustee('c0', true);
     expect(rooms.processTimeouts()[0]).toMatchObject({
       seat: 0,
@@ -326,6 +328,7 @@ describe('房间注册表与生命周期', () => {
         seatPreference: seat,
       });
     }
+    expect(disconnectedRooms.startMatch('c0').ok).toBe(true);
     disconnectedRooms.disconnectRoom('c0');
     expect(disconnectedRooms.processTimeouts()[0]).toMatchObject({
       seat: 0,
@@ -370,5 +373,196 @@ describe('房间注册表与生命周期', () => {
     if (!resumed.ok) return;
     expect(resumed.snapshot.revision).toBe(1);
     expect(resumed.snapshot.match.game.viewerSeat).toBe(0);
+  });
+});
+
+describe('房主开局与机器人补位', () => {
+  async function seatedRoom(count: 1 | 2 | 3 | 4, options: { now?: () => number } = {}) {
+    const rooms = registry(options);
+    await rooms.createRoom({
+      roomId: 'host-room',
+      connectionId: 'c0',
+      displayName: '房主',
+      matchOptions: { dealerSeat: 0, seed: 21 },
+    });
+    for (const seat of [1, 2, 3] as const) {
+      if (seat >= count) break;
+      await rooms.joinRoom({
+        roomId: 'host-room',
+        connectionId: `c${seat}`,
+        displayName: `P${seat}`,
+        role: 'player',
+        seatPreference: seat,
+      });
+    }
+    return rooms;
+  }
+
+  it('新房间处于未开局状态，满员前不能开局，满员后只有房主能开局', async () => {
+    const rooms = await seatedRoom(3);
+    expect(rooms.getRoomView('host-room')).toMatchObject({
+      started: false,
+      readyToStart: false,
+      playerCount: 3,
+    });
+    expect(rooms.startMatch('c0')).toMatchObject({ ok: false, code: 'room-not-ready' });
+    await rooms.joinRoom({
+      roomId: 'host-room',
+      connectionId: 'c3',
+      displayName: 'P3',
+      role: 'player',
+    });
+    expect(rooms.getRoomView('host-room')).toMatchObject({ started: false, readyToStart: true });
+    expect(rooms.startMatch('c1')).toMatchObject({ ok: false, code: 'host-required' });
+    expect(rooms.startMatch('stranger')).toMatchObject({ ok: false, code: 'not-joined' });
+    const started = rooms.startMatch('c0');
+    expect(started).toMatchObject({ ok: true, lobby: { started: true, readyToStart: false } });
+    expect(rooms.startMatch('c0')).toMatchObject({ ok: false, code: 'match-already-started' });
+  });
+
+  it('未开局时不会超时代打，开局后才从开局时刻计时', async () => {
+    let now = 0;
+    const rooms = await seatedRoom(4, { now: () => now });
+    now = 60_000;
+    expect(rooms.processTimeouts()).toEqual([]);
+    expect(rooms.startMatch('c0').ok).toBe(true);
+    now = 60_000 + 29_000;
+    expect(rooms.processTimeouts()).toEqual([]);
+    now = 60_000 + 30_000;
+    expect(rooms.processTimeouts()[0]).toMatchObject({
+      seat: 0,
+      reason: 'timeout',
+      accepted: true,
+    });
+  });
+
+  it('房主可以补入和移走机器人，其他人不能', async () => {
+    const rooms = await seatedRoom(2);
+    expect(rooms.addBot('c1')).toMatchObject({ ok: false, code: 'host-required' });
+    const first = rooms.addBot('c0');
+    expect(first).toMatchObject({ ok: true, lobby: { playerCount: 3, started: false } });
+    if (!first.ok) return;
+    const bot = first.lobby.participants.find((participant) => participant.bot);
+    expect(bot).toMatchObject({
+      role: 'player',
+      seat: 2,
+      trustee: true,
+      connected: true,
+      isHost: false,
+    });
+    expect(bot?.displayName).toBe('机器人甲');
+    expect(rooms.addBot('c0')).toMatchObject({
+      ok: true,
+      lobby: { playerCount: 4, readyToStart: true },
+    });
+    expect(rooms.addBot('c0')).toMatchObject({ ok: false, code: 'room-full' });
+    expect(rooms.removeBot('c1', bot!.participantId)).toMatchObject({
+      ok: false,
+      code: 'host-required',
+    });
+    expect(rooms.removeBot('c0', 'nobody')).toMatchObject({
+      ok: false,
+      code: 'participant-not-found',
+    });
+    expect(rooms.removeBot('c0', bot!.participantId)).toMatchObject({
+      ok: true,
+      lobby: { playerCount: 3, readyToStart: false },
+    });
+    expect(
+      rooms
+        .getRoomView('host-room')
+        ?.participants.some((p) => p.participantId === bot!.participantId),
+    ).toBe(false);
+  });
+
+  it('机器人在开局后由服务端代打，真人加入时顶替最晚补入的机器人', async () => {
+    const rooms = await seatedRoom(1);
+    for (let count = 0; count < 3; count += 1) expect(rooms.addBot('c0').ok).toBe(true);
+    const human = await rooms.joinRoom({
+      roomId: 'host-room',
+      connectionId: 'c9',
+      displayName: '真人',
+      role: 'player',
+    });
+    expect(human).toMatchObject({ ok: true, session: { seat: 3 }, lobby: { playerCount: 4 } });
+    if (!human.ok) return;
+    expect(human.lobby.participants.filter((participant) => participant.bot)).toHaveLength(2);
+    expect(rooms.startMatch('c0').ok).toBe(true);
+    // Seat 0 (the human host) discards first; then the bots act on their own turns.
+    expect(rooms.processTimeouts()).toEqual([]);
+    const room = rooms.getRoom('host-room')!;
+    const discard = room.getSnapshot(0).match.game.legalActions.find((a) => a.type === 'discard')!;
+    room.submitAction({
+      requestId: 'h1',
+      expectedRevision: room.getRevision(),
+      seat: 0,
+      action: discard,
+    });
+    const botTurns = rooms.processTimeouts();
+    expect(botTurns.length).toBeGreaterThan(0);
+    expect(botTurns.every((entry) => entry.reason === 'trustee' && entry.accepted)).toBe(true);
+    expect(botTurns.map((entry) => entry.seat)).toContain(1);
+  });
+
+  it('开局后不能移走机器人，但房主可以给空座补机器人解除卡局', async () => {
+    const rooms = await seatedRoom(4);
+    expect(rooms.startMatch('c0').ok).toBe(true);
+    rooms.leaveRoom('c3');
+    expect(rooms.getRoomView('host-room')?.playerCount).toBe(3);
+    const filled = rooms.addBot('c0');
+    expect(filled).toMatchObject({ ok: true, lobby: { playerCount: 4, started: true } });
+    if (!filled.ok) return;
+    const bot = filled.lobby.participants.find((participant) => participant.bot)!;
+    expect(bot.seat).toBe(3);
+    expect(rooms.removeBot('c0', bot.participantId)).toMatchObject({
+      ok: false,
+      code: 'match-already-started',
+    });
+  });
+
+  it('房主离开时房主身份不会落到机器人头上；开局状态与机器人可持久化恢复', async () => {
+    let token = 0;
+    const source = () => `${++token}`;
+    const rooms = new RoomRegistry({ tokenSource: source, now: () => 100 });
+    await rooms.createRoom({ roomId: 'persist-bot', connectionId: 'c0', displayName: '房主' });
+    expect(rooms.addBot('c0').ok).toBe(true);
+    await rooms.joinRoom({
+      roomId: 'persist-bot',
+      connectionId: 'c1',
+      displayName: 'P1',
+      role: 'player',
+    });
+    expect(rooms.addBot('c0').ok).toBe(true);
+    expect(rooms.startMatch('c0').ok).toBe(true);
+    rooms.leaveRoom('c0');
+    const view = rooms.getRoomView('persist-bot')!;
+    expect(view.participants.find((participant) => participant.isHost)?.displayName).toBe('P1');
+
+    const restored = RoomRegistry.restore(JSON.parse(JSON.stringify(rooms.exportState())), {
+      tokenSource: source,
+      now: () => 100 + 10 * 60_000,
+    });
+    const restoredView = restored.getRoomView('persist-bot')!;
+    expect(restoredView.started).toBe(true);
+    expect(restoredView.participants.filter((participant) => participant.bot)).toHaveLength(2);
+    expect(restored.sweepDisconnectedParticipants()).not.toContain(
+      restoredView.participants.find((participant) => participant.bot)!.participantId,
+    );
+    expect(restored.getRoomView('persist-bot')?.participants.filter((p) => p.bot)).toHaveLength(2);
+  });
+
+  it('旧版持久化数据缺少开局与机器人字段时按已开局、非机器人恢复', async () => {
+    const rooms = registry();
+    await rooms.createRoom({ roomId: 'legacy', connectionId: 'c0', displayName: '房主' });
+    const exported = JSON.parse(JSON.stringify(rooms.exportState())) as {
+      rooms: Array<Record<string, unknown> & { participants: Array<Record<string, unknown>> }>;
+    };
+    for (const room of exported.rooms) {
+      delete room.started;
+      for (const participant of room.participants) delete participant.bot;
+    }
+    const restored = RoomRegistry.restore(exported as never);
+    expect(restored.getRoomView('legacy')).toMatchObject({ started: true, readyToStart: false });
+    expect(restored.getRoomView('legacy')?.participants[0]?.bot).toBe(false);
   });
 });

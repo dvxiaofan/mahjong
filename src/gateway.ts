@@ -1,4 +1,9 @@
-import { RoomRegistry, type JoinLobbyRoomInput, type LifecycleResult } from './lobby.js';
+import {
+  RoomRegistry,
+  type HostActionResult,
+  type JoinLobbyRoomInput,
+  type LifecycleResult,
+} from './lobby.js';
 import {
   PROTOCOL_VERSION,
   createServerErrorMessage,
@@ -21,6 +26,15 @@ function lifecycleMessages(requestId: string, result: LifecycleResult): ServerMe
       lobby: result.lobby,
       snapshot: result.snapshot,
     },
+  ];
+}
+
+function hostActionMessages(requestId: string, result: HostActionResult): ServerMessage[] {
+  if (!result.ok) {
+    return [createServerErrorMessage(requestId, result.code, result.message, false)];
+  }
+  return [
+    { protocolVersion: PROTOCOL_VERSION, requestId, type: 'lobby-updated', lobby: result.lobby },
   ];
 }
 
@@ -165,6 +179,19 @@ export class MultiplayerGateway {
       ];
     }
 
+    if (message.type === 'start-match') {
+      return hostActionMessages(message.requestId, this.registry.startMatch(connectionId));
+    }
+    if (message.type === 'add-bot') {
+      return hostActionMessages(message.requestId, this.registry.addBot(connectionId));
+    }
+    if (message.type === 'remove-bot') {
+      return hostActionMessages(
+        message.requestId,
+        this.registry.removeBot(connectionId, message.participantId),
+      );
+    }
+
     if (identity === null) {
       return [createServerErrorMessage(message.requestId, 'not-joined', '连接尚未加入房间', true)];
     }
@@ -175,13 +202,13 @@ export class MultiplayerGateway {
     const lobby = this.registry.getRoomView(identity.roomId);
     if (
       (message.type === 'submit-action' || message.type === 'start-next-round') &&
-      (lobby?.playerCount ?? 0) < 4
+      (lobby === null || !lobby.started || lobby.playerCount < 4)
     ) {
       return [
         createServerErrorMessage(
           message.requestId,
           'room-not-ready',
-          '需要四名玩家入座后才能行动',
+          lobby?.started ? '需要四名玩家入座后才能行动' : '等待房主开局后才能行动',
           true,
         ),
       ];

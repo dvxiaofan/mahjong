@@ -1,8 +1,30 @@
 import { useState, type FormEvent } from 'react';
+import type { LobbyRoomView, PublicParticipant } from '../../src/lobby.ts';
 import type { MatchView, SpectatorMatchView } from '../../src/room.ts';
+import type { Seat } from '../../src/types.ts';
 import { MahjongTable } from '../components/MahjongTable';
+import type { SeatDecoration } from '../components/PlayerSeat';
 import type { RoundDealerReason } from '../components/RoundSetupPanel';
+import { randomNickname, randomRoomName } from './roomNames';
 import { useOnlineGame } from './useOnlineGame';
+
+/** Map seated participants to the per-seat identity badges the table shows. */
+export function seatDecorationsFor(lobby: LobbyRoomView): Partial<Record<Seat, SeatDecoration>> {
+  const decorations: Partial<Record<Seat, SeatDecoration>> = {};
+  for (const participant of lobby.participants) {
+    if (participant.role !== 'player' || participant.seat === null) continue;
+    decorations[participant.seat] = {
+      name: participant.displayName,
+      host: participant.isHost,
+      bot: participant.bot,
+    };
+  }
+  return decorations;
+}
+
+export function hostOf(lobby: LobbyRoomView): PublicParticipant | undefined {
+  return lobby.participants.find((participant) => participant.isHost);
+}
 
 export function getOnlineDealerReason(match: MatchView | SpectatorMatchView): RoundDealerReason {
   if (match.roundNumber === 1) {
@@ -22,25 +44,32 @@ export function getOnlineDealerReason(match: MatchView | SpectatorMatchView): Ro
 
 export function OnlineMode() {
   const online = useOnlineGame();
-  const [roomId, setRoomId] = useState('mahjong-room');
-  const [displayName, setDisplayName] = useState('玩家');
+  const [roomId, setRoomId] = useState(() => randomRoomName());
+  const [displayName, setDisplayName] = useState(() => randomNickname());
   const [password, setPassword] = useState('');
   const [role, setRole] = useState<'player' | 'spectator'>('player');
   const [maxRounds, setMaxRounds] = useState(8);
   const participant = online.lobby?.participants.find(
     (candidate) => candidate.participantId === online.session?.participantId,
   );
+  const host = online.lobby === null ? undefined : hostOf(online.lobby);
+  const isHost = participant?.isHost ?? false;
+  const started = online.lobby?.started ?? false;
   const waitingForPlayers =
     online.session?.role === 'player' && (online.lobby?.playerCount ?? 0) < 4;
   const gameView = online.snapshot?.match.game ?? null;
   const actionDisabledReason =
     online.status !== 'connected'
       ? '连接已断开，重连后继续操作'
-      : waitingForPlayers
-        ? '等待四位玩家入座后开始'
-        : participant?.trustee
-          ? '当前由托管代打，取消托管后可操作'
-          : undefined;
+      : !started
+        ? isHost
+          ? '人齐后点击「开始牌局」'
+          : '等待房主开始牌局'
+        : waitingForPlayers
+          ? '等待四位玩家入座后继续'
+          : participant?.trustee
+            ? '当前由托管代打，取消托管后可操作'
+            : undefined;
 
   function createRoom(event: FormEvent) {
     event.preventDefault();
@@ -75,19 +104,41 @@ export function OnlineMode() {
             <h2>创建牌桌</h2>
             <label>
               房间 ID
-              <input
-                maxLength={64}
-                onChange={(event) => setRoomId(event.currentTarget.value)}
-                value={roomId}
-              />
+              <span className="input-with-action">
+                <input
+                  maxLength={64}
+                  onChange={(event) => setRoomId(event.currentTarget.value)}
+                  value={roomId}
+                />
+                <button
+                  aria-label="换一个房间名"
+                  className="ghost-button"
+                  onClick={() => setRoomId(randomRoomName())}
+                  title="换一个随机房间名"
+                  type="button"
+                >
+                  换一个
+                </button>
+              </span>
             </label>
             <label>
               昵称
-              <input
-                maxLength={24}
-                onChange={(event) => setDisplayName(event.currentTarget.value)}
-                value={displayName}
-              />
+              <span className="input-with-action">
+                <input
+                  maxLength={24}
+                  onChange={(event) => setDisplayName(event.currentTarget.value)}
+                  value={displayName}
+                />
+                <button
+                  aria-label="换一个花名"
+                  className="ghost-button"
+                  onClick={() => setDisplayName(randomNickname())}
+                  title="换一个随机花名"
+                  type="button"
+                >
+                  换一个
+                </button>
+              </span>
             </label>
             <label>
               房间密码（可选）
@@ -129,11 +180,22 @@ export function OnlineMode() {
             </label>
             <label>
               昵称
-              <input
-                maxLength={24}
-                onChange={(event) => setDisplayName(event.currentTarget.value)}
-                value={displayName}
-              />
+              <span className="input-with-action">
+                <input
+                  maxLength={24}
+                  onChange={(event) => setDisplayName(event.currentTarget.value)}
+                  value={displayName}
+                />
+                <button
+                  aria-label="换一个花名"
+                  className="ghost-button"
+                  onClick={() => setDisplayName(randomNickname())}
+                  title="换一个随机花名"
+                  type="button"
+                >
+                  换一个
+                </button>
+              </span>
             </label>
             <label>
               房间密码（如有）
@@ -200,13 +262,40 @@ export function OnlineMode() {
         <div>
           <p className="panel-eyebrow">ONLINE ROOM</p>
           <strong>{online.lobby.roomId}</strong>
+          <span className="room-host-label">
+            👑 房主：{host?.displayName ?? '暂无'}
+            {isHost ? '（你）' : ''}
+          </span>
           <span>
-            第 {online.snapshot?.match.roundNumber ?? 1}/{online.snapshot?.match.maxRounds ?? 1} 局
-            · revision {online.snapshot?.revision ?? 0}
+            {started
+              ? `第 ${online.snapshot?.match.roundNumber ?? 1}/${online.snapshot?.match.maxRounds ?? 1} 局`
+              : '未开局'}
+            {' · '}
+            {online.lobby.playerCount}/4 人
           </span>
         </div>
         <div className="online-room-actions">
-          {online.session.role === 'player' && (
+          {isHost && !started && (
+            <button
+              className="online-primary-button"
+              disabled={!online.lobby.readyToStart || online.status !== 'connected'}
+              onClick={online.startMatch}
+              type="button"
+            >
+              开始牌局
+            </button>
+          )}
+          {isHost && online.lobby.playerCount < 4 && (
+            <button
+              className="ghost-button"
+              disabled={online.status !== 'connected'}
+              onClick={online.addBot}
+              type="button"
+            >
+              补一个机器人
+            </button>
+          )}
+          {online.session.role === 'player' && started && (
             <button
               className="ghost-button"
               onClick={() => online.setTrustee(!(participant?.trustee ?? false))}
@@ -223,17 +312,48 @@ export function OnlineMode() {
 
       <div className="participant-strip">
         {online.lobby.participants.map((entry) => (
-          <span className={entry.connected ? '' : 'is-offline'} key={entry.participantId}>
+          <span
+            className={[
+              entry.connected ? '' : 'is-offline',
+              entry.isHost ? 'is-host' : '',
+              entry.bot ? 'is-bot' : '',
+            ]
+              .filter(Boolean)
+              .join(' ')}
+            key={entry.participantId}
+          >
+            {entry.isHost ? '👑 ' : ''}
             {entry.displayName} ·{' '}
             {entry.role === 'spectator' ? '观战' : `${(entry.seat ?? 0) + 1}号位`}
-            {entry.isHost ? ' · 房主' : ''}
-            {entry.trustee ? ' · 托管' : ''}
+            {entry.bot ? ' · 机器人' : entry.trustee && started ? ' · 托管' : ''}
+            {entry.bot && isHost && !started && (
+              <button
+                aria-label={`移走${entry.displayName}`}
+                className="participant-remove"
+                onClick={() => online.removeBot(entry.participantId)}
+                type="button"
+              >
+                ×
+              </button>
+            )}
           </span>
         ))}
       </div>
-      {waitingForPlayers && (
-        <div className="online-waiting">
-          等待玩家入座：当前 {online.lobby.playerCount}/4，满员后开始操作。
+      {!started && (
+        <div className="online-waiting" role="status">
+          {online.lobby.readyToStart
+            ? isHost
+              ? '四个座位已满，点击「开始牌局」发牌。'
+              : `四个座位已满，等待房主 ${host?.displayName ?? ''} 开始牌局。`
+            : isHost
+              ? `等待玩家入座：当前 ${online.lobby.playerCount}/4。人不够可以补机器人，人齐后由你开局。`
+              : `等待玩家入座：当前 ${online.lobby.playerCount}/4，人齐后由房主开局。`}
+        </div>
+      )}
+      {started && waitingForPlayers && (
+        <div className="online-waiting" role="status">
+          有玩家离开，当前 {online.lobby.playerCount}/4。
+          {isHost ? '你可以补一个机器人继续。' : '等待房主补位。'}
         </div>
       )}
       {online.error !== null && (
@@ -241,11 +361,12 @@ export function OnlineMode() {
           {online.error}
         </div>
       )}
-      {gameView !== null && (
+      {gameView !== null && started && (
         <MahjongTable
           view={gameView}
           botThinking={false}
           isReplaying={false}
+          seatDecorations={seatDecorationsFor(online.lobby)}
           actionPending={online.actionPending}
           actionDisabledReason={actionDisabledReason}
           roundKey={`${online.session.roomId}:${online.snapshot!.match.roundNumber}`}

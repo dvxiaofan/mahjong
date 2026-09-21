@@ -3,7 +3,7 @@ import type { GameAction, GameAudienceView, PlayerViewEntry, Seat } from '../../
 import { ActionBar } from './ActionBar';
 import { DiscardNotice } from './DiscardNotice';
 import { EventFeed } from './EventFeed';
-import { PlayerSeat } from './PlayerSeat';
+import { PlayerSeat, type SeatDecoration } from './PlayerSeat';
 import { ResultPanel } from './ResultPanel';
 import { TableCenterLayer } from './TableCenterLayer';
 import { TableActionNotice } from './TableActionNotice';
@@ -40,6 +40,8 @@ interface MahjongTableProps {
   resetLabel?: string;
   resetDisabled?: boolean;
   roundSetup?: RoundSetupView;
+  /** Per-seat online identity (display name, host, bot); absent in local play. */
+  seatDecorations?: Partial<Record<Seat, SeatDecoration>> | undefined;
 }
 
 type TablePosition = 'north' | 'west' | 'east' | 'south';
@@ -69,6 +71,7 @@ export function MahjongTable({
   resetLabel,
   resetDisabled,
   roundSetup,
+  seatDecorations,
 }: MahjongTableProps) {
   const submittedView = useRef<GameAudienceView | null>(null);
   const handSettings = useHandSettings();
@@ -191,6 +194,7 @@ export function MahjongTable({
                   seat === view.viewerSeat ? { context: handContext, ...handSettings } : undefined
                 }
                 label={view.viewerSeat === null ? seatLabel(seat, null) : undefined}
+                decoration={seatDecorations?.[seat]}
                 onAction={submitAction}
                 player={playerFor(view, seat)}
                 position={position}

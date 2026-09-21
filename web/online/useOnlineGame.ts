@@ -47,6 +47,12 @@ export interface OnlineGameController {
   dispatch(action: GameAction): void;
   startNextRound(): void;
   setTrustee(enabled: boolean): void;
+  /** Host only: begin the match once four seats are filled. */
+  startMatch(): void;
+  /** Host only: fill the lowest free seat with a server-played bot. */
+  addBot(): void;
+  /** Host only: remove a bot before the match starts. */
+  removeBot(participantId: string): void;
 }
 
 interface LocationLike {
@@ -310,5 +316,17 @@ export function useOnlineGame(): OnlineGameController {
       });
     },
     setTrustee: (enabled) => send({ requestId: nextRequestId(), type: 'set-trustee', enabled }),
+    startMatch: () => {
+      setError(null);
+      send({ requestId: nextRequestId(), type: 'start-match' });
+    },
+    addBot: () => {
+      setError(null);
+      send({ requestId: nextRequestId(), type: 'add-bot' });
+    },
+    removeBot: (participantId) => {
+      setError(null);
+      send({ requestId: nextRequestId(), type: 'remove-bot', participantId });
+    },
   };
 }
