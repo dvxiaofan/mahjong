@@ -40,6 +40,8 @@ All notable changes to this project are documented in this file.
 
 ### Fixed
 
+- The site now declares a favicon, so browsers no longer request `/favicon.ico` and log a 404 on every page load;
+- The full-game bot simulation test now carries an explicit timeout, so a slow build machine can no longer fail the Docker image build;
 - Disconnection reasons take priority over a pending submission message, while unavailable actions stay hidden;
 - Winning-hand and wait detection now count concealed and meld tiles together, excluding impossible fifth copies and false mouth declarations;
 - A concealed kong declared before the normal draw now finishes its replacement and then preserves the normal draw, including consecutive kongs and subsequent mouth declaration;

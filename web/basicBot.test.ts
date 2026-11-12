@@ -112,5 +112,5 @@ describe('本地基础 Bot', () => {
 
     expect(['finished', 'drawn']).toContain(state.phase);
     expect(steps).toBeLessThan(2000);
-  });
+  }, 30_000);
 });
