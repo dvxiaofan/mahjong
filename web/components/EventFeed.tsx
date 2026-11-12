@@ -22,10 +22,7 @@ export function EventFeed({ events, viewerSeat, live = true }: EventFeedProps) {
       </summary>
       <section className="panel event-panel">
         <div className="panel-heading">
-          <div>
-            <p className="panel-eyebrow">LIVE LOG</p>
-            <h2>牌局动态</h2>
-          </div>
+          <h2>牌局动态</h2>
           <span className="live-indicator">
             <span />
             {live ? '实时' : '回放'}

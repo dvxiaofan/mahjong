@@ -100,7 +100,6 @@ export function OnlineMode() {
 
         <div className="online-form-grid">
           <form className="online-card" onSubmit={createRoom}>
-            <p className="panel-eyebrow">CREATE ROOM</p>
             <h2>创建牌桌</h2>
             <label>
               房间 ID
@@ -168,7 +167,6 @@ export function OnlineMode() {
           </form>
 
           <form className="online-card" onSubmit={joinRoom}>
-            <p className="panel-eyebrow">JOIN ROOM</p>
             <h2>加入牌桌</h2>
             <label>
               房间 ID
@@ -227,10 +225,7 @@ export function OnlineMode() {
 
         <section className="room-browser">
           <div className="panel-heading">
-            <div>
-              <p className="panel-eyebrow">ROOMS</p>
-              <h2>可见房间</h2>
-            </div>
+            <h2>可见房间</h2>
             <button className="ghost-button" onClick={online.refreshRooms} type="button">
               刷新
             </button>
@@ -260,10 +255,9 @@ export function OnlineMode() {
     <section className="online-game-shell">
       <div className="online-room-bar">
         <div>
-          <p className="panel-eyebrow">ONLINE ROOM</p>
           <strong>{online.lobby.roomId}</strong>
           <span className="room-host-label">
-            👑 房主：{host?.displayName ?? '暂无'}
+            房主：{host?.displayName ?? '暂无'}
             {isHost ? '（你）' : ''}
           </span>
           <span>
@@ -322,7 +316,7 @@ export function OnlineMode() {
               .join(' ')}
             key={entry.participantId}
           >
-            {entry.isHost ? '👑 ' : ''}
+            {entry.isHost ? '房主 · ' : ''}
             {entry.displayName} ·{' '}
             {entry.role === 'spectator' ? '观战' : `${(entry.seat ?? 0) + 1}号位`}
             {entry.bot ? ' · 机器人' : entry.trustee && started ? ' · 托管' : ''}

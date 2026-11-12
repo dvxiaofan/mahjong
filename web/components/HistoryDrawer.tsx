@@ -81,7 +81,6 @@ export function HistoryDrawer({
       >
         <header className="drawer-header">
           <div>
-            <p className="panel-eyebrow">ROUND ARCHIVE</p>
             <h2 id="history-drawer-title">牌局记录</h2>
             <p>从动作轨迹重建任意一步，不会修改实时牌局。</p>
           </div>

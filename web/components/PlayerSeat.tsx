@@ -29,7 +29,9 @@ interface PlayerSeatProps {
   activityLabel?: string | undefined;
   label?: string | undefined;
   decoration?: SeatDecoration | undefined;
+  dockNotice?: ReactNode;
   controls?: ReactNode;
+  statusLine?: ReactNode;
   handInteraction?: HandInteraction | undefined;
   discardHighlight?:
     | {
@@ -191,7 +193,9 @@ export function PlayerSeat({
   activityLabel: suppliedActivityLabel,
   label,
   decoration,
+  dockNotice,
   controls,
+  statusLine,
   handInteraction,
   discardHighlight,
   dealer,
@@ -207,9 +211,30 @@ export function PlayerSeat({
   const discardOffset = player.discards.length - recentDiscards.length;
   const activityLabel = suppliedActivityLabel ?? activityLabels[activity];
 
+  const discardRow = recentDiscards.length > 0 && (
+    <div className="discard-row" aria-label="弃牌区">
+      {recentDiscards.map((tile, index) =>
+        discardHighlight?.presentation.discardIndex === discardOffset + index ? (
+          <span
+            key={`${tile}-${discardOffset + index}`}
+            className={`discard-target${discardHighlight.floating ? ' discard-target--floating' : ''}`}
+            ref={discardHighlight.targetRef}
+            aria-hidden={discardHighlight.floating || undefined}
+            data-discard-id={discardHighlight.presentation.id}
+          >
+            <TileFace compact tile={tile} />
+          </span>
+        ) : (
+          <TileFace compact key={`${tile}-${discardOffset + index}`} tile={tile} />
+        ),
+      )}
+    </div>
+  );
+
   return (
     <article
       data-seat={player.seat}
+      data-position={position}
       aria-label={`${label ?? positionLabels[position]}牌区`}
       className={[
         'player-seat',
@@ -222,7 +247,7 @@ export function PlayerSeat({
         .filter(Boolean)
         .join(' ')}
     >
-      <div className="seat-corner">
+      <div className={`seat-rail seat-rail--${position}`}>
         <div className="player-heading">
           <div className="player-identity">
             <span className="seat-number">{player.seat + 1}</span>
@@ -242,7 +267,7 @@ export function PlayerSeat({
           <div className="seat-heading-status">
             {decoration?.host === true && (
               <span className="seat-badge seat-badge--host" title="房主">
-                👑 房主
+                房主
               </span>
             )}
             {decoration?.bot === true && <span className="seat-badge seat-badge--bot">机器人</span>}
@@ -253,9 +278,6 @@ export function PlayerSeat({
             <span className="score-label">{player.score} 分</span>
           </div>
         </div>
-      </div>
-
-      <div className="seat-river">
         {!isSelf && (
           <>
             <div className="player-status-row">
@@ -268,86 +290,46 @@ export function PlayerSeat({
                 {player.melds.map((meld, index) => renderMeld(meld, index, revealed))}
               </div>
             )}
-
-            {recentDiscards.length > 0 && (
-              <div className="discard-row" aria-label="弃牌区">
-                {recentDiscards.map((tile, index) =>
-                  discardHighlight?.presentation.discardIndex === discardOffset + index ? (
-                    <span
-                      key={`${tile}-${discardOffset + index}`}
-                      className={`discard-target${discardHighlight.floating ? ' discard-target--floating' : ''}`}
-                      ref={discardHighlight.targetRef}
-                      aria-hidden={discardHighlight.floating || undefined}
-                      data-discard-id={discardHighlight.presentation.id}
-                    >
-                      <TileFace compact tile={tile} />
-                    </span>
-                  ) : (
-                    <TileFace compact key={`${tile}-${discardOffset + index}`} tile={tile} />
-                  ),
-                )}
-              </div>
-            )}
+            {player.visibility === 'public' && renderPublicHand(player)}
+            {revealed && player.visibility !== 'public' && renderFinalHand(player, winningTile)}
           </>
         )}
-        {player.visibility === 'public' && renderPublicHand(player)}
-        {revealed &&
-          !isSelf &&
-          player.visibility !== 'public' &&
-          renderFinalHand(player, winningTile)}
+        {isSelf && (
+          <div className="seat-rail-summary">
+            {renderFortunes(player.fortuneCount)}
+            {player.mouthDeclared && <span className="status-pill">已报嘴</span>}
+            {player.mouthRequired && <span className="status-pill status-pill--warn">待报嘴</span>}
+            {player.melds.length > 0 && (
+              <div className="meld-row" aria-label="碰杠区">
+                {player.melds.map((meld, index) => renderMeld(meld, index, revealed))}
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
+      <div className={`seat-river seat-river--${position}`}>{discardRow}</div>
+
       {isSelf ? (
-        <div className="seat-self">
-          {isSelf && (
-            <div className="seat-self-summary">
-              {renderFortunes(player.fortuneCount)}
-              {player.mouthDeclared && <span className="status-pill">已报嘴</span>}
-              {player.mouthRequired && (
-                <span className="status-pill status-pill--warn">待报嘴</span>
-              )}
-              {player.melds.length > 0 && (
-                <div className="meld-row" aria-label="碰杠区">
-                  {player.melds.map((meld, index) => renderMeld(meld, index, revealed))}
-                </div>
-              )}
-              {recentDiscards.length > 0 && (
-                <div className="discard-row" aria-label="弃牌区">
-                  {recentDiscards.map((tile, index) =>
-                    discardHighlight?.presentation.discardIndex === discardOffset + index ? (
-                      <span
-                        key={`${tile}-${discardOffset + index}`}
-                        className={`discard-target${discardHighlight.floating ? ' discard-target--floating' : ''}`}
-                        ref={discardHighlight.targetRef}
-                        aria-hidden={discardHighlight.floating || undefined}
-                        data-discard-id={discardHighlight.presentation.id}
-                      >
-                        <TileFace compact tile={tile} />
-                      </span>
-                    ) : (
-                      <TileFace compact key={`${tile}-${discardOffset + index}`} tile={tile} />
-                    ),
-                  )}
-                </div>
-              )}
-            </div>
+        <div className="seat-dock">
+          {dockNotice !== undefined && <div className="seat-dock-notice">{dockNotice}</div>}
+          {controls}
+          {revealed ? (
+            renderFinalHand(player, winningTile)
+          ) : (
+            <SelfHand
+              player={player}
+              actions={legalActions}
+              lastDrawnTile={lastDrawnTile}
+              onAction={onAction}
+              interaction={handInteraction}
+            />
           )}
-          {isSelf ? (
-            revealed ? (
-              renderFinalHand(player, winningTile)
-            ) : (
-              <>
-                <SelfHand
-                  player={player}
-                  actions={legalActions}
-                  lastDrawnTile={lastDrawnTile}
-                  onAction={onAction}
-                  interaction={handInteraction}
-                />
-                {controls}
-              </>
-            )
-          ) : null}
+          {statusLine !== undefined && (
+            <p className="hand-status-line" role="status" aria-live="polite" aria-atomic="true">
+              {statusLine}
+            </p>
+          )}
         </div>
       ) : null}
     </article>

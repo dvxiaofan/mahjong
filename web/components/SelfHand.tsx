@@ -9,6 +9,7 @@ import {
   type HandSettings,
 } from '../handSettings';
 import { findDiscardAction } from '../uiModel';
+import { HandSettingsControl } from './HandSettingsControl';
 import { MahjongTileFace } from './MahjongTileFace';
 
 export interface HandInteraction {
@@ -33,7 +34,6 @@ export function SelfHand({ player, actions, lastDrawnTile, onAction, interaction
   const confirm = interaction?.confirmDiscard ?? false;
   const selected = confirm ? selectedDiscard(selection, context, player, actions) : null;
   const canDiscard = actions.some((action) => action.type === 'discard');
-  const settingsRef = useRef<HTMLDetailsElement>(null);
 
   useEffect(() => {
     setSelection(null);
@@ -69,6 +69,29 @@ export function SelfHand({ player, actions, lastDrawnTile, onAction, interaction
 
   return (
     <>
+      {interaction !== undefined && (
+        <div className="hand-controls">
+          {confirm && canDiscard && (
+            <button
+              className="action-button hand-confirm"
+              type="button"
+              disabled={selected === null}
+              onClick={submitSelection}
+              aria-label={
+                selected === null ? '确认出牌，请先选牌' : `确认打出${tileLabel(selected.tile)}`
+              }
+            >
+              {selected === null ? '先选一张牌' : `打出 ${tileLabel(selected.tile)}`}
+            </button>
+          )}
+          <HandSettingsControl
+            settings={interaction.settings}
+            saved={interaction.saved}
+            update={interaction.update}
+            variant="dock"
+          />
+        </div>
+      )}
       <div
         className={`self-hand self-hand--${interaction?.settings.layout ?? 'scroll'}`}
         aria-label="自己的手牌"
@@ -120,69 +143,6 @@ export function SelfHand({ player, actions, lastDrawnTile, onAction, interaction
           );
         })}
       </div>
-      {interaction !== undefined && (
-        <div className="hand-controls">
-          {confirm && canDiscard && (
-            <button
-              className="action-button hand-confirm"
-              type="button"
-              disabled={selected === null}
-              onClick={submitSelection}
-              aria-label={
-                selected === null ? '确认出牌，请先选牌' : `确认打出${tileLabel(selected.tile)}`
-              }
-            >
-              {selected === null ? '先选一张牌' : `打出 ${tileLabel(selected.tile)}`}
-            </button>
-          )}
-          <details
-            className="hand-settings"
-            ref={settingsRef}
-            onKeyDown={(event) => {
-              if (event.key === 'Escape' && settingsRef.current !== null) {
-                settingsRef.current.open = false;
-                settingsRef.current.querySelector('summary')?.focus();
-              }
-            }}
-          >
-            <summary>手牌设置</summary>
-            <div className="hand-settings-panel">
-              <label>
-                出牌方式
-                <select
-                  aria-label="出牌方式"
-                  value={interaction.settings.confirmation}
-                  onChange={(event) =>
-                    interaction.update({
-                      confirmation: event.currentTarget.value as HandSettings['confirmation'],
-                    })
-                  }
-                >
-                  <option value="auto">自动：触屏或窄屏先确认</option>
-                  <option value="confirm">先选牌，再确认</option>
-                  <option value="direct">直接点击出牌</option>
-                </select>
-              </label>
-              <label>
-                手牌排列
-                <select
-                  aria-label="手牌排列"
-                  value={interaction.settings.layout}
-                  onChange={(event) =>
-                    interaction.update({
-                      layout: event.currentTarget.value as HandSettings['layout'],
-                    })
-                  }
-                >
-                  <option value="wrap">放不下时分行</option>
-                  <option value="scroll">单行横向滚动</option>
-                </select>
-              </label>
-              <small>{interaction.saved ? '设置已保存到本设备' : '设置仅在本次使用中生效'}</small>
-            </div>
-          </details>
-        </div>
-      )}
     </>
   );
 }

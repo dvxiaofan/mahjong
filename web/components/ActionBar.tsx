@@ -1,15 +1,11 @@
-import { tileLabel, type NormalTile } from '../../src/tiles.ts';
+import { tileLabel } from '../../src/tiles.ts';
 import type { GameAction } from '../../src/types.ts';
 import { nonDiscardActions } from '../uiModel';
-import { MahjongTileFace } from './MahjongTileFace';
 
 interface ActionBarProps {
   actions: readonly GameAction[];
-  botThinking: boolean;
   isReplaying: boolean;
   busy: boolean;
-  pendingTile: NormalTile | null;
-  prompt: string;
   responding?: boolean;
   onAction: (action: GameAction) => void;
 }
@@ -45,11 +41,8 @@ function actionClass(action: GameAction): string {
 
 export function ActionBar({
   actions,
-  botThinking,
   isReplaying,
   busy,
-  pendingTile,
-  prompt,
   responding = false,
   onAction,
 }: ActionBarProps) {
@@ -78,28 +71,16 @@ export function ActionBar({
       aria-label="我方操作"
       aria-busy={busy}
     >
-      <div className="interaction-prompt main-action-prompt" role="status" aria-atomic="true">
-        {pendingTile !== null ? (
-          <span
-            className="mahjong-tile mahjong-tile--compact"
-            aria-label={`待响应牌 ${tileLabel(pendingTile)}`}
-          >
-            <MahjongTileFace tile={pendingTile} />
-          </span>
-        ) : (
-          <span
-            aria-hidden="true"
-            className={botThinking && !canAct ? 'prompt-pulse' : 'prompt-dot'}
-          />
-        )}
-        <strong>{prompt}</strong>
-      </div>
       {responding ? (
         <div className="response-actions" aria-label="弃牌响应动作">
           {responseTypes.map((type) => {
             const action = controlActions.find((candidate) => candidate.type === type);
             return (
-              <div className="response-action-slot" data-response-action={type} key={type}>
+              <div
+                className={`response-action-slot${action === undefined ? ' response-action-slot--empty' : ''}`}
+                data-response-action={type}
+                key={type}
+              >
                 {action === undefined ? <span aria-hidden="true" /> : button(action)}
               </div>
             );

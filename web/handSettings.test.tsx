@@ -71,6 +71,9 @@ describe('手牌选择与真实动作', () => {
     expect(html).toContain('disabled=""');
     expect(html.match(/aria-pressed="false"/g)).toHaveLength(player.concealedTileCount);
     expect(html.match(/data-tile=/g)).toHaveLength(player.concealedTileCount);
+    expect(html.indexOf('class="hand-controls"')).toBeLessThan(
+      html.indexOf('aria-label="自己的手牌"'),
+    );
     const readonly = renderToStaticMarkup(<SelfHand {...props} actions={[]} />);
     expect(readonly).not.toContain('<button');
     expect(readonly).not.toContain('aria-pressed');

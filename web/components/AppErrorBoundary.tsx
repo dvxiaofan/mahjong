@@ -11,7 +11,6 @@ interface AppErrorBoundaryState {
 export function AppErrorFallback() {
   return (
     <main className="fatal-error" role="alert">
-      <p className="panel-eyebrow">RECOVERY</p>
       <h1>牌桌暂时无法显示</h1>
       <p>本地存档仍然保留。重新载入页面后会尝试恢复当前牌局。</p>
       <button

@@ -47,7 +47,6 @@ export function ResultPanel({
   return (
     <section className="result-panel" aria-live="assertive">
       <div className="result-copy">
-        <p className="panel-eyebrow">ROUND RESULT</p>
         <h2>{title}</h2>
         <p>{subtitle}</p>
         {result.outcome === 'win' && (

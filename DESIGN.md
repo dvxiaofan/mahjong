@@ -1,0 +1,249 @@
+---
+name: 嗨！搓麻呀！
+description: 熟人牌局的自定义麻将数字牌桌
+colors:
+  rail: "#2c1b13"
+  rail-light: "#4b3122"
+  brass: "#b88a52"
+  felt-deep: "#0a2b26"
+  felt: "#0f5142"
+  felt-light: "#176653"
+  gold: "#e5bd68"
+  gold-soft: "#f2d995"
+  ivory: "#f3f1e8"
+  muted: "#9fb6ad"
+  muted-deep: "#a5bbb0"
+  coral: "#ed8d76"
+  tile: "#f7f0da"
+  tile-ink: "#183b33"
+  panel: "#0c2420"
+typography:
+  display:
+    fontFamily: "Songti SC, STSong, Noto Serif CJK SC, serif"
+    fontSize: "26px"
+    fontWeight: 700
+    lineHeight: 1.1
+    letterSpacing: "-0.03em"
+  title:
+    fontFamily: "Inter, PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif"
+    fontSize: "16px"
+    fontWeight: 700
+    lineHeight: 1.3
+  body:
+    fontFamily: "Inter, PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif"
+    fontSize: "12px"
+    fontWeight: 500
+    lineHeight: 1.55
+  label:
+    fontFamily: "Inter, PingFang SC, Hiragino Sans GB, Microsoft YaHei, sans-serif"
+    fontSize: "10px"
+    fontWeight: 650
+    lineHeight: 1.2
+    letterSpacing: "0.06em"
+rounded:
+  xs: "4px"
+  sm: "6px"
+  md: "8px"
+  lg: "12px"
+  xl: "16px"
+  table: "30px"
+spacing:
+  hairline: "2px"
+  xs: "4px"
+  sm: "8px"
+  md: "12px"
+  lg: "16px"
+  xl: "24px"
+components:
+  button-primary:
+    backgroundColor: "{colors.gold-soft}"
+    textColor: "{colors.tile-ink}"
+    rounded: "{rounded.md}"
+    padding: "9px 12px"
+  button-action:
+    backgroundColor: "{colors.felt-deep}"
+    textColor: "{colors.ivory}"
+    rounded: "{rounded.md}"
+    padding: "5px 9px"
+  seat-rail:
+    backgroundColor: "{colors.felt-deep}"
+    textColor: "{colors.ivory}"
+    rounded: "{rounded.md}"
+    padding: "5px 7px"
+  table-compass:
+    backgroundColor: "{colors.felt-deep}"
+    textColor: "{colors.gold}"
+    rounded: "{rounded.table}"
+    width: "29.5%"
+  result-panel:
+    backgroundColor: "{colors.felt-deep}"
+    textColor: "{colors.ivory}"
+    rounded: "{rounded.lg}"
+    padding: "18px"
+  tile-face:
+    backgroundColor: "{colors.tile}"
+    textColor: "{colors.tile-ink}"
+    rounded: "{rounded.xs}"
+    width: "42px"
+    height: "58px"
+---
+
+# Design System: 嗨！搓麻呀！
+
+## Overview
+
+**Creative North Star: "灯下熟人局"**
+
+这是一个围坐打牌的物理牌桌，而不是把数据面板塞进绿色背景。深胡桃木外框、黄铜细线、深绿牌毡和象牙牌面共同建立“熟人家里那张常用牌桌”的质感；界面只在这张桌上补充必要信息，不另造一套悬浮仪表盘。
+
+信息层级围绕四个方位展开。每个座位拥有同方位的身份轨，牌河独立落在身份轨与中央局况盘之间；底部手牌坞只服务当前玩家，中央圆盘只保留局数、牌墙和方位。玩家能先看牌，再找操作，最后才注意装饰。
+
+视觉克制来自材料本身。金色只给庄家、主操作、选中牌和最近弃牌；绿色表示行动中，珊瑚色表示待响应。状态同时有文字、点位或边框变化，不只依赖颜色。
+
+**Key Characteristics:**
+- 方形木框牌桌，深绿毡面，黄铜内线。
+- 四向身份轨与四向牌河共用座位方位。
+- 中央局况盘小而稳定；操作提示贴近我方手牌。
+- 宽屏左右信息栏围合方桌：左侧记分与开门，右侧动态与结算。
+- 实体牌面优先，金色稀有，状态必须有文字。
+- PC 单屏完成牌桌、手牌、操作与结算的阅读。
+
+## Colors
+
+整体是低明度胡桃木与深绿牌毡上的黄铜、象牙点缀，强调材料对比而不是高饱和界面色。
+
+### Primary
+- **黄铜金** (`#e5bd68`): 牌墙数字、庄家、最近弃牌、主操作边框。只在需要玩家立刻定位的对象上出现。
+- **柔金** (`#f2d995`): 主按钮填色、胡牌、选中牌和关键提示。比黄铜金更亮，但面积更小。
+
+### Secondary
+- **行动绿** (`#7be0a2` 语义状态色): 当前行动座位和“行动中”文字。
+- **响应珊瑚** (`#ed8d76`): 待响应提示、错误和需要玩家注意但不能自动推进的状态。
+
+### Neutral
+- **胡桃木** (`#2c1b13`): 牌桌外框和最深的结构层级。
+- **牌毡深绿** (`#0f5142`): 牌桌主表面；浅一档为受光边缘，深一档为面板底色。
+- **象牙** (`#f3f1e8`): 主要文字和牌面纸色。
+- **低语灰绿** (`#a5bbb0`): 牌毡上的次要文字；在 `#0f5142` 上保持 4.5:1 以上。
+
+### Named Rules
+
+**The Rationed Gold Rule.** 金色用于庄家、主操作、选中牌和最近弃牌；普通边框、图标和说明不使用金色。
+
+**The State Is Spoken Rule.** 行动、待响应和出牌者必须同时有文字或形状变化，颜色不能是唯一线索。
+
+## Typography
+
+**Display Font:** Songti SC（STSong / Noto Serif CJK SC 回退）  
+**Body Font:** Inter（PingFang SC / Hiragino Sans GB / Microsoft YaHei 回退）
+
+**Character:** 正文是安静、紧凑的界面字，负责扫读与操作；宋体只出现在结算标题、中央“胡”字和牌面语义上，让牌局结果像桌面上的印章，而不是网页横幅。
+
+### Hierarchy
+- **Display** (700, 26px, 1.1): 结算标题、中央动作大字。只用于结果和动作节点。
+- **Title** (700, 16px, 1.3): 面板标题与当前结果。
+- **Body** (500, 12px, 1.55): 说明、支付流水和规则解释。
+- **Label** (650, 10px, 0.06em): 牌墙、番数、状态和辅助信息。
+
+### Named Rules
+
+**The One Reading Scale Rule.** 牌桌内正文不小于 10px；主要可读信息保持 11–12px，未达到对比度的灰绿不得用于牌毡上的说明文字。
+
+**The Table-Scaled Type Rule.** PC 方桌内的字号、牌面和操作高度跟随 `--table-size` 缩放，而不是固定为小屏尺寸。2000×1200 下座位名约 18px、辅助信息约 15px、手牌约 67×92px；1440×900 下座位名不低于 14px、辅助信息不低于 11px。
+
+## Layout
+
+PC 牌桌使用方形舞台。1200px 以上为三栏牌室：左栏 220–320px 放记分、开门与规则速查，中栏是方形牌桌，右栏 260–400px 放动态、结算与手牌设置。应用壳最大宽度为 1920px；1440px 以下用 260 / 300px 信息栏，1600px 起用 300 / 380px，1800px 起用 320 / 400px，超宽屏不再把空间浪费在页面两侧。
+
+牌桌边长取 `min(90vh, 1120px, calc(100vh - 122px), 100cqw)`，由视口高度、牌桌舞台宽度和 1120px 上限共同约束。2000×1200 为 1078px，1440×900 为 778px，1366×768 为 646px，1280×720 为 618px；低高度桌面单独放宽为 `calc(100vh - 102px)`，页脚隐藏后仍保持单屏。牌桌始终是画面最大的单一对象，左右栏高度与桌边对齐，内容超高时栏内滚动。
+
+1200px 以下回到牌桌上方两列折叠信息：定庄与动态各占一列；820px 以下改为单列堆叠。中央局况盘保持 29.5% 宽，四个座位分别占据上、下、左、右方位。结算与手牌设置在宽屏进入右栏，在中等宽度覆盖牌桌右缘，窄屏回到牌桌下方；任何尺寸都不缩窄或推走牌桌。
+
+间距以 4px 为基数，主要使用 4 / 8 / 12 / 16 / 24。身份轨内部用 2–5px 的紧凑间距，牌河与中央盘之间至少保留 14px，牌河之间不共享同一视觉容器。手牌坞贴底，14 张牌在 2000×1200 下约 67px 宽、1440×900 下约 48px 宽，所有 PC 宽度均保持单行；不使用横向页面滚动。
+
+820px 以下保留既有堆叠回退：牌桌改为纵向区域，身份信息回到座位块内，中央盘变为横向局况条。PC 的绝对定位牌河不直接套用到窄屏。
+
+## Elevation & Depth
+
+深度主要来自材料层级和柔和投影：木框高于毡面，身份轨与中央盘高于牌河，牌面高于牌毡。阴影全部带偏移和模糊，不使用零模糊色块冒充高度。
+
+### Shadow Vocabulary
+- **牌桌落地** (`0 40px 100px rgba(0, 0, 0, 0.58)`): 方形牌桌与页面背景分离。
+- **面板浮起** (`0 24px 60px rgba(0, 0, 0, 0.38)`): 右侧结算栏。
+- **牌面接触** (`0 2px 0 #c8bfa2, 0 4px 7px rgba(0, 0, 0, 0.2)`): 象牙牌在毡面上的厚度与接触阴影。
+- **中央提示** (`0 16px 46px rgba(0, 0, 0, 0.5)`): 胡碰杠和新弃牌浮层。
+
+### Named Rules
+
+**The Material Stack Rule.** 层级用木、毡、牌三种材料关系表达；新增面板不得用发光描边取代材料层级。
+
+## Shapes
+
+牌桌外框使用 30px 大圆角和 12px 胡桃木厚边；毡面内线使用 16px 圆角。身份轨、牌河和操作条使用 8–12px 的小圆角，牌面使用 3–5px，避免把每个区域都做成胶囊。圆角随物体尺寸变化：实体牌最小，牌桌最大。
+
+## Components
+
+### Mahjong Tile
+
+象牙纸面、深色数码、底部一档实体厚度。牌面图片占内容区 88–94%，不叠加渐变文字或彩色滤镜。非交互牌无 hover；可出牌只在 hover / focus 时抬升并显示金色外圈。
+
+### Seat Rail
+
+每个座位一条身份轨，包含座位号、相对座位、昵称、分数、庄家、房主、机器人和行动状态。暗牌留在身份轨内，不进入牌河。待响应用珊瑚边框和文字，行动中用绿色边框和文字，出牌者用金色边框。
+
+### Discard River
+
+上、下各 6 列，左、右各 3 列，最多展示最近 18 张。牌河本身没有大卡片背景，只在毡面上形成牌群。最近弃牌在中央浮层放大，归位后只保留一张小牌。
+
+### Table Compass
+
+圆形局况盘只显示局数、牌墙余量和四个方位。牌墙数字使用柔金的等宽数字；不承载出牌提示、响应进度或操作按钮。
+
+### Scoreboard Rail
+
+宽屏左栏常驻，顶部显示局数、牌墙、庄家、当前行动和开门位置；下方按“你 / 下家 / 对家 / 上家”列出四家分数与发财数。庄家用金色小标记，行动中用绿色文字与浅底，不只靠颜色。底部规则速查使用低对比正文，不抢占牌桌注意力。
+
+### Event Rail
+
+宽屏右栏常驻，显示最近十条公开事件；最近一条使用轻金底强调。标题旁有“实时 / 回放”文字和点位；牌局结束后由结算面板接管右栏。
+
+### Seat Dock
+
+底部手牌坞的纵向顺序固定为：最近出牌提示 → 合法按钮 → 我方手牌 → 单行状态文字。所有会出现的交互控件都在手牌上方，因此按钮出现、提交禁手或确认出牌只会让坞区向上生长，不会改变手牌位置。手牌下方只允许一条固定高度、单行省略的状态文字，不再放置会撑高布局的按钮或详情面板。手牌设置 1200px 以上移入右栏底部，1200px 以下才回到手牌坞。
+
+### Result Rail
+
+终局结算在牌桌右侧栏展开，宽屏宽度与右栏一致（260–400px），包含结果、番数、四家得分、支付流水、下一局按钮和胡牌组成。牌桌不因结算出现而缩小或推走；内容超出时栏内滚动。
+
+### Hand Settings Rail
+
+1200px 以上在手牌坞之外提供“手牌与出牌设置”入口，固定在右栏底部；展开后向上增长，动态列表相应收缩，不覆盖手牌或牌河。设置仍由同一份本地偏好驱动，窄屏从手牌坞进入时读写同一状态。
+
+### Buttons
+
+- **Primary:** 柔金底、深色文字、8px 圆角，用于“开始下一局”等唯一主操作。
+- **Action:** 深毡底、象牙文字、8px 圆角；碰杠使用蓝灰文字，响应使用珊瑚文字，过牌降低强调。
+- **Claim Actions:** 碰、杠、胡等响应按钮在手牌上方成组居中，PC 宽度不小于 88px、高度不小于 44px；2000×1200 下约 108×60px。标签必须完整显示，不用缩写换空间；按钮层出现或消失不得移动手牌。
+- **Ghost / Settings:** 透明或低对比底，只保留细边框和文字，不与主操作争夺金色。
+- **Focus:** 2px 柔金外圈，3px 偏移；不使用仅靠颜色变化的焦点。
+
+### Chips
+
+状态、番种和支付使用 4–8px 小圆角或 999px 胶囊。文字优先，颜色只作辅助。金色胶囊只用于庄家和胡牌，珊瑚胶囊只用于待响应。
+
+## Do's and Don'ts
+
+### Do:
+- **Do** 保持四个座位的身份、暗牌和牌河同方位。
+- **Do** 让手牌、最近出牌和合法操作在底部形成一条连续工作区。
+- **Do** 用胡桃木、黄铜、深绿毡和象牙牌面建立层级。
+- **Do** 在牌毡文字上使用 `#a5bbb0` 或更亮的中性色，保证至少 4.5:1。
+- **Do** 给提交、断线、回放、观战和减弱动态保留明确状态。
+
+### Don't:
+- **Don't** 恢复四角身份卡让玩家二次翻译座位。
+- **Don't** 把出牌提示、响应进度或动作按钮放回中央局况盘。
+- **Don't** 用 emoji 皇冠或骰子代替座位/状态图标；房主使用文字。
+- **Don't** 在标题上方添加英文 kicker、eyebrow 或重复小标题。
+- **Don't** 用低对比灰绿说明文字压在深绿牌毡上。
+- **Don't** 为了让结算出现而缩窄、推走或遮挡完整牌桌。

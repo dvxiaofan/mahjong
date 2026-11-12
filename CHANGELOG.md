@@ -6,7 +6,11 @@ All notable changes to this project are documented in this file.
 
 ### Added
 
-- A nine-region PC table layout: four corner identity chips, four directional discard rivers and a persistent central status dial, with the player's hand and actions occupying the bottom row;
+- A C3 wide-screen scale pass: the 1920px app shell, 300–400px information rails and a square table that grows with the available PC viewport, so a 2000×1200 window now renders a 1078px table instead of a 720px one;
+- A C2 wide-screen PC room built around the C1 square table: a persistent scoreboard rail on the left, the walnut-framed felt table in the centre, and a live-event rail on the right;
+- The left rail shows round, wall, dealer, opening position, four seat scores and fortune counts, plus a compact rules reference; the right rail holds the latest ten events and switches to the result panel at settlement;
+- Settlement now opens in the right rail while the complete table, all four revealed hands and the action notice remain visible; the rail scrolls internally on short screens;
+- Physical seat rails keep hidden hands beside each identity, while rivers render only discards and never absorb the public hand rows;
 - Local play now opens on a start panel: nothing is dealt and no AI moves until the player clicks 开始对局 (or 继续对局 for a saved game, with an option to discard the save);
 - Online rooms now wait for an explicit host start: the room is created in a lobby state, the host sees a "开始牌局" button once four seats are filled, and no action or turn timer runs before it;
 - Host-controlled bot seats: the host can fill empty seats with server-played bots (and remove them before the start); a joining human always takes over the newest bot's seat, and bots can also patch a seat vacated mid-match;
@@ -28,7 +32,14 @@ All notable changes to this project are documented in this file.
 
 ### Changed
 
-- On wide screens the table is reorganised around a central status dial instead of three large opponent cards with an empty felt middle; narrow viewports keep the existing stacked layout;
+- On screens 1200px and wider the square table is framed by persistent information rails (220–320px left, 260–400px right); 1280, 1600 and 1800px breakpoints widen both the rails and their typography, while narrower viewports keep the compact disclosure layout above the table;
+- The square table now uses `min(90vh, 1120px, calc(100vh - 122px), 100cqw)`: 2000×1200 renders 1078px, 1440×900 renders 778px, 1366×768 renders 646px and 1280×720 renders 618px, with no page scrolling;
+- Seat labels, scores, status chips, meld text, compass numbers, rivers, hand tiles and action buttons scale from the table size; at 2000×1200 the seat title reaches 18px, secondary labels 15px, hand tiles 66.8×92.2px and river tiles 46px;
+- Claim actions now occupy a centred row above the hand instead of a narrow column below it: unavailable slots collapse, pong/kong use stronger blue emphasis, pass stays available but quieter, and the 2000×1200 buttons measure 108×60px with 18px labels (88×44px at 1280×720);
+- The hand dock now reserves a fixed single-line status below the hand. Response buttons and the discard-confirmation button live above the tiles, so showing or hiding them moves the dock's top edge but never changes the hand's vertical position;
+- Hand settings moved from the table's bottom-right corner into the right rail on screens 1200px and wider; the dock copy remains available below 1200px, and both entries share the same saved preference state;
+- The latest-discard notice, response progress and legal actions moved from the central compass into the hand dock, leaving the compass with only round, wall count and seat direction;
+- Secondary text on felt now uses `#a5bbb0`, and English eyebrow labels were removed from result, event, local-start, online-room and archive surfaces;
 - All 30 tile faces are fetched and decoded before the table is shown (with a 5 s fallback), so no tile ever appears blank while its image loads over a slow link;
 - Static caching is tiered: hashed bundles are immutable for a year, tile and audio media are cached for a week, HTML is always revalidated;
 - Compact table spacing with dealer details, response progress and recent events available on demand;

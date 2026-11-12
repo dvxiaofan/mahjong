@@ -23,7 +23,6 @@ export function LocalMode() {
   if (!started) {
     return (
       <section className="local-start" aria-labelledby="local-start-title">
-        <p className="panel-eyebrow">LOCAL TABLE</p>
         <h2 id="local-start-title">{resumable ? '继续上次的本地对局？' : '开一桌本地对局'}</h2>
         <p className="local-start-hint">
           {resumable

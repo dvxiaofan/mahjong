@@ -1,6 +1,6 @@
 import { tileLabel } from '../../src/tiles.ts';
 import { SEATS, type GameAudienceView } from '../../src/types.ts';
-import { getSeatActivity, seatLabel } from '../uiModel';
+import { getSeatActivity, getTurnLabel, seatLabel } from '../uiModel';
 import { getDiscardPresentation } from '../discardPresentation';
 import { MahjongTileFace } from './MahjongTileFace';
 
@@ -34,6 +34,10 @@ export function DiscardNotice({ view, isReplaying }: DiscardNoticeProps) {
           {seatLabel(discard.seat, view.viewerSeat)}（{discard.seat + 1}号位）打出{' '}
           {tileLabel(discard.tile)}
         </strong>
+        <span className="discard-notice-turn">
+          <span className="turn-dot" aria-hidden="true" />
+          当前：{getTurnLabel(view)}
+        </span>
       </div>
       {pending && (
         <details className="response-details">

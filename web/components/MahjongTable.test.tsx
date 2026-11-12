@@ -49,27 +49,129 @@ function renderTable(
 }
 
 describe('牌桌出牌与操作提示', () => {
-  it('牌桌提供常驻中央局况盘，四向座位仍围绕中央排列', () => {
+  it('牌桌以中央局况盘为轴，四个座位各自拥有同方位的身份轨和牌河', () => {
     const html = renderTable(projectStateForSeat(createGame({ seed: 3 }), 0));
-    expect(html).toContain('class="table-dial"');
+    expect(html).toContain('class="table-compass"');
     expect(html).toContain('aria-label="牌局局况"');
+    expect(html).toContain('class="table-stage"');
     expect(html).toContain('seat-slot--north');
     expect(html).toContain('seat-slot--west');
     expect(html).toContain('seat-slot--east');
     expect(html).toContain('seat-slot--south');
+    expect(html).not.toContain('seat-corner-card');
+
+    for (const [position, seat] of [
+      ['north', 2],
+      ['west', 3],
+      ['east', 1],
+      ['south', 0],
+    ] as const) {
+      const start = html.indexOf(`data-position="${position}"`);
+      expect(start).toBeGreaterThan(-1);
+      const article = html.slice(start, html.indexOf('</article>', start));
+      expect(article).toContain(`data-seat="${seat}"`);
+      expect(article).toContain(`seat-rail--${position}`);
+      expect(article).toContain(`seat-river--${position}`);
+    }
   });
 
-  it('局况与最近出牌集中在中央盘，不新增重复的操作区或出牌提示', () => {
+  it('PC 宽屏在牌桌两侧常驻记分与动态栏，同时保留窄屏折叠入口', () => {
+    const html = renderTable(projectStateForSeat(createGame({ seed: 3 }), 0), false, {
+      roundSetup: {
+        roundNumber: 1,
+        dealerReason: 'assigned',
+        dealerSelection: null,
+        opening: {
+          rollerSeat: 0,
+          dice: [3, 4],
+          total: 7,
+          wallSeat: 1,
+          stack: 2,
+          tileOffset: 0,
+        },
+      },
+    });
+    expect(html).toContain('class="table-main"');
+    expect(html).toContain('class="table-info-rail"');
+    expect(html).toContain('class="table-side-rail"');
+    expect(html).not.toContain('class="table-utility-rail"');
+    expect(html.match(/aria-label="本局记分"/g)).toHaveLength(1);
+    expect(html.match(/aria-label="牌局动态"/g)).toHaveLength(1);
+    expect(html).toContain('class="table-scoreboard"');
+    expect(html).toContain('class="table-event-rail"');
+    expect(html).toContain('class="table-quick-rules"');
+    expect(html).toContain('class="table-feed-disclosure"');
+    expect(html).toContain('class="table-disclosure event-disclosure"');
+    expect(html).toContain('规则速查');
+    expect(html).toContain('class="hand-settings hand-settings--dock"');
+    expect(html).toContain('class="hand-settings hand-settings--rail"');
+
+    const scoreStart = html.indexOf('class="table-scoreboard"');
+    const score = html.slice(scoreStart, html.indexOf('</section>', scoreStart));
+    expect(score.match(/class="scoreboard-row/g)).toHaveLength(4);
+
+    const sideStart = html.indexOf('class="table-side-rail"');
+    const side = html.slice(sideStart, html.indexOf('</aside>', sideStart));
+    expect(side).toContain('class="hand-settings hand-settings--rail"');
+    expect(side).toContain('手牌与出牌设置');
+
+    const spectator = renderTable(projectStateForSpectator(createGame({ seed: 3 })));
+    expect(spectator).not.toContain('hand-settings--rail');
+  });
+
+  it('中央盘只保留局况，最近出牌和响应进度贴近我方手牌坞', () => {
     const html = renderTable(projectStateForSeat(responseState(), 0));
     expect(html.match(/aria-label="出牌提示"/g)).toHaveLength(1);
     expect(html.match(/aria-label="我方操作"/g)).toHaveLength(1);
-    const dialStart = html.indexOf('class="table-dial"');
-    const dial = html.slice(dialStart, html.indexOf('</section>', dialStart));
-    expect(dial).toContain('牌墙剩余');
-    expect(dial).toContain('aria-label="出牌提示"');
-    expect(dial).toContain('class="response-details"');
-    expect(dial).toContain('庄家');
-    expect(dial).toContain('当前：等待各家响应');
+    const compassStart = html.indexOf('class="table-compass"');
+    const compass = html.slice(compassStart, html.indexOf('</div>', compassStart));
+    expect(compass).toContain('牌墙');
+    expect(compass).toContain('庄');
+    expect(compass).not.toContain('aria-label="出牌提示"');
+    expect(compass).not.toContain('class="response-details"');
+
+    const selfStart = html.indexOf('data-seat="0"');
+    const self = html.slice(selfStart, html.indexOf('</article>', selfStart));
+    expect(self).toContain('class="seat-dock-notice"');
+    expect(self).toContain('aria-label="出牌提示"');
+    expect(self).toContain('class="response-details"');
+    expect(html).toContain('等待各家响应');
+  });
+
+  it('对手暗牌留在身份轨，牌河只渲染弃牌', () => {
+    const state = createGame({ seed: 3 });
+    state.players[1]!.discards.push('p7');
+    const html = renderTable(projectStateForSeat(state, 0));
+    const start = html.indexOf('data-position="east"');
+    const article = html.slice(start, html.indexOf('</article>', start));
+    const riverStart = article.indexOf('class="seat-river');
+    const rail = article.slice(0, riverStart);
+    const river = article.slice(riverStart);
+    expect(rail).toContain('hidden-hand');
+    expect(river).not.toContain('hidden-hand');
+    expect(river).toContain('discard-row');
+    expect(river).toContain('data-tile="p7"');
+  });
+
+  it('终局结算进入右侧栏，牌桌保持完整可见', () => {
+    const state = createGame({ seed: 2 });
+    state.phase = 'drawn';
+    state.result = {
+      outcome: 'draw',
+      winner: null,
+      winType: null,
+      winningTile: null,
+      fan: null,
+      payments: [],
+      reason: 'wall-exhausted',
+    };
+    const html = renderTable(projectStateForSeat(state, 0));
+    expect(html).toContain('class="table-side-rail"');
+    expect(html.indexOf('class="table-side-rail"')).toBeGreaterThan(
+      html.indexOf('class="felt-table"'),
+    );
+    expect(html).not.toContain('class="table-event-rail"');
+    expect(html).toContain('本局荒庄');
   });
 
   it('待响应牌在中央独立浮层展示，来源牌区只保留隐藏的小牌占位', () => {
@@ -84,7 +186,7 @@ describe('牌桌出牌与操作提示', () => {
     expect(source).not.toContain('discard-entry--featured');
   });
 
-  it('响应动作只出现在我方手牌所在牌区，其他座位和下方面板没有重复操作区', () => {
+  it('响应动作位于我方手牌上方，固定状态行位于手牌下方，其他座位没有重复操作区', () => {
     const html = renderTable(projectStateForSeat(responseState(), 0));
     const selfStart = html.indexOf('data-seat="0"');
     const selfEnd = html.indexOf('</article>', selfStart);
@@ -92,9 +194,12 @@ describe('牌桌出牌与操作提示', () => {
     expect(self).toContain('aria-label="我方操作"');
     expect(self).toContain('title="碰"');
     expect(self).toContain('title="过"');
-    expect(self.indexOf('aria-label="我方操作"')).toBeGreaterThan(
-      self.indexOf('aria-label="自己的手牌"'),
-    );
+    const actions = self.indexOf('aria-label="我方操作"');
+    const hand = self.indexOf('aria-label="自己的手牌"');
+    const status = self.indexOf('class="hand-status-line"');
+    expect(actions).toBeLessThan(hand);
+    expect(hand).toBeLessThan(status);
+    expect(self.slice(status)).toContain('下家');
     expect(html.match(/aria-label="我方操作"/g)).toHaveLength(1);
   });
 
@@ -151,6 +256,13 @@ describe('牌桌出牌与操作提示', () => {
       expect(
         [...html.matchAll(/data-response-action="([^"]+)"/g)].map((match) => match[1]),
       ).toEqual(['win', 'pong', 'exposed-kong', 'declare-mouth', 'pass']);
+      expect(html).toMatch(
+        /class="response-action-slot response-action-slot--empty" data-response-action="win"/,
+      );
+      if (options.actionPending !== true) {
+        expect(html).toMatch(/class="response-action-slot" data-response-action="pong"/);
+        expect(html).toMatch(/class="response-action-slot" data-response-action="pass"/);
+      }
       if (options.actionDisabledReason !== undefined) {
         expect(html).toContain(options.actionDisabledReason);
         expect(html).not.toContain('正在提交，请等待牌局确认');

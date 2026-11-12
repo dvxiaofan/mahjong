@@ -64,10 +64,7 @@ export function RoundSetupPanel({
       </summary>
       <section className="round-setup-panel" aria-label="本局定庄与开门信息">
         <header className="round-setup-heading">
-          <div>
-            <p className="panel-eyebrow">ROUND SETUP</p>
-            <h2>{roundNumber === 1 ? '首局定庄' : `第 ${roundNumber} 局`}</h2>
-          </div>
+          <h2>{roundNumber === 1 ? '首局定庄' : `第 ${roundNumber} 局`}</h2>
           <span className="dealer-result">
             <b>庄</b>
             {dealerName}
