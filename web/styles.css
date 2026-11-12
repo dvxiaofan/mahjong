@@ -503,14 +503,14 @@ h1 {
   position: relative;
   isolation: isolate;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr) minmax(0, 1fr);
+  grid-template-columns: minmax(96px, 0.24fr) minmax(0, 1fr) minmax(96px, 0.24fr);
   grid-template-areas:
-    'hud hud hud'
-    'west north east'
-    'south south south'
-    'marks marks marks';
-  align-items: start;
-  gap: 10px;
+    'nw north ne'
+    'west dial east'
+    'sw south se';
+  align-items: stretch;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  gap: 8px;
   overflow: clip;
   border: 1px solid rgba(190, 225, 202, 0.2);
   border-radius: 22px;
@@ -752,19 +752,189 @@ h1 {
 }
 
 .seat-slot {
+  display: contents;
+}
+
+.seat-slot > .player-seat {
+  display: contents;
+}
+
+.seat-corner-card {
   position: relative;
   z-index: 2;
   min-width: 0;
+  align-self: stretch;
+  border: 1px solid rgba(208, 232, 210, 0.16);
+  border-radius: 12px;
+  padding: 9px 10px;
+  background: rgba(4, 27, 23, 0.82);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+.seat-corner-card--nw {
+  grid-area: nw;
+}
+.seat-corner-card--ne {
+  grid-area: ne;
+}
+.seat-corner-card--sw {
+  grid-area: sw;
+}
+.seat-corner-card--se {
+  grid-area: se;
+}
+
+.seat-corner-card {
+  align-self: start;
+}
+
+.seat-corner-head {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.78rem;
+}
+
+.seat-corner-number {
+  display: grid;
+  width: 20px;
+  height: 20px;
+  flex: none;
+  place-items: center;
+  border: 1px solid rgba(229, 189, 104, 0.5);
+  border-radius: 6px;
+  color: var(--gold-soft);
+  font-size: 0.66rem;
+  font-weight: 800;
+}
+
+.seat-corner-name {
+  overflow: hidden;
+  color: var(--muted);
+  font-size: 0.68rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.seat-corner-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 6px;
+  margin-top: 6px;
+  color: var(--muted);
+  font-size: 0.64rem;
+}
+
+.seat-corner-status {
+  margin-top: 5px;
+  color: var(--gold-soft);
+  font-size: 0.66rem;
+  font-weight: 700;
+}
+
+.seat-slot--north .seat-corner {
+  display: none;
+}
+.seat-slot--south .seat-corner {
+  display: none;
+}
+.seat-slot--west .seat-corner {
+  display: none;
+}
+.seat-slot--east .seat-corner {
+  display: none;
+}
+
+.player-seat--north .seat-river {
+  grid-area: north;
+}
+.player-seat--west .seat-river {
+  grid-area: west;
+}
+.player-seat--east .seat-river {
+  grid-area: east;
+}
+.player-seat--south .seat-river {
+  grid-area: south;
+}
+
+.seat-river {
+  position: relative;
+  z-index: 2;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  border: 1px solid rgba(208, 232, 210, 0.12);
+  border-radius: 12px;
+  padding: 7px 9px;
+  background: rgba(4, 27, 23, 0.42);
+}
+
+.seat-river .player-status-row,
+.seat-river .meld-row,
+.seat-river .discard-row,
+.seat-river .hidden-hand {
+  justify-content: center;
+}
+
+.seat-corner-card {
+  background: rgba(4, 27, 23, 0.52);
+}
+
+.seat-self {
+  position: relative;
+  z-index: 3;
+  grid-area: south;
+  align-self: stretch;
+  min-width: 0;
+  border: 1px solid rgba(229, 189, 104, 0.48);
+  border-radius: 14px;
+  padding: 10px 14px;
+  background: rgba(7, 37, 31, 0.92);
+  box-shadow: 0 18px 45px rgba(0, 0, 0, 0.22);
+}
+
+.player-seat--self .seat-river {
+  display: none;
+}
+
+.seat-self-summary {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+  margin-bottom: 4px;
+}
+
+.seat-self-summary .discard-row,
+.seat-self-summary .meld-row {
+  min-height: 0;
+  margin: 0;
+}
+
+.player-seat--south .seat-river .player-status-row,
+.player-seat--south .seat-river .meld-row {
+  min-height: 0;
+  margin: 0;
+}
+
+.player-seat--south .seat-river .discard-row {
+  min-height: 0;
+  margin: 0;
 }
 
 .seat-slot--north {
   grid-area: north;
+  min-height: 78px;
 }
 
 .seat-slot--south {
   grid-area: south;
-  width: min(780px, 100%);
-  justify-self: center;
+  width: 100%;
 }
 
 .seat-slot--west {
@@ -777,57 +947,99 @@ h1 {
 
 .seat-slot--west,
 .seat-slot--east {
-  margin-top: 20px;
+  min-height: 78px;
+}
+
+.seat-slot--west .player-seat,
+.seat-slot--east .player-seat,
+.seat-slot--north .player-seat {
+  min-height: 78px;
+}
+
+.table-dial {
+  position: relative;
+  z-index: 2;
+  grid-area: dial;
+  display: flex;
+  min-width: 0;
+  min-height: 132px;
+  flex-direction: column;
+  justify-content: center;
+  border: 1px solid rgba(229, 189, 104, 0.34);
+  border-radius: 16px;
+  padding: 14px 18px;
+  background:
+    radial-gradient(circle at 50% 26%, rgba(229, 189, 104, 0.11), transparent 62%),
+    rgba(4, 27, 23, 0.86);
+  box-shadow:
+    0 16px 44px rgba(0, 0, 0, 0.34),
+    inset 0 0 30px rgba(0, 0, 0, 0.28);
+}
+
+.table-dial-heading {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 3px;
+  margin-bottom: 8px;
+}
+
+.table-dial .discard-notice {
+  border-top: 0;
+  padding-top: 2px;
+}
+
+.table-dial .table-mark {
+  justify-content: flex-start;
+  gap: 14px;
+  margin-top: 8px;
+  letter-spacing: 0.12em;
+}
+
+.table-dial .table-hud {
+  flex: 1;
+  align-content: center;
+}
+
+.table-dial-round {
+  color: var(--muted);
+  font-size: 0.68rem;
+  letter-spacing: 0.06em;
+}
+
+.table-dial-prompt {
+  overflow: hidden;
+  color: var(--gold-soft);
+  font-size: 1.15rem;
+  line-height: 1.25;
+  text-overflow: ellipsis;
+}
+
+.table-dial .table-hud {
+  margin-top: auto;
 }
 
 .player-seat {
   min-width: 0;
-  border: 1px solid rgba(208, 232, 210, 0.15);
-  border-radius: 14px;
-  padding: 10px;
-  background: rgba(5, 31, 27, 0.5);
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.13);
-  backdrop-filter: blur(8px);
-  transition:
-    border-color 180ms ease,
-    box-shadow 180ms ease,
-    background 180ms ease;
+  display: contents;
 }
 
-.player-seat--self {
-  border-color: rgba(229, 189, 104, 0.48);
-  background: rgba(7, 37, 31, 0.86);
-  box-shadow:
-    0 18px 45px rgba(0, 0, 0, 0.22),
-    0 0 0 1px rgba(229, 189, 104, 0.08);
-}
-
-.player-seat--active {
+.player-seat--active .seat-river,
+.player-seat--active .seat-self {
   border-color: rgba(123, 224, 162, 0.7);
-  background: rgba(7, 48, 38, 0.86);
-  box-shadow:
-    0 0 0 2px rgba(123, 224, 162, 0.12),
-    0 18px 45px rgba(0, 0, 0, 0.22);
 }
 
-.player-seat--waiting {
+.player-seat--waiting .seat-river,
+.player-seat--waiting .seat-self {
   border-color: rgba(237, 141, 118, 0.62);
-  box-shadow:
-    0 0 0 2px rgba(237, 141, 118, 0.1),
-    0 18px 40px rgba(0, 0, 0, 0.18);
 }
 
-.player-seat--responded {
-  opacity: 0.8;
-}
-
-.player-seat--discarder {
+.player-seat--discarder .seat-river {
   border-color: var(--gold);
-  background: rgba(95, 74, 25, 0.28);
   box-shadow: inset 0 0 0 1px rgba(229, 189, 104, 0.26);
 }
 
-.player-seat--self.player-seat--waiting {
+.player-seat--self.player-seat--waiting .seat-self {
   border-color: #ffc5b5;
   background: rgba(76, 41, 31, 0.62);
   box-shadow: 0 0 0 3px rgba(237, 141, 118, 0.2);
@@ -1855,20 +2067,13 @@ h1 {
 .table-hud {
   position: relative;
   z-index: 2;
-  grid-area: hud;
   display: flex;
   min-width: 0;
   align-items: center;
   flex-wrap: wrap;
   gap: 6px 12px;
-  border: 1px solid rgba(229, 189, 104, 0.26);
-  border-radius: 16px;
-  padding: 8px 10px;
-  background: rgba(3, 31, 26, 0.58);
-  box-shadow:
-    0 15px 40px rgba(0, 0, 0, 0.16),
-    inset 0 1px 0 rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(10px);
+  padding: 0 0 8px;
+  border-bottom: 1px solid rgba(229, 189, 104, 0.2);
 }
 
 .wall-summary,
@@ -1977,7 +2182,6 @@ h1 {
 .table-mark {
   position: relative;
   z-index: 1;
-  grid-area: marks;
   display: flex;
   justify-content: center;
   gap: 24px;
@@ -2557,15 +2761,119 @@ h1 {
   }
 
   .felt-table {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: minmax(0, 1fr);
     grid-template-areas:
-      'hud hud'
-      'north north'
-      'west east'
-      'south south'
-      'marks marks';
+      'dial'
+      'north'
+      'west'
+      'east'
+      'south';
     gap: 8px;
     padding: 8px;
+  }
+
+  .seat-slot,
+  .seat-slot > .player-seat,
+  .player-seat {
+    display: block;
+    border: 1px solid rgba(208, 232, 210, 0.15);
+    border-radius: 14px;
+    padding: 10px;
+    background: rgba(5, 31, 27, 0.5);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.13);
+  }
+
+  .player-seat--self {
+    border-color: rgba(229, 189, 104, 0.48);
+    background: rgba(7, 37, 31, 0.86);
+  }
+
+  .player-seat--active {
+    border-color: rgba(123, 224, 162, 0.7);
+  }
+
+  .player-seat--waiting {
+    border-color: rgba(237, 141, 118, 0.62);
+  }
+
+  .player-seat--discarder {
+    border-color: var(--gold);
+  }
+
+  .seat-corner-card {
+    display: none;
+  }
+
+  .seat-slot--north .seat-corner,
+  .seat-slot--south .seat-corner,
+  .seat-slot--west .seat-corner,
+  .seat-slot--east .seat-corner {
+    display: block;
+  }
+
+  .seat-river,
+  .seat-self {
+    border: 0;
+    border-radius: 0;
+    padding: 0;
+    background: none;
+    box-shadow: none;
+  }
+
+  .player-seat--self .seat-river,
+  .seat-slot--south .seat-river {
+    display: block;
+  }
+
+  .seat-slot--north .seat-river,
+  .seat-slot--west .seat-river,
+  .seat-slot--east .seat-river,
+  .seat-slot--south .seat-river {
+    grid-area: auto;
+  }
+
+  .table-dial {
+    order: 0;
+  }
+
+  .seat-slot--north .player-seat,
+  .seat-slot--south .player-seat,
+  .seat-slot--west .player-seat,
+  .seat-slot--east .player-seat {
+    display: block;
+  }
+
+  .seat-slot--north .player-heading,
+  .seat-slot--south .player-heading {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .seat-slot--north .player-status-row,
+  .seat-slot--north .meld-row,
+  .seat-slot--north .discard-row,
+  .seat-slot--north .hidden-hand,
+  .seat-slot--south .player-status-row,
+  .seat-slot--south .meld-row,
+  .seat-slot--south .discard-row,
+  .seat-slot--south .hidden-hand {
+    grid-column: auto;
+  }
+
+  .seat-slot--north .player-seat {
+    display: grid;
+    grid-template-columns: minmax(0, 118px) minmax(0, 1fr);
+  }
+
+  .player-seat:not(.player-seat--self) .hidden-hand {
+    min-height: 0;
+    height: 26px;
+  }
+
+  .player-seat:not(.player-seat--self) .discard-row {
+    min-height: 0;
   }
 
   .seat-slot--north {

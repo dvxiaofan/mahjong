@@ -222,85 +222,134 @@ export function PlayerSeat({
         .filter(Boolean)
         .join(' ')}
     >
-      <div className="player-heading">
-        <div className="player-identity">
-          <span className="seat-number">{player.seat + 1}</span>
-          <span>
-            <strong>
-              {label ?? positionLabels[position]}
-              {decoration?.name !== undefined && (
-                <span className="seat-name">{decoration.name}</span>
-              )}
-            </strong>
-            <small>
-              {revealed ? '本局亮牌' : dealer ? '庄家' : `${player.concealedTileCount}张手牌`}
-              {revealed && dealer ? ' · 庄家' : ''}
-            </small>
-          </span>
-        </div>
-        <div className="seat-heading-status">
-          {decoration?.host === true && (
-            <span className="seat-badge seat-badge--host" title="房主">
-              👑 房主
+      <div className="seat-corner">
+        <div className="player-heading">
+          <div className="player-identity">
+            <span className="seat-number">{player.seat + 1}</span>
+            <span>
+              <strong>
+                {label ?? positionLabels[position]}
+                {decoration?.name !== undefined && (
+                  <span className="seat-name">{decoration.name}</span>
+                )}
+              </strong>
+              <small>
+                {revealed ? '本局亮牌' : dealer ? '庄家' : `${player.concealedTileCount}张手牌`}
+                {revealed && dealer ? ' · 庄家' : ''}
+              </small>
             </span>
-          )}
-          {decoration?.bot === true && <span className="seat-badge seat-badge--bot">机器人</span>}
-          {winningTile !== null && <span className="seat-state seat-state--winner">胡牌</span>}
-          {activityLabel !== undefined && (
-            <span className={`seat-state seat-state--${activity}`}>{activityLabel}</span>
-          )}
-          <span className="score-label">{player.score} 分</span>
-        </div>
-      </div>
-
-      <div className="player-status-row">
-        {renderFortunes(player.fortuneCount)}
-        {player.mouthDeclared && <span className="status-pill">已报嘴</span>}
-        {isSelf && player.mouthRequired && (
-          <span className="status-pill status-pill--warn">待报嘴</span>
-        )}
-      </div>
-
-      {player.melds.length > 0 && (
-        <div className="meld-row" aria-label="碰杠区">
-          {player.melds.map((meld, index) => renderMeld(meld, index, revealed))}
-        </div>
-      )}
-
-      {recentDiscards.length > 0 && (
-        <div className="discard-row" aria-label="弃牌区">
-          {recentDiscards.map((tile, index) =>
-            discardHighlight?.presentation.discardIndex === discardOffset + index ? (
-              <span
-                key={`${tile}-${discardOffset + index}`}
-                className={`discard-target${discardHighlight.floating ? ' discard-target--floating' : ''}`}
-                ref={discardHighlight.targetRef}
-                aria-hidden={discardHighlight.floating || undefined}
-                data-discard-id={discardHighlight.presentation.id}
-              >
-                <TileFace compact tile={tile} />
+          </div>
+          <div className="seat-heading-status">
+            {decoration?.host === true && (
+              <span className="seat-badge seat-badge--host" title="房主">
+                👑 房主
               </span>
-            ) : (
-              <TileFace compact key={`${tile}-${discardOffset + index}`} tile={tile} />
-            ),
-          )}
+            )}
+            {decoration?.bot === true && <span className="seat-badge seat-badge--bot">机器人</span>}
+            {winningTile !== null && <span className="seat-state seat-state--winner">胡牌</span>}
+            {activityLabel !== undefined && (
+              <span className={`seat-state seat-state--${activity}`}>{activityLabel}</span>
+            )}
+            <span className="score-label">{player.score} 分</span>
+          </div>
         </div>
-      )}
+      </div>
 
-      {player.visibility === 'public' ? (
-        renderPublicHand(player)
-      ) : player.visibility === 'revealed' || revealHand ? (
-        renderFinalHand(player, winningTile)
-      ) : (
-        <SelfHand
-          player={player}
-          actions={legalActions}
-          lastDrawnTile={lastDrawnTile}
-          onAction={onAction}
-          interaction={handInteraction}
-        />
-      )}
-      {isSelf && !revealed && controls}
+      <div className="seat-river">
+        {!isSelf && (
+          <>
+            <div className="player-status-row">
+              {renderFortunes(player.fortuneCount)}
+              {player.mouthDeclared && <span className="status-pill">已报嘴</span>}
+            </div>
+
+            {player.melds.length > 0 && (
+              <div className="meld-row" aria-label="碰杠区">
+                {player.melds.map((meld, index) => renderMeld(meld, index, revealed))}
+              </div>
+            )}
+
+            {recentDiscards.length > 0 && (
+              <div className="discard-row" aria-label="弃牌区">
+                {recentDiscards.map((tile, index) =>
+                  discardHighlight?.presentation.discardIndex === discardOffset + index ? (
+                    <span
+                      key={`${tile}-${discardOffset + index}`}
+                      className={`discard-target${discardHighlight.floating ? ' discard-target--floating' : ''}`}
+                      ref={discardHighlight.targetRef}
+                      aria-hidden={discardHighlight.floating || undefined}
+                      data-discard-id={discardHighlight.presentation.id}
+                    >
+                      <TileFace compact tile={tile} />
+                    </span>
+                  ) : (
+                    <TileFace compact key={`${tile}-${discardOffset + index}`} tile={tile} />
+                  ),
+                )}
+              </div>
+            )}
+          </>
+        )}
+        {player.visibility === 'public' && renderPublicHand(player)}
+        {revealed &&
+          !isSelf &&
+          player.visibility !== 'public' &&
+          renderFinalHand(player, winningTile)}
+      </div>
+
+      {isSelf ? (
+        <div className="seat-self">
+          {isSelf && (
+            <div className="seat-self-summary">
+              {renderFortunes(player.fortuneCount)}
+              {player.mouthDeclared && <span className="status-pill">已报嘴</span>}
+              {player.mouthRequired && (
+                <span className="status-pill status-pill--warn">待报嘴</span>
+              )}
+              {player.melds.length > 0 && (
+                <div className="meld-row" aria-label="碰杠区">
+                  {player.melds.map((meld, index) => renderMeld(meld, index, revealed))}
+                </div>
+              )}
+              {recentDiscards.length > 0 && (
+                <div className="discard-row" aria-label="弃牌区">
+                  {recentDiscards.map((tile, index) =>
+                    discardHighlight?.presentation.discardIndex === discardOffset + index ? (
+                      <span
+                        key={`${tile}-${discardOffset + index}`}
+                        className={`discard-target${discardHighlight.floating ? ' discard-target--floating' : ''}`}
+                        ref={discardHighlight.targetRef}
+                        aria-hidden={discardHighlight.floating || undefined}
+                        data-discard-id={discardHighlight.presentation.id}
+                      >
+                        <TileFace compact tile={tile} />
+                      </span>
+                    ) : (
+                      <TileFace compact key={`${tile}-${discardOffset + index}`} tile={tile} />
+                    ),
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+          {isSelf ? (
+            revealed ? (
+              renderFinalHand(player, winningTile)
+            ) : (
+              <>
+                <SelfHand
+                  player={player}
+                  actions={legalActions}
+                  lastDrawnTile={lastDrawnTile}
+                  onAction={onAction}
+                  interaction={handInteraction}
+                />
+                {controls}
+              </>
+            )
+          ) : null}
+        </div>
+      ) : null}
     </article>
   );
 }

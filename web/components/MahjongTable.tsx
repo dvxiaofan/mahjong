@@ -46,12 +46,14 @@ interface MahjongTableProps {
 
 type TablePosition = 'north' | 'west' | 'east' | 'south';
 
-const seatPositions: ReadonlyArray<{ position: TablePosition; seat: Seat }> = [
-  { position: 'north', seat: 2 },
-  { position: 'west', seat: 3 },
-  { position: 'east', seat: 1 },
-  { position: 'south', seat: 0 },
+/** Absolute seats for a viewer on seat 0; other viewers rotate by their own seat. */
+const seatRegions: ReadonlyArray<{ region: TablePosition; corner: string; seat: Seat }> = [
+  { region: 'south', corner: 'sw', seat: 0 },
+  { region: 'east', corner: 'se', seat: 1 },
+  { region: 'north', corner: 'ne', seat: 2 },
+  { region: 'west', corner: 'nw', seat: 3 },
 ];
+
 function playerFor(view: GameAudienceView, seat: Seat): PlayerViewEntry {
   const player = view.players.find((entry) => entry.seat === seat);
   if (player === undefined) throw new Error(`视图缺少 ${seat} 号玩家`);
@@ -161,23 +163,72 @@ export function MahjongTable({
           )}
         </TableCenterLayer>
 
-        <div className="table-hud" aria-label="牌桌状态">
-          <div className="wall-summary">
-            <span className="wall-label">牌墙剩余</span>
-            <strong className="wall-count">{view.wallRemaining}</strong>
-            <span className="wall-caption">张</span>
-          </div>
-          <div className="turn-summary">
-            <span className="turn-line">
-              <span className="turn-dot" aria-hidden="true" />
-              {isReplaying ? '回放 · ' : '当前：'}
-              {getTurnLabel(view)}
+        <section className="table-dial" aria-label="牌局局况">
+          <div className="table-dial-heading">
+            <span className="table-dial-round">
+              {roundSetup === undefined ? '牌局进行中' : `第 ${roundSetup.roundNumber} 局`}
+              {roundSetup !== undefined && ` · ${isReplaying ? '回放' : '进行中'}`}
             </span>
+            <strong className="table-dial-prompt">
+              {view.viewerSeat === null ? prompt : getTurnLabel(view)}
+            </strong>
           </div>
-          <DiscardNotice key={discardKey} view={interactionView} isReplaying={isReplaying} />
-        </div>
+          <div className="table-hud" aria-label="牌桌状态">
+            <div className="wall-summary">
+              <span className="wall-label">牌墙剩余</span>
+              <strong className="wall-count">{view.wallRemaining}</strong>
+              <span className="wall-caption">张</span>
+            </div>
+            <div className="turn-summary">
+              <span className="turn-line">
+                <span className="turn-dot" aria-hidden="true" />
+                {isReplaying ? '回放 · ' : '当前：'}
+                {getTurnLabel(view)}
+              </span>
+            </div>
+            <DiscardNotice key={discardKey} view={interactionView} isReplaying={isReplaying} />
+          </div>
+          <div className="table-mark">
+            <span>逆时针</span>
+            <span>庄家 · {seatLabel(view.dealerSeat, view.viewerSeat)}</span>
+          </div>
+        </section>
 
-        {seatPositions.map(({ position, seat: relativeSeat }) => {
+        {seatRegions.map(({ corner, seat: relativeSeat }) => {
+          const baseSeat = view.viewerSeat ?? 0;
+          const seat = ((baseSeat + relativeSeat) % 4) as Seat;
+          const decoration = seatDecorations?.[seat];
+          return (
+            <div
+              className={`seat-corner-card seat-corner-card--${corner}`}
+              key={corner}
+              aria-label={`${seatLabel(seat, view.viewerSeat)}座位信息`}
+            >
+              <div className="seat-corner-head">
+                <span className="seat-corner-number">{seat + 1}</span>
+                <strong>{seatLabel(seat, view.viewerSeat)}</strong>
+                {decoration?.name !== undefined && (
+                  <span className="seat-corner-name">{decoration.name}</span>
+                )}
+              </div>
+              <div className="seat-corner-meta">
+                {decoration?.host === true && (
+                  <span className="seat-badge seat-badge--host">👑 房主</span>
+                )}
+                {decoration?.bot === true && (
+                  <span className="seat-badge seat-badge--bot">机器人</span>
+                )}
+                {view.dealerSeat === seat && <span>庄家</span>}
+                <span>{playerFor(view, seat).score} 分</span>
+              </div>
+              <div className="seat-corner-status">
+                {getSeatActivityLabel(interactionView, seat, isReplaying) ?? '等待中'}
+              </div>
+            </div>
+          );
+        })}
+
+        {seatRegions.map(({ region: position, seat: relativeSeat }) => {
           const baseSeat = view.viewerSeat ?? 0;
           const seat = ((baseSeat + relativeSeat) % 4) as Seat;
           return (
@@ -236,11 +287,6 @@ export function MahjongTable({
             </div>
           );
         })}
-
-        <div className="table-mark">
-          <span>逆时针</span>
-          <span>庄家 · {seatLabel(view.dealerSeat, view.viewerSeat)}</span>
-        </div>
       </section>
 
       {view.viewerSeat === null && (

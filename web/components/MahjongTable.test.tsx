@@ -49,6 +49,29 @@ function renderTable(
 }
 
 describe('牌桌出牌与操作提示', () => {
+  it('牌桌提供常驻中央局况盘，四向座位仍围绕中央排列', () => {
+    const html = renderTable(projectStateForSeat(createGame({ seed: 3 }), 0));
+    expect(html).toContain('class="table-dial"');
+    expect(html).toContain('aria-label="牌局局况"');
+    expect(html).toContain('seat-slot--north');
+    expect(html).toContain('seat-slot--west');
+    expect(html).toContain('seat-slot--east');
+    expect(html).toContain('seat-slot--south');
+  });
+
+  it('局况与最近出牌集中在中央盘，不新增重复的操作区或出牌提示', () => {
+    const html = renderTable(projectStateForSeat(responseState(), 0));
+    expect(html.match(/aria-label="出牌提示"/g)).toHaveLength(1);
+    expect(html.match(/aria-label="我方操作"/g)).toHaveLength(1);
+    const dialStart = html.indexOf('class="table-dial"');
+    const dial = html.slice(dialStart, html.indexOf('</section>', dialStart));
+    expect(dial).toContain('牌墙剩余');
+    expect(dial).toContain('aria-label="出牌提示"');
+    expect(dial).toContain('class="response-details"');
+    expect(dial).toContain('庄家');
+    expect(dial).toContain('当前：等待各家响应');
+  });
+
   it('待响应牌在中央独立浮层展示，来源牌区只保留隐藏的小牌占位', () => {
     const html = renderTable(projectStateForSeat(responseState(), 0));
     expect(html.match(/class="table-discard-overlay"/g)).toHaveLength(1);

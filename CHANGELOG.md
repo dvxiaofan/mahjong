@@ -6,6 +6,7 @@ All notable changes to this project are documented in this file.
 
 ### Added
 
+- A nine-region PC table layout: four corner identity chips, four directional discard rivers and a persistent central status dial, with the player's hand and actions occupying the bottom row;
 - Local play now opens on a start panel: nothing is dealt and no AI moves until the player clicks 开始对局 (or 继续对局 for a saved game, with an option to discard the save);
 - Online rooms now wait for an explicit host start: the room is created in a lobby state, the host sees a "开始牌局" button once four seats are filled, and no action or turn timer runs before it;
 - Host-controlled bot seats: the host can fill empty seats with server-played bots (and remove them before the start); a joining human always takes over the newest bot's seat, and bots can also patch a seat vacated mid-match;
@@ -27,6 +28,7 @@ All notable changes to this project are documented in this file.
 
 ### Changed
 
+- On wide screens the table is reorganised around a central status dial instead of three large opponent cards with an empty felt middle; narrow viewports keep the existing stacked layout;
 - All 30 tile faces are fetched and decoded before the table is shown (with a 5 s fallback), so no tile ever appears blank while its image loads over a slow link;
 - Static caching is tiered: hashed bundles are immutable for a year, tile and audio media are cached for a week, HTML is always revalidated;
 - Compact table spacing with dealer details, response progress and recent events available on demand;
