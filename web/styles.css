@@ -202,6 +202,27 @@ h1 {
   gap: 6px;
 }
 
+.sound-voice-pack {
+  display: grid;
+  gap: 6px;
+  font-size: 14px;
+}
+
+.sound-voice-pack select {
+  min-height: 34px;
+  border: 1px solid rgb(211 185 126 / 28%);
+  border-radius: 9px;
+  padding: 6px 10px;
+  color: var(--ink);
+  background: #143a32;
+  font: inherit;
+}
+
+.sound-voice-pack select:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px rgb(227 198 134 / 34%);
+}
+
 .sound-volume > span {
   justify-content: space-between;
 }

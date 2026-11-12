@@ -1,9 +1,12 @@
 export const SOUND_STORAGE_KEY = 'play-mahjong.sound.v1';
 
+export type VoicePack = 'male' | 'female';
+
 export interface SoundSettings {
   enabled: boolean;
   voiceEnabled: boolean;
   effectsEnabled: boolean;
+  voicePack: VoicePack;
   voiceVolume: number;
   effectsVolume: number;
 }
@@ -17,6 +20,7 @@ export const DEFAULT_SOUND_SETTINGS: Readonly<SoundSettings> = {
   enabled: false,
   voiceEnabled: true,
   effectsEnabled: true,
+  voicePack: 'male',
   voiceVolume: 0.8,
   effectsVolume: 0.35,
 };
@@ -40,6 +44,7 @@ export function normalizeSoundSettings(value: unknown): SoundSettings {
       typeof input.effectsEnabled === 'boolean'
         ? input.effectsEnabled
         : DEFAULT_SOUND_SETTINGS.effectsEnabled,
+    voicePack: input.voicePack === 'female' ? 'female' : 'male',
     voiceVolume: volume(input.voiceVolume, DEFAULT_SOUND_SETTINGS.voiceVolume),
     effectsVolume: volume(input.effectsVolume, DEFAULT_SOUND_SETTINGS.effectsVolume),
   };

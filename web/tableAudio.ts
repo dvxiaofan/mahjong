@@ -1,5 +1,8 @@
 import { NORMAL_TILE_TYPES, type NormalTile } from '../src/tiles.ts';
 import type { GameAudienceView } from '../src/types.ts';
+import type { VoicePack } from './soundSettings';
+
+const AUDIO_VERSION = 2;
 
 export type VoiceClip =
   | NormalTile
@@ -13,8 +16,12 @@ export type VoiceClip =
   | 'self-draw'
   | 'drawn';
 
-export function voiceClipUrl(clip: VoiceClip): string {
-  return `/audio/mandarin/${clip}.mp3?v=1`;
+export function voicePackDirectory(pack: VoicePack): string {
+  return pack === 'female' ? 'mandarin' : 'mandarin-male';
+}
+
+export function voiceClipUrl(clip: VoiceClip, pack: VoicePack = 'male'): string {
+  return `/audio/${voicePackDirectory(pack)}/${clip}.mp3?v=${AUDIO_VERSION}`;
 }
 
 export function effectClipUrl(clip: VoiceClip): string {
@@ -23,7 +30,7 @@ export function effectClipUrl(clip: VoiceClip): string {
     : clip === 'win' || clip === 'self-draw'
       ? 'win'
       : 'action';
-  return `/audio/effects/${name}.wav?v=1`;
+  return `/audio/effects/${name}.wav?v=${AUDIO_VERSION}`;
 }
 
 /** Only fixed public event fields can select speech; private event text is never read. */
@@ -98,6 +105,7 @@ export class TableAudioPlayer {
   private generation = 0;
   private volumes = { voice: 0.8, effects: 0 };
   private channelVersions = { voice: 0, effects: 0 };
+  private voicePack: VoicePack = 'male';
 
   constructor(
     private createContext: () => AudioContext = () => new AudioContext(),
@@ -138,6 +146,15 @@ export class TableAudioPlayer {
     if (this.volumes.voice === 0 && this.volumes.effects === 0) this.stop();
   }
 
+  setVoicePack(pack: VoicePack): void {
+    if (pack === this.voicePack) return;
+    this.voicePack = pack;
+    this.channelVersions.voice++;
+    for (const [source, channel] of this.sources) {
+      if (channel === 'voice') this.stopSource(source);
+    }
+  }
+
   private buffer(url: string, context: AudioContext): Promise<AudioBuffer> {
     let pending = this.buffers.get(url);
     if (pending === undefined) {
@@ -155,6 +172,7 @@ export class TableAudioPlayer {
   async play(clip: VoiceClip): Promise<void> {
     this.stop();
     const generation = this.generation;
+    const voicePack = this.voicePack;
     const context = this.context;
     if (context === null || context.state !== 'running') return;
     await Promise.all(
@@ -164,7 +182,7 @@ export class TableAudioPlayer {
         let buffer: AudioBuffer;
         try {
           buffer = await this.buffer(
-            channel === 'voice' ? voiceClipUrl(clip) : effectClipUrl(clip),
+            channel === 'voice' ? voiceClipUrl(clip, voicePack) : effectClipUrl(clip),
             context,
           );
         } catch (error) {

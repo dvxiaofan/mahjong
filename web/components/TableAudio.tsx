@@ -88,12 +88,16 @@ export function TableAudioProvider({
   const update = useCallback(
     (patch: Partial<SoundSettings>) => {
       const next = normalizeSoundSettings({ ...settingsRef.current, ...patch });
+      const packChanged =
+        patch.voicePack !== undefined && patch.voicePack !== settingsRef.current.voicePack;
       settingsRef.current = next;
       setSettings(next);
+      if (packChanged) stop();
+      player.current?.setVoicePack(next.voicePack);
       player.current?.setVolumes(playbackVolumes(next));
       setSaved(saveSoundSettings(storage, next));
     },
-    [storage],
+    [stop, storage],
   );
   const mute = useCallback(() => {
     activation.current++;
@@ -108,6 +112,7 @@ export function TableAudioProvider({
     setStatus('loading');
     setMessage(null);
     const current = (player.current ??= new TableAudioPlayer());
+    current.setVoicePack(settingsRef.current.voicePack);
     current.setVolumes(playbackVolumes(settingsRef.current));
     try {
       await current.enable();
@@ -232,6 +237,21 @@ export function SoundToggle() {
             />
             语音报牌
           </label>
+          <label className="sound-voice-pack">
+            <span>播报音色</span>
+            <select
+              aria-label="播报音色"
+              value={sound.settings.voicePack}
+              onChange={(event) =>
+                sound.update({
+                  voicePack: event.currentTarget.value === 'female' ? 'female' : 'male',
+                })
+              }
+            >
+              <option value="male">男声 · 超文</option>
+              <option value="female">女声 · 婷婷</option>
+            </select>
+          </label>
           <label className="sound-volume">
             <span>
               语音音量 <output>{Math.round(sound.settings.voiceVolume * 100)}%</output>
@@ -291,6 +311,7 @@ export function SoundToggle() {
               : '本次设置有效，当前浏览器无法保存偏好。'}
           </small>
           <small>只播报公开动作，暗牌和听口不外放。</small>
+          <small>男声为离线神经网络合成，不读取麦克风。</small>
         </div>
       </details>
       {sound.message !== null && (

@@ -38,6 +38,7 @@ describe('声音偏好与设置面板', () => {
       ...DEFAULT_SOUND_SETTINGS,
       enabled: true,
       voiceEnabled: false,
+      voicePack: 'female' as const,
       voiceVolume: 0.55,
       effectsVolume: 0.2,
     };
@@ -58,6 +59,7 @@ describe('声音偏好与设置面板', () => {
         enabled: 'yes',
         voiceEnabled: false,
         effectsEnabled: null,
+        voicePack: 'robot',
         voiceVolume: 3,
         effectsVolume: -2,
       }),
@@ -65,6 +67,8 @@ describe('声音偏好与设置面板', () => {
     expect(normalizeSoundSettings({ voiceVolume: NaN, effectsVolume: Infinity })).toEqual(
       DEFAULT_SOUND_SETTINGS,
     );
+    expect(normalizeSoundSettings({ voicePack: 'female' }).voicePack).toBe('female');
+    expect(normalizeSoundSettings({ voicePack: 'robot' }).voicePack).toBe('male');
     expect(
       saveSoundSettings(
         {
@@ -92,6 +96,9 @@ describe('声音偏好与设置面板', () => {
     expect(html).toContain('开启声音');
     expect(html).toContain('声音设置');
     expect(html).toContain('语音报牌');
+    expect(html).toContain('播报音色');
+    expect(html).toContain('男声 · 超文');
+    expect(html).toContain('女声 · 婷婷');
     expect(html).toContain('牌桌音效');
     expect(html).toContain('aria-label="语音音量"');
     expect(html).toContain('aria-valuetext="55%"');

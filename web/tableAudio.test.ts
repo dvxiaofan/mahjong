@@ -30,11 +30,33 @@ describe('公开动作语音', () => {
       projectStateForSpectator(state),
     ]) {
       expect(getLatestVoiceClip(view, 0)).toBe(tile);
-      const file = readFileSync(
-        new URL(`./public${voiceClipUrl(tile).split('?')[0]}`, import.meta.url),
+      for (const pack of ['male', 'female'] as const) {
+        const file = readFileSync(
+          new URL(`./public${voiceClipUrl(tile, pack).split('?')[0]}`, import.meta.url),
+        );
+        expect(file.length).toBeGreaterThan(500);
+        expect(file.subarray(0, 3).toString()).toBe('ID3');
+      }
+    }
+  });
+
+  it('男女声包各自独立，明杠与暗杠的文件和清单不串音', () => {
+    expect(voiceClipUrl('exposed-kong', 'male')).toBe('/audio/mandarin-male/exposed-kong.mp3?v=2');
+    expect(voiceClipUrl('exposed-kong', 'female')).toBe('/audio/mandarin/exposed-kong.mp3?v=2');
+    for (const pack of ['male', 'female'] as const) {
+      const directory = pack === 'male' ? 'mandarin-male' : 'mandarin';
+      const manifest = JSON.parse(
+        readFileSync(new URL(`./public/audio/${directory}/manifest.json`, import.meta.url), 'utf8'),
+      ) as { clips: Record<string, string> };
+      expect(manifest.clips['exposed-kong']).toBe('明杠');
+      expect(manifest.clips['concealed-kong']).toBe('暗杠');
+      const exposed = readFileSync(
+        new URL(`./public${voiceClipUrl('exposed-kong', pack).split('?')[0]}`, import.meta.url),
       );
-      expect(file.length).toBeGreaterThan(500);
-      expect(file.subarray(0, 3).toString()).toBe('ID3');
+      const concealed = readFileSync(
+        new URL(`./public${voiceClipUrl('concealed-kong', pack).split('?')[0]}`, import.meta.url),
+      );
+      expect(exposed.equals(concealed)).toBe(false);
     }
   });
 
@@ -219,6 +241,17 @@ describe('语音播放器生命周期', () => {
     player.dispose();
     expect(sources[1]!.stop).toHaveBeenCalledOnce();
     expect(context.close).toHaveBeenCalledOnce();
+  });
+
+  it('切换播报音色会取消旧语音并使用新音色资源', async () => {
+    const { player, sources, load } = audioHarness();
+    await player.enable();
+    await player.play('m7');
+    player.setVoicePack('female');
+    await player.play('m7');
+    expect(load).toHaveBeenCalledWith(voiceClipUrl('m7', 'male'));
+    expect(load).toHaveBeenCalledWith(voiceClipUrl('m7', 'female'));
+    expect(sources.some((source) => source.stop.mock.calls.length > 0)).toBe(true);
   });
 
   it('静音、离开或新动作能取消尚在加载的语音', async () => {

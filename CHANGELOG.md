@@ -19,6 +19,7 @@ All notable changes to this project are documented in this file.
 - Persistent hand preferences with touch-first selection and explicit discard confirmation, optional direct clicking and wrapped or scrollable hands;
 - Bundled Mandarin announcements for public discards and table actions, with private draws/waits excluded and stale playback cancelled;
 - Persistent master mute, separate voice/effect switches and volumes, preview and three generated table effects;
+- An offline male Mandarin voice pack (`Piper zh_CN-chaowen-medium`) alongside the existing female pack, with a saved male/female voice setting; male is the new default;
 - Winning-hand explanations showing actual melds and the pair, using the same partition search as win detection and preferring the all-pungs scoring decomposition;
 - An expandable own-hand explanation for incomplete shape, fortune/mouth requirements and turn restrictions, with remaining tiles and read-only replay context;
 - Visually reviewed references for all 30 active tile faces, with image-content checks and four-seat action, visibility and tile-conservation regression coverage;
@@ -36,6 +37,7 @@ All notable changes to this project are documented in this file.
 - The square table now uses `min(90vh, 1120px, calc(100vh - 122px), 100cqw)`: 2000×1200 renders 1078px, 1440×900 renders 778px, 1366×768 renders 646px and 1280×720 renders 618px, with no page scrolling;
 - Seat labels, scores, status chips, meld text, compass numbers, rivers, hand tiles and action buttons scale from the table size; at 2000×1200 the seat title reaches 18px, secondary labels 15px, hand tiles 66.8×92.2px and river tiles 46px;
 - Claim actions now occupy a centred row above the hand instead of a narrow column below it: unavailable slots collapse, pong/kong use stronger blue emphasis, pass stays available but quieter, and the 2000×1200 buttons measure 108×60px with 18px labels (88×44px at 1280×720);
+- Kong notices now use the large glyphs 明 / 暗 / 补 instead of a generic 杠, so the compact notice above a floating discard still distinguishes exposed, concealed and added kongs even when its secondary label is hidden;
 - The hand dock now reserves a fixed single-line status below the hand. Response buttons and the discard-confirmation button live above the tiles, so showing or hiding them moves the dock's top edge but never changes the hand's vertical position;
 - Hand settings moved from the table's bottom-right corner into the right rail on screens 1200px and wider; the dock copy remains available below 1200px, and both entries share the same saved preference state;
 - The latest-discard notice, response progress and legal actions moved from the central compass into the hand dock, leaving the compass with only round, wall count and seat direction;
@@ -53,6 +55,7 @@ All notable changes to this project are documented in this file.
 
 ### Fixed
 
+- Exposed-kong feedback now has an end-to-end regression covering the engine event, meld, text, central notice, voice clip and settlement reason; audio URLs moved to `v=2` so browsers cannot keep a stale `v=1` clip;
 - The site now declares a favicon, so browsers no longer request `/favicon.ico` and log a 404 on every page load;
 - The full-game bot simulation test now carries an explicit timeout, so a slow build machine can no longer fail the Docker image build;
 - Disconnection reasons take priority over a pending submission message, while unavailable actions stay hidden;

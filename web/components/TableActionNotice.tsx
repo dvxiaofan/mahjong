@@ -2,7 +2,11 @@ import { useEffect, useRef, useState } from 'react';
 import type { GameAudienceView } from '../../src/types.ts';
 import { tileLabel } from '../../src/tiles.ts';
 import { seatLabel } from '../uiModel';
-import { getTableActionNotice, type TableActionNotice as ActionNotice } from '../tableFeedback';
+import {
+  actionNoticeGlyph,
+  getTableActionNotice,
+  type TableActionNotice as ActionNotice,
+} from '../tableFeedback';
 import { MahjongTileFace } from './MahjongTileFace';
 
 export const ACTION_NOTICE_MS = 1400;
@@ -55,7 +59,7 @@ export function TableActionNotice({ view, contextKey, live }: TableActionNoticeP
         {seatLabel(action.seat, view.viewerSeat)}（{action.seat + 1}号位）
       </span>
       <div className="table-callout-face">
-        <strong>{action.kind === 'win' ? '胡' : action.kind === 'pong' ? '碰' : '杠'}</strong>
+        <strong>{actionNoticeGlyph(action.kind)}</strong>
         {action.tile !== null && (
           <span className="mahjong-tile" aria-label={tileLabel(action.tile)}>
             <MahjongTileFace tile={action.tile} />

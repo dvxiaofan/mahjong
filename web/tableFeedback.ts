@@ -16,6 +16,15 @@ export interface TableActionNotice {
   tile: GameEventView['tile'];
 }
 
+export function actionNoticeGlyph(kind: TableActionNotice['kind']): string {
+  if (kind === 'win') return '胡';
+  if (kind === 'pong') return '碰';
+  if (kind === 'exposed-kong') return '明';
+  if (kind === 'concealed-kong') return '暗';
+  if (kind === 'supplement-kong') return '补';
+  return '杠';
+}
+
 /** Read only public action events added after the last observed snapshot. */
 export function getTableActionNotice(
   view: GameAudienceView,

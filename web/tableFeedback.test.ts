@@ -1,9 +1,17 @@
 import { describe, expect, it } from 'vitest';
 import { createGame } from '../src/game';
 import { projectStateForSeat, projectStateForSpectator } from '../src/view';
-import { getTableActionNotice } from './tableFeedback';
+import { actionNoticeGlyph, getTableActionNotice } from './tableFeedback';
 
 describe('中央动作提示', () => {
+  it('杠类提示用明/暗/补区分，紧凑提示即使隐藏副标签也不会混淆', () => {
+    expect(actionNoticeGlyph('exposed-kong')).toBe('明');
+    expect(actionNoticeGlyph('concealed-kong')).toBe('暗');
+    expect(actionNoticeGlyph('supplement-kong')).toBe('补');
+    expect(actionNoticeGlyph('pong')).toBe('碰');
+    expect(actionNoticeGlyph('win')).toBe('胡');
+  });
+
   it.each(['pong', 'exposed-kong', 'concealed-kong', 'supplement-kong', 'win'] as const)(
     '识别 %s 并忽略后续摸牌、支付事件',
     (kind) => {
