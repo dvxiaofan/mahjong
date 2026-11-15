@@ -64,6 +64,7 @@ All notable changes to this project are documented in this file.
 
 ### Fixed
 
+- Playwright's Vite web server now binds explicitly to `127.0.0.1` and pipes startup logs, preventing the Ubuntu CI job from timing out while waiting for the dev server;
 - Whole-game coach loss attribution now checks the actual pending discard's owner and tile, instead of assigning a loss to the latest human discard with the same tile face;
 - Exposed-kong feedback now has an end-to-end regression covering the engine event, meld, text, central notice, voice clip and settlement reason; audio URLs moved to `v=2` so browsers cannot keep a stale `v=1` clip;
 - The site now declares a favicon, so browsers no longer request `/favicon.ico` and log a 404 on every page load;
