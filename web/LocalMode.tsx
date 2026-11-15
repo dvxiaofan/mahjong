@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import type { AiDifficulty } from '../src/ai-difficulty.ts';
+import { CoachToggle } from './coach/CoachToggle';
+import { useCoach } from './coach/useCoach';
 import { HistoryDrawer } from './components/HistoryDrawer';
 import { MahjongTable } from './components/MahjongTable';
 import { createFreshLocalSeed } from './localSession';
@@ -18,6 +20,7 @@ export function LocalMode() {
   // Nothing moves until the player explicitly starts; a saved game waits to be resumed too.
   const [started, setStarted] = useState(false);
   const game = useLocalGame(initialSeed, difficulty, { active: started });
+  const coach = useCoach(game.state, game.view, game.isReplaying, game.roundKey, difficulty);
   const resumable = game.restored && game.records.length > 0;
 
   if (!started) {
@@ -43,6 +46,10 @@ export function LocalMode() {
             ))}
           </select>
         </label>
+        <CoachToggle
+          enabled={coach.settings.enabled}
+          onChange={(enabled) => coach.update({ enabled })}
+        />
         <div className="local-start-actions">
           <button className="online-primary-button" onClick={() => setStarted(true)} type="button">
             {resumable ? '继续对局' : '开始对局'}
@@ -86,6 +93,11 @@ export function LocalMode() {
           {game.restored ? '已恢复本地牌局' : '自动保存已开启'}
         </span>
         <span className="replay-badge">第 {game.roundNumber} 局</span>
+        <CoachToggle
+          compact
+          enabled={coach.settings.enabled}
+          onChange={(enabled) => coach.update({ enabled })}
+        />
         {game.isReplaying && (
           <span className="replay-badge">
             回放 {game.replayStep}/{game.records.length}
@@ -113,6 +125,7 @@ export function LocalMode() {
           dealerSelection: game.dealerSelection,
           opening: game.opening,
         }}
+        coach={coach.model}
       />
 
       <HistoryDrawer

@@ -17,6 +17,7 @@
     "test:integration": "vitest run src/ai-simulation.test.ts src/multiplayer.acceptance.test.ts server/server.test.ts",
     "test:acceptance": "vitest run web/acceptance/m2.acceptance.test.ts",
     "coverage": "vitest run --coverage",
+    "coach:fit": "npm run build:engine && node scripts/fit-coach-risk.mjs",
     "simulate:ai": "npm run build:engine && node scripts/ai-report.mjs",
     "test:watch": "vitest",
     "dev": "vite --config vite.config.ts",

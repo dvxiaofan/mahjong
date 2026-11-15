@@ -1,4 +1,6 @@
 import { useEffect, useMemo, useRef } from 'react';
+import { CoachPanel } from '../coach/CoachPanel';
+import type { CoachModel } from '../coach/useCoach';
 import { tileLabel } from '../../src/tiles.ts';
 import type { GameAction, GameAudienceView, PlayerViewEntry, Seat } from '../../src/types.ts';
 import { ActionBar } from './ActionBar';
@@ -44,6 +46,7 @@ interface MahjongTableProps {
   resetLabel?: string;
   resetDisabled?: boolean;
   roundSetup?: RoundSetupView;
+  coach?: CoachModel | null;
   /** Per-seat online identity (display name, host, bot); absent in local play. */
   seatDecorations?: Partial<Record<Seat, SeatDecoration>> | undefined;
 }
@@ -77,6 +80,7 @@ export function MahjongTable({
   resetLabel,
   resetDisabled,
   roundSetup,
+  coach = null,
   seatDecorations,
 }: MahjongTableProps) {
   const submittedView = useRef<GameAudienceView | null>(null);
@@ -231,6 +235,7 @@ export function MahjongTable({
                         ? { context: handContext, ...handSettings }
                         : undefined
                     }
+                    tileRisks={seat === view.viewerSeat ? coach?.analysis.risksByTile : undefined}
                     label={view.viewerSeat === null ? seatLabel(seat, null) : undefined}
                     decoration={seatDecorations?.[seat]}
                     dockNotice={
@@ -309,6 +314,7 @@ export function MahjongTable({
               </span>
             </div>
           )}
+          {coach !== null && <CoachPanel compact={view.result !== null} model={coach} />}
           {view.result === null && (
             <TableEventRail events={view.events} viewerSeat={view.viewerSeat} live={!isReplaying} />
           )}

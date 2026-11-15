@@ -6,6 +6,7 @@ All notable changes to this project are documented in this file.
 
 ### Added
 
+- A local-only coach mode with a persisted off-by-default switch, right-rail situation/risk/review panels, per-tile risk dots, a one-step confirmation for discards estimated at 10% or higher, and a discard review that stays visible until the next draw; all estimates use public `GameView` information only, with separate fitted and isotonic-calibrated models for the three AI difficulties, a compact settlement review card, and an explicit note that the probabilities are calibrated against the current AI rather than human opponents;
 - A C3 wide-screen scale pass: the 1920px app shell, 300–400px information rails and a square table that grows with the available PC viewport, so a 2000×1200 window now renders a 1078px table instead of a 720px one;
 - A C2 wide-screen PC room built around the C1 square table: a persistent scoreboard rail on the left, the walnut-framed felt table in the centre, and a live-event rail on the right;
 - The left rail shows round, wall, dealer, opening position, four seat scores and fortune counts, plus a compact rules reference; the right rail holds the latest ten events and switches to the result panel at settlement;
@@ -33,6 +34,7 @@ All notable changes to this project are documented in this file.
 
 ### Changed
 
+- On screens 1200px and wider the coach panel sits above live events in the right rail, the event list scrolls in the remaining height, and hand settings stay pinned to the rail bottom; the coach body, review metrics and risk rows remain readable without covering the table or moving the hand dock;
 - On screens 1200px and wider the square table is framed by persistent information rails (220–320px left, 260–400px right); 1280, 1600 and 1800px breakpoints widen both the rails and their typography, while narrower viewports keep the compact disclosure layout above the table;
 - The square table now uses `min(90vh, 1120px, calc(100vh - 122px), 100cqw)`: 2000×1200 renders 1078px, 1440×900 renders 778px, 1366×768 renders 646px and 1280×720 renders 618px, with no page scrolling;
 - Seat labels, scores, status chips, meld text, compass numbers, rivers, hand tiles and action buttons scale from the table size; at 2000×1200 the seat title reaches 18px, secondary labels 15px, hand tiles 66.8×92.2px and river tiles 46px;

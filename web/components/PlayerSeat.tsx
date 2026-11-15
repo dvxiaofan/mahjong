@@ -33,6 +33,7 @@ interface PlayerSeatProps {
   controls?: ReactNode;
   statusLine?: ReactNode;
   handInteraction?: HandInteraction | undefined;
+  tileRisks?: Readonly<Partial<Record<NormalTile, number>>> | undefined;
   discardHighlight?:
     | {
         presentation: DiscardPresentation;
@@ -197,6 +198,7 @@ export function PlayerSeat({
   controls,
   statusLine,
   handInteraction,
+  tileRisks,
   discardHighlight,
   dealer,
   legalActions,
@@ -323,6 +325,7 @@ export function PlayerSeat({
               lastDrawnTile={lastDrawnTile}
               onAction={onAction}
               interaction={handInteraction}
+              tileRisks={tileRisks}
             />
           )}
           {statusLine !== undefined && (

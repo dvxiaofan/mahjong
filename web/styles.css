@@ -1489,6 +1489,10 @@ h1 {
   align-items: center;
 }
 
+.local-start .coach-toggle {
+  justify-self: start;
+}
+
 .app-loading {
   display: grid;
   place-items: center;
@@ -3503,6 +3507,587 @@ h1 {
   line-height: 1.5;
 }
 
+.coach-toggle {
+  display: inline-flex;
+  min-height: 36px;
+  align-items: center;
+  gap: 7px;
+  border: 1px solid rgba(229, 189, 104, 0.2);
+  border-radius: 9px;
+  padding: 7px 10px;
+  color: var(--muted);
+  background: rgba(4, 25, 21, 0.46);
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 650;
+  white-space: nowrap;
+}
+
+.coach-toggle:hover {
+  border-color: rgba(229, 189, 104, 0.42);
+  color: var(--ink);
+}
+
+.coach-toggle--compact {
+  min-height: 27px;
+  padding: 4px 8px;
+  font-size: 10px;
+}
+
+.coach-toggle-track {
+  display: inline-flex;
+  width: 24px;
+  height: 14px;
+  align-items: center;
+  border: 1px solid rgba(165, 187, 176, 0.28);
+  border-radius: 999px;
+  padding: 2px;
+  background: rgba(165, 187, 176, 0.12);
+}
+
+.coach-toggle-track > span {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--muted);
+  transition: transform 140ms ease;
+}
+
+.coach-toggle--on {
+  border-color: rgba(123, 224, 162, 0.34);
+  color: #c6f1d3;
+  background: rgba(123, 224, 162, 0.08);
+}
+
+.coach-toggle--on .coach-toggle-track {
+  border-color: rgba(123, 224, 162, 0.45);
+  background: rgba(123, 224, 162, 0.18);
+}
+
+.coach-toggle--on .coach-toggle-track > span {
+  background: #a8eec0;
+  transform: translateX(10px);
+}
+
+.coach-panel {
+  display: flex;
+  min-width: 0;
+  flex: 0 0 auto;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid rgba(229, 189, 104, 0.22);
+  border-radius: 12px;
+  background:
+    radial-gradient(circle at 8% 0, rgba(229, 189, 104, 0.07), transparent 30%),
+    rgba(4, 25, 21, 0.72);
+}
+
+.coach-panel--open {
+  height: min(400px, 50vh);
+}
+
+.coach-panel--compact {
+  flex: 0 0 auto;
+  border-color: rgba(229, 189, 104, 0.16);
+}
+
+.coach-panel--compact .coach-panel-head {
+  min-height: 36px;
+  padding: 6px 10px 6px 12px;
+}
+
+.coach-panel--compact .coach-title-group h2 {
+  font-size: 13px;
+}
+
+.coach-compact-body {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px 10px;
+}
+
+.coach-compact-tiles {
+  display: inline-flex;
+  flex: 0 0 auto;
+  gap: 2px;
+}
+
+.coach-compact-body p {
+  margin: 0;
+  color: var(--ink);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.coach-panel-head {
+  display: flex;
+  min-height: 44px;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 8px;
+  border-bottom: 1px solid rgba(229, 189, 104, 0.16);
+  padding: 8px 10px 8px 12px;
+}
+
+.coach-title-group {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 7px;
+}
+
+.coach-title-group h2 {
+  margin: 0;
+  color: var(--ink);
+  font-size: 16px;
+  font-weight: 750;
+  letter-spacing: -0.02em;
+}
+
+.coach-mode-chip,
+.coach-local-chip {
+  border-radius: 5px;
+  padding: 3px 6px;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.coach-mode-chip {
+  border: 1px solid rgba(165, 187, 176, 0.2);
+  color: var(--muted-deep);
+  background: rgba(165, 187, 176, 0.06);
+}
+
+.coach-mode-chip--risk,
+.coach-mode-chip--review {
+  border-color: rgba(229, 189, 104, 0.34);
+  color: var(--gold-soft);
+  background: rgba(229, 189, 104, 0.09);
+}
+
+.coach-local-chip {
+  margin-left: auto;
+  color: var(--muted);
+  background: rgba(255, 255, 255, 0.045);
+}
+
+.coach-collapse {
+  display: grid;
+  width: 26px;
+  height: 26px;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 1px solid rgba(165, 187, 176, 0.18);
+  border-radius: 7px;
+  padding: 0;
+  color: var(--muted);
+  background: rgba(255, 255, 255, 0.035);
+  cursor: pointer;
+  font-size: 16px;
+  line-height: 1;
+}
+
+.coach-collapse:hover {
+  border-color: rgba(229, 189, 104, 0.36);
+  color: var(--ink);
+}
+
+.coach-panel-body {
+  min-height: 0;
+  flex: 1 1 auto;
+  overflow-y: auto;
+  padding: 10px 12px 8px;
+  scrollbar-width: thin;
+}
+
+.coach-panel-foot {
+  flex: 0 0 auto;
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+  padding: 7px 12px;
+  color: var(--muted-deep);
+  font-size: 10px;
+  line-height: 1.45;
+}
+
+.coach-panel:not(.coach-panel--open) .coach-panel-foot {
+  display: none;
+}
+
+.coach-notice {
+  margin: 0 0 9px;
+  border-left: 2px solid var(--coral);
+  padding: 2px 0 2px 8px;
+  color: #f0b9aa;
+  font-size: 10px;
+  line-height: 1.45;
+}
+
+.coach-view-tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 3px;
+  margin-bottom: 8px;
+  border: 1px solid rgba(165, 187, 176, 0.12);
+  border-radius: 7px;
+  padding: 3px;
+  background: rgba(255, 255, 255, 0.025);
+}
+
+.coach-view-tabs button {
+  min-height: 26px;
+  border: 0;
+  border-radius: 5px;
+  padding: 4px 6px;
+  color: var(--muted);
+  background: transparent;
+  cursor: pointer;
+  font-size: 10px;
+  font-weight: 650;
+}
+
+.coach-view-tabs button[aria-pressed='true'] {
+  color: #17251f;
+  background: var(--gold-soft);
+}
+
+.coach-mode {
+  display: grid;
+  gap: 8px;
+}
+
+.coach-section-heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.coach-section-heading h3,
+.coach-review-head b {
+  margin: 0;
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 720;
+}
+
+.coach-section-heading > span,
+.coach-review-head > span {
+  color: var(--muted-deep);
+  font-size: 10px;
+  white-space: nowrap;
+}
+
+.coach-section-heading--risks {
+  margin-top: 2px;
+}
+
+.coach-opponent-list,
+.coach-risk-list {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.coach-opponent {
+  display: grid;
+  grid-template-columns: 7px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  min-height: 34px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  padding: 5px 2px;
+}
+
+.coach-opponent:last-child {
+  border-bottom: 0;
+}
+
+.coach-opponent-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--muted);
+}
+
+.coach-opponent--can-ron .coach-opponent-dot,
+.coach-opponent--mouth-required .coach-opponent-dot {
+  background: var(--coral);
+  box-shadow: 0 0 0 3px rgba(237, 141, 118, 0.09);
+}
+
+.coach-opponent--declared .coach-opponent-dot {
+  background: var(--gold-soft);
+  box-shadow: 0 0 0 3px rgba(229, 189, 104, 0.12);
+}
+
+.coach-opponent--no-fortune .coach-opponent-dot {
+  background: rgba(165, 187, 176, 0.55);
+}
+
+.coach-opponent-copy {
+  display: grid;
+  min-width: 0;
+  gap: 1px;
+}
+
+.coach-opponent-copy b {
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 680;
+}
+
+.coach-opponent-copy small {
+  overflow: hidden;
+  color: var(--muted-deep);
+  font-size: 10px;
+  line-height: 1.35;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.coach-opponent > strong {
+  color: var(--muted);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.coach-opponent--declared > strong {
+  color: var(--gold-soft);
+}
+
+.coach-risk-row {
+  display: grid;
+  grid-template-columns: 24px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  min-height: 38px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  padding: 5px 2px;
+}
+
+.coach-risk-row:last-child {
+  border-bottom: 0;
+}
+
+.coach-risk-face {
+  display: grid;
+  width: 24px;
+  height: 33px;
+  place-items: center;
+  overflow: hidden;
+  border: 1px solid rgba(24, 59, 51, 0.22);
+  border-radius: 4px;
+  background: var(--tile);
+  box-shadow: 0 2px 0 #c5bd9f;
+}
+
+.coach-risk-face .tile-art {
+  width: 94%;
+  height: 94%;
+}
+
+.coach-risk-copy {
+  display: grid;
+  min-width: 0;
+  gap: 1px;
+}
+
+.coach-risk-copy b {
+  color: var(--ink);
+  font-size: 12px;
+  font-weight: 680;
+}
+
+.coach-risk-copy small {
+  overflow: hidden;
+  color: var(--muted-deep);
+  font-size: 10px;
+  line-height: 1.35;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.coach-risk-row > strong {
+  color: var(--coral);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.coach-opponent-strip {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 5px;
+}
+
+.coach-opponent-mini {
+  display: grid;
+  min-width: 0;
+  gap: 2px;
+  border: 1px solid rgba(165, 187, 176, 0.12);
+  border-radius: 7px;
+  padding: 6px 7px;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.coach-opponent-mini b {
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.coach-opponent-mini strong {
+  color: var(--ink);
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+}
+
+.coach-opponent-mini--can-ron strong,
+.coach-opponent-mini--mouth-required strong {
+  color: #f0b9aa;
+}
+
+.coach-opponent-mini--declared strong {
+  color: var(--gold-soft);
+}
+
+.coach-more-risks,
+.coach-rule-note,
+.coach-empty {
+  margin: 0;
+  color: var(--muted-deep);
+  font-size: 10px;
+  line-height: 1.45;
+}
+
+.coach-more-risks {
+  border-top: 1px dashed rgba(165, 187, 176, 0.14);
+  padding-top: 6px;
+}
+
+.coach-rule-note {
+  margin-top: 2px;
+}
+
+.coach-empty {
+  padding: 8px 2px;
+}
+
+.coach-review {
+  gap: 7px;
+}
+
+.coach-review-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.coach-review-grid {
+  display: grid;
+  grid-template-columns: 56px minmax(0, 1fr) minmax(0, 1fr);
+  align-items: center;
+  gap: 5px 7px;
+}
+
+.coach-review-label {
+  color: var(--muted-deep);
+  font-size: 10px;
+}
+
+.coach-review-col {
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 650;
+  text-align: right;
+}
+
+.coach-review-value {
+  display: inline-flex;
+  min-width: 0;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+  color: var(--ink);
+  font-size: 11px;
+  font-weight: 650;
+  white-space: nowrap;
+}
+
+.coach-review-value--number {
+  font-variant-numeric: tabular-nums;
+}
+
+.coach-review-value--danger {
+  color: #f0b9aa;
+}
+
+.coach-review-value--safe {
+  color: #a8eec0;
+}
+
+.coach-review-tile {
+  display: grid;
+  width: 20px;
+  height: 28px;
+  place-items: center;
+  overflow: hidden;
+  border: 1px solid rgba(24, 59, 51, 0.22);
+  border-radius: 3px;
+  background: var(--tile);
+  box-shadow: 0 1px 0 #c5bd9f;
+}
+
+.coach-review-tile .tile-art {
+  width: 94%;
+  height: 94%;
+}
+
+.coach-review-summary {
+  margin: 3px 0 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+  padding-top: 7px;
+  color: var(--ink);
+  font-size: 11px;
+  line-height: 1.55;
+}
+
+.coach-review--loss .coach-review-summary {
+  color: #f0b9aa;
+}
+
+.coach-review--safe .coach-review-summary {
+  color: #c6f1d3;
+}
+
+.mahjong-tile--coach-risk {
+  position: relative;
+}
+
+.tile-risk-marker {
+  position: absolute;
+  z-index: 3;
+  top: 3px;
+  right: 3px;
+  width: 7px;
+  height: 7px;
+  border: 1px solid rgba(4, 25, 21, 0.8);
+  border-radius: 50%;
+  background: var(--gold);
+  box-shadow: 0 0 0 2px rgba(4, 25, 21, 0.36);
+  pointer-events: none;
+}
+
+.tile-risk-marker--high {
+  background: var(--coral);
+}
+
 @media (max-width: 600px) {
   .self-hand--wrap {
     gap: 10px 2px;
@@ -4308,7 +4893,7 @@ h1 {
   }
 
   .table-stage .seat-rail--south {
-    bottom: 27%;
+    bottom: 32%;
     left: 3%;
     width: 27%;
     flex-direction: column;
@@ -4753,11 +5338,29 @@ h1 {
     grid-area: side;
     align-self: stretch;
     justify-self: stretch;
+    display: flex;
     width: auto;
     height: var(--rail-max-height);
     max-height: var(--rail-max-height);
+    flex-direction: column;
     margin: 0;
-    overflow: auto;
+    overflow: hidden;
+  }
+
+  .table-side-rail .table-event-rail {
+    min-height: 160px;
+    flex: 1 1 auto;
+    overflow: hidden;
+  }
+
+  .table-side-rail .event-rail-list {
+    min-height: 0;
+    flex: 1 1 auto;
+    overflow-y: auto;
+  }
+
+  .table-side-rail .hand-settings--rail {
+    flex: 0 0 auto;
   }
 
   .table-stage .hand-settings--dock {
@@ -4894,6 +5497,45 @@ h1 {
 
   .table-side-rail .status-copy small {
     font-size: 11px;
+  }
+
+  .coach-panel--open {
+    height: 420px;
+  }
+
+  .coach-title-group h2 {
+    font-size: 16px;
+  }
+
+  .coach-mode-chip,
+  .coach-local-chip {
+    font-size: 10px;
+  }
+
+  .coach-section-heading h3,
+  .coach-review-head b,
+  .coach-opponent-copy b,
+  .coach-risk-copy b {
+    font-size: 12px;
+  }
+
+  .coach-opponent-copy small,
+  .coach-risk-copy small,
+  .coach-opponent-mini b,
+  .coach-review-label,
+  .coach-review-col,
+  .coach-more-risks,
+  .coach-rule-note,
+  .coach-empty {
+    font-size: 10px;
+  }
+
+  .coach-opponent > strong,
+  .coach-opponent-mini strong,
+  .coach-risk-row > strong,
+  .coach-review-value,
+  .coach-review-summary {
+    font-size: 12px;
   }
 }
 
