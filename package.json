@@ -16,6 +16,7 @@
     "test:fast": "vitest run --exclude src/ai-simulation.test.ts --exclude src/multiplayer.acceptance.test.ts --exclude server/server.test.ts",
     "test:integration": "vitest run src/ai-simulation.test.ts src/multiplayer.acceptance.test.ts server/server.test.ts",
     "test:acceptance": "vitest run web/acceptance/m2.acceptance.test.ts",
+    "test:e2e": "playwright test",
     "coverage": "vitest run --coverage",
     "coach:fit": "npm run build:engine && node scripts/fit-coach-risk.mjs",
     "simulate:ai": "npm run build:engine && node scripts/ai-report.mjs",
@@ -30,8 +31,8 @@
     "check:web": "tsc -p tsconfig.web.json --noEmit",
     "check:server": "tsc -p tsconfig.server.json --noEmit",
     "check": "npm run check:engine && npm run check:web && npm run check:server",
-    "format": "prettier --write \"src/**/*.ts\" \"web/**/*.{ts,tsx,css}\" \"server/**/*.ts\" \"scripts/**/*.mjs\" \"*.{json,ts}\" \".github/**/*.yml\"",
-    "format:check": "prettier --check \"src/**/*.ts\" \"web/**/*.{ts,tsx,css}\" \"server/**/*.ts\" \"scripts/**/*.mjs\" \"*.{json,ts}\" \".github/**/*.yml\"",
+    "format": "prettier --write \"src/**/*.ts\" \"web/**/*.{ts,tsx,css}\" \"server/**/*.ts\" \"scripts/**/*.mjs\" \"e2e/**/*.ts\" \"*.{json,ts}\" \".github/**/*.yml\"",
+    "format:check": "prettier --check \"src/**/*.ts\" \"web/**/*.{ts,tsx,css}\" \"server/**/*.ts\" \"scripts/**/*.mjs\" \"e2e/**/*.ts\" \"*.{json,ts}\" \".github/**/*.yml\"",
     "lint": "npm run format:check && node scripts/check-repo.mjs",
     "quality": "npm run lint && npm run check && npm run coverage && npm run test:acceptance && npm run build"
   },
@@ -47,6 +48,7 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@playwright/test": "^1.65.1",
     "@types/node": "^26.4.1",
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.7",

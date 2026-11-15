@@ -7,6 +7,7 @@ import {
 } from '../../src/coach.ts';
 import type { AiDifficulty } from '../../src/ai-difficulty.ts';
 import type { GameState, GameView } from '../../src/types.ts';
+import type { RecordedAction } from '../localSession';
 import {
   DEFAULT_COACH_SETTINGS,
   loadCoachSettings,
@@ -14,15 +15,23 @@ import {
   type CoachSettings,
   type CoachStorage,
 } from './coachSettings';
+import { buildCoachGameReview, type CoachGameReview } from './gameReview';
 
 export type CoachPanelMode = 'situation' | 'risk' | 'review';
 
 export interface CoachModel {
   analysis: CoachAnalysis;
   review: CoachReview | null;
+  gameReview?: CoachGameReview | null;
+  difficulty?: AiDifficulty;
   mode: CoachPanelMode;
   canDiscard: boolean;
   notice: string | null;
+}
+
+export interface CoachReviewSource {
+  initialState: GameState;
+  records: readonly RecordedAction[];
 }
 
 export interface CoachController {
@@ -55,6 +64,7 @@ export function useCoach(
   isReplaying: boolean,
   roundKey: string,
   difficulty: AiDifficulty = 'standard',
+  reviewSource?: CoachReviewSource,
 ): CoachController {
   const [storage] = useState(browserStorage);
   const [settings, setSettings] = useState(() => loadCoachSettings(storage));
@@ -66,6 +76,26 @@ export function useCoach(
     () =>
       settings.enabled && !isReplaying ? analyzeCoach(state, view.viewerSeat, difficulty) : null,
     [difficulty, isReplaying, settings.enabled, state, view.viewerSeat],
+  );
+  const gameReview = useMemo(
+    () =>
+      settings.enabled && view.result !== null && reviewSource !== undefined
+        ? buildCoachGameReview({
+            initialState: reviewSource.initialState,
+            records: reviewSource.records,
+            viewerSeat: view.viewerSeat,
+            difficulty,
+            result: view.result,
+          })
+        : null,
+    [
+      difficulty,
+      reviewSource?.initialState,
+      reviewSource?.records,
+      settings.enabled,
+      view.result,
+      view.viewerSeat,
+    ],
   );
 
   useEffect(() => {
@@ -116,10 +146,12 @@ export function useCoach(
   }
 
   let model: CoachModel | null = null;
-  if (analysis !== null && view.result !== null && review !== null) {
+  if (analysis !== null && view.result !== null && (review !== null || gameReview !== null)) {
     model = {
       analysis,
       review,
+      gameReview,
+      difficulty,
       mode: 'review',
       canDiscard: false,
       notice: null,
@@ -129,6 +161,8 @@ export function useCoach(
     model = {
       analysis,
       review,
+      gameReview: null,
+      difficulty,
       mode: review !== null ? 'review' : canDiscard ? 'risk' : 'situation',
       canDiscard,
       notice: phaseNotice(view),

@@ -36,5 +36,9 @@ local-docs/imges/
 # Logs
 *.log
 
+# Playwright
+playwright-report/
+test-results/
+
 # Local design-tool runtime state
 .impeccable/

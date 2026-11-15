@@ -6,6 +6,11 @@ All notable changes to this project are documented in this file.
 
 ### Added
 
+- A four-lesson rules tutorial (`?mode=tutorial`) driven by real `GameState` legal actions: fortune replacement, no-fortune discard restriction, three-fortune mouth declaration and post-kong replacement draw, with lesson tabs, completion, replay and next-lesson controls;
+- A room invitation panel that shows all four seats as empty, online, offline, bot or trustee, copies a `?mode=online&room=…` deep link and deliberately omits passwords and reconnect tokens;
+- Replay markers for mouth declarations, pongs, exposed/concealed/supplement kongs and wins, using recorded-action indices so each marker can jump to the exact step before or after the action;
+- Playwright browser E2E coverage for tutorial progression, local start and history, two-human room creation through invite deep link, bot filling and host start, plus a fixed 264-action final-round fixture for coach review and replay markers;
+- A whole-game coach review at settlement with reviewed human discards, agreement/safer/improvement/loss counts, average discard risk, the three most useful review spots and a local-only feedback/export flow; the export contains round statistics only, never hands, wall order or reconnect tokens;
 - A local-only coach mode with a persisted off-by-default switch, right-rail situation/risk/review panels, per-tile risk dots, a one-step confirmation for discards estimated at 10% or higher, and a discard review that stays visible until the next draw; all estimates use public `GameView` information only, with separate fitted and isotonic-calibrated models for the three AI difficulties, a compact settlement review card, and an explicit note that the probabilities are calibrated against the current AI rather than human opponents;
 - A C3 wide-screen scale pass: the 1920px app shell, 300–400px information rails and a square table that grows with the available PC viewport, so a 2000×1200 window now renders a 1078px table instead of a 720px one;
 - A C2 wide-screen PC room built around the C1 square table: a persistent scoreboard rail on the left, the walnut-framed felt table in the centre, and a live-event rail on the right;
@@ -34,6 +39,8 @@ All notable changes to this project are documented in this file.
 
 ### Changed
 
+- Tutorial, invitation and settlement-review text now uses an 11–13px PC reading scale; the history drawer widens to 560px so replay markers and their before/after buttons remain legible at 1280–2000px widths;
+- Local E2E config uses Playwright Chromium by default for CI portability, with `PLAYWRIGHT_CHANNEL=chrome` available for machines that already have Chrome;
 - On screens 1200px and wider the coach panel sits above live events in the right rail, the event list scrolls in the remaining height, and hand settings stay pinned to the rail bottom; the coach body, review metrics and risk rows remain readable without covering the table or moving the hand dock;
 - On screens 1200px and wider the square table is framed by persistent information rails (220–320px left, 260–400px right); 1280, 1600 and 1800px breakpoints widen both the rails and their typography, while narrower viewports keep the compact disclosure layout above the table;
 - The square table now uses `min(90vh, 1120px, calc(100vh - 122px), 100cqw)`: 2000×1200 renders 1078px, 1440×900 renders 778px, 1366×768 renders 646px and 1280×720 renders 618px, with no page scrolling;
@@ -57,6 +64,7 @@ All notable changes to this project are documented in this file.
 
 ### Fixed
 
+- Whole-game coach loss attribution now checks the actual pending discard's owner and tile, instead of assigning a loss to the latest human discard with the same tile face;
 - Exposed-kong feedback now has an end-to-end regression covering the engine event, meld, text, central notice, voice clip and settlement reason; audio URLs moved to `v=2` so browsers cannot keep a stale `v=1` clip;
 - The site now declares a favicon, so browsers no longer request `/favicon.ico` and log a 404 on every page load;
 - The full-game bot simulation test now carries an explicit timeout, so a slow build machine can no longer fail the Docker image build;

@@ -1,0 +1,2176 @@
+{
+  "version": 2,
+  "seed": 1,
+  "roundNumber": 1,
+  "dealerSeat": 0,
+  "dealerSource": "initial-dice",
+  "records": [
+    {
+      "action": {
+        "type": "discard",
+        "seat": 0,
+        "tile": "white"
+      },
+      "source": "human",
+      "reason": "玩家手动选择"
+    },
+    {
+      "action": {
+        "type": "pass",
+        "seat": 1
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "pass",
+        "seat": 2
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "pass",
+        "seat": 3
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "draw",
+        "seat": 1
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "discard",
+        "seat": 1,
+        "tile": "red"
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "pass",
+        "seat": 0
+      },
+      "source": "human",
+      "reason": "玩家手动选择"
+    },
+    {
+      "action": {
+        "type": "pass",
+        "seat": 2
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "pass",
+        "seat": 3
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "draw",
+        "seat": 2
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "discard",
+        "seat": 2,
+        "tile": "white"
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "pass",
+        "seat": 0
+      },
+      "source": "human",
+      "reason": "玩家手动选择"
+    },
+    {
+      "action": {
+        "type": "pass",
+        "seat": 1
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "pass",
+        "seat": 3
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "draw",
+        "seat": 3
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "discard",
+        "seat": 3,
+        "tile": "p6"
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "pass",
+        "seat": 0
+      },
+      "source": "human",
+      "reason": "玩家手动选择"
+    },
+    {
+      "action": {
+        "type": "pass",
+        "seat": 1
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "pass",
+        "seat": 2
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "draw",
+        "seat": 0
+      },
+      "source": "human",
+      "reason": "玩家手动选择"
+    },
+    {
+      "action": {
+        "type": "discard",
+        "seat": 0,
+        "tile": "s9"
+      },
+      "source": "human",
+      "reason": "玩家手动选择"
+    },
+    {
+      "action": {
+        "type": "pass",
+        "seat": 1
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "pass",
+        "seat": 2
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "pass",
+        "seat": 3
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "draw",
+        "seat": 1
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "concealed-kong",
+        "seat": 1,
+        "tile": "p9"
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "draw",
+        "seat": 1
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "discard",
+        "seat": 1,
+        "tile": "m9"
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "pass",
+        "seat": 0
+      },
+      "source": "human",
+      "reason": "玩家手动选择"
+    },
+    {
+      "action": {
+        "type": "pass",
+        "seat": 2
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "pass",
+        "seat": 3
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "draw",
+        "seat": 2
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "discard",
+        "seat": 2,
+        "tile": "s9"
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "pass",
+        "seat": 0
+      },
+      "source": "human",
+      "reason": "玩家手动选择"
+    },
+    {
+      "action": {
+        "type": "pass",
+        "seat": 1
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "pass",
+        "seat": 3
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "draw",
+        "seat": 3
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "discard",
+        "seat": 3,
+        "tile": "s1"
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "pass",
+        "seat": 0
+      },
+      "source": "human",
+      "reason": "玩家手动选择"
+    },
+    {
+      "action": {
+        "type": "pass",
+        "seat": 1
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "pass",
+        "seat": 2
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "draw",
+        "seat": 0
+      },
+      "source": "human",
+      "reason": "玩家手动选择"
+    },
+    {
+      "action": {
+        "type": "discard",
+        "seat": 0,
+        "tile": "m9"
+      },
+      "source": "human",
+      "reason": "玩家手动选择"
+    },
+    {
+      "action": {
+        "type": "pass",
+        "seat": 1
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "pass",
+        "seat": 2
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "pass",
+        "seat": 3
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "draw",
+        "seat": 1
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "discard",
+        "seat": 1,
+        "tile": "red"
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "pass",
+        "seat": 0
+      },
+      "source": "human",
+      "reason": "玩家手动选择"
+    },
+    {
+      "action": {
+        "type": "pass",
+        "seat": 2
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "pass",
+        "seat": 3
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "draw",
+        "seat": 2
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "discard",
+        "seat": 2,
+        "tile": "s6"
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "pass",
+        "seat": 0
+      },
+      "source": "human",
+      "reason": "玩家手动选择"
+    },
+    {
+      "action": {
+        "type": "pass",
+        "seat": 1
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "pass",
+        "seat": 3
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "draw",
+        "seat": 3
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "discard",
+        "seat": 3,
+        "tile": "s2"
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "pass",
+        "seat": 0
+      },
+      "source": "human",
+      "reason": "玩家手动选择"
+    },
+    {
+      "action": {
+        "type": "pass",
+        "seat": 1
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "pass",
+        "seat": 2
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "draw",
+        "seat": 0
+      },
+      "source": "human",
+      "reason": "玩家手动选择"
+    },
+    {
+      "action": {
+        "type": "discard",
+        "seat": 0,
+        "tile": "p1"
+      },
+      "source": "human",
+      "reason": "玩家手动选择"
+    },
+    {
+      "action": {
+        "type": "pass",
+        "seat": 1
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "pass",
+        "seat": 2
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "pass",
+        "seat": 3
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "draw",
+        "seat": 1
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "discard",
+        "seat": 1,
+        "tile": "m2"
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "pass",
+        "seat": 0
+      },
+      "source": "human",
+      "reason": "玩家手动选择"
+    },
+    {
+      "action": {
+        "type": "pass",
+        "seat": 2
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "pass",
+        "seat": 3
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "draw",
+        "seat": 2
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "discard",
+        "seat": 2,
+        "tile": "s1"
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "pass",
+        "seat": 0
+      },
+      "source": "human",
+      "reason": "玩家手动选择"
+    },
+    {
+      "action": {
+        "type": "pass",
+        "seat": 1
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "pass",
+        "seat": 3
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "draw",
+        "seat": 3
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "discard",
+        "seat": 3,
+        "tile": "s3"
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "pass",
+        "seat": 0
+      },
+      "source": "human",
+      "reason": "玩家手动选择"
+    },
+    {
+      "action": {
+        "type": "pass",
+        "seat": 1
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "pass",
+        "seat": 2
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "draw",
+        "seat": 0
+      },
+      "source": "human",
+      "reason": "玩家手动选择"
+    },
+    {
+      "action": {
+        "type": "discard",
+        "seat": 0,
+        "tile": "p8"
+      },
+      "source": "human",
+      "reason": "玩家手动选择"
+    },
+    {
+      "action": {
+        "type": "pass",
+        "seat": 1
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "pass",
+        "seat": 2
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "pass",
+        "seat": 3
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "draw",
+        "seat": 1
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "discard",
+        "seat": 1,
+        "tile": "p7"
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "pong",
+        "seat": 0
+      },
+      "source": "human",
+      "reason": "玩家手动选择"
+    },
+    {
+      "action": {
+        "type": "pass",
+        "seat": 2
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "pass",
+        "seat": 3
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "discard",
+        "seat": 0,
+        "tile": "m4"
+      },
+      "source": "human",
+      "reason": "玩家手动选择"
+    },
+    {
+      "action": {
+        "type": "pass",
+        "seat": 1
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "pong",
+        "seat": 2
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "pass",
+        "seat": 3
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "discard",
+        "seat": 2,
+        "tile": "m1"
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "pass",
+        "seat": 0
+      },
+      "source": "human",
+      "reason": "玩家手动选择"
+    },
+    {
+      "action": {
+        "type": "pass",
+        "seat": 1
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "pong",
+        "seat": 3
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "discard",
+        "seat": 3,
+        "tile": "m2"
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "pass",
+        "seat": 0
+      },
+      "source": "human",
+      "reason": "玩家手动选择"
+    },
+    {
+      "action": {
+        "type": "pass",
+        "seat": 1
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "pass",
+        "seat": 2
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "draw",
+        "seat": 0
+      },
+      "source": "human",
+      "reason": "玩家手动选择"
+    },
+    {
+      "action": {
+        "type": "discard",
+        "seat": 0,
+        "tile": "p5"
+      },
+      "source": "human",
+      "reason": "玩家手动选择"
+    },
+    {
+      "action": {
+        "type": "pass",
+        "seat": 1
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "pass",
+        "seat": 2
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "pass",
+        "seat": 3
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "draw",
+        "seat": 1
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "discard",
+        "seat": 1,
+        "tile": "p1"
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "pass",
+        "seat": 0
+      },
+      "source": "human",
+      "reason": "玩家手动选择"
+    },
+    {
+      "action": {
+        "type": "pass",
+        "seat": 2
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "pass",
+        "seat": 3
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "draw",
+        "seat": 2
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "discard",
+        "seat": 2,
+        "tile": "s4"
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "pass",
+        "seat": 0
+      },
+      "source": "human",
+      "reason": "玩家手动选择"
+    },
+    {
+      "action": {
+        "type": "pass",
+        "seat": 1
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "pass",
+        "seat": 3
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "draw",
+        "seat": 3
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "discard",
+        "seat": 3,
+        "tile": "p6"
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "pass",
+        "seat": 0
+      },
+      "source": "human",
+      "reason": "玩家手动选择"
+    },
+    {
+      "action": {
+        "type": "pass",
+        "seat": 1
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "pass",
+        "seat": 2
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "draw",
+        "seat": 0
+      },
+      "source": "human",
+      "reason": "玩家手动选择"
+    },
+    {
+      "action": {
+        "type": "discard",
+        "seat": 0,
+        "tile": "red"
+      },
+      "source": "human",
+      "reason": "玩家手动选择"
+    },
+    {
+      "action": {
+        "type": "pass",
+        "seat": 1
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "pass",
+        "seat": 2
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "pass",
+        "seat": 3
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "draw",
+        "seat": 1
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "discard",
+        "seat": 1,
+        "tile": "s2"
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "pass",
+        "seat": 0
+      },
+      "source": "human",
+      "reason": "玩家手动选择"
+    },
+    {
+      "action": {
+        "type": "pass",
+        "seat": 2
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "pass",
+        "seat": 3
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "draw",
+        "seat": 2
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "discard",
+        "seat": 2,
+        "tile": "red"
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "pass",
+        "seat": 0
+      },
+      "source": "human",
+      "reason": "玩家手动选择"
+    },
+    {
+      "action": {
+        "type": "pass",
+        "seat": 1
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "pass",
+        "seat": 3
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "draw",
+        "seat": 3
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "discard",
+        "seat": 3,
+        "tile": "p6"
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "pass",
+        "seat": 0
+      },
+      "source": "human",
+      "reason": "玩家手动选择"
+    },
+    {
+      "action": {
+        "type": "pass",
+        "seat": 1
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "pass",
+        "seat": 2
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "draw",
+        "seat": 0
+      },
+      "source": "human",
+      "reason": "玩家手动选择"
+    },
+    {
+      "action": {
+        "type": "discard",
+        "seat": 0,
+        "tile": "m3"
+      },
+      "source": "human",
+      "reason": "玩家手动选择"
+    },
+    {
+      "action": {
+        "type": "pass",
+        "seat": 1
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "pass",
+        "seat": 2
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "pass",
+        "seat": 3
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "draw",
+        "seat": 1
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "discard",
+        "seat": 1,
+        "tile": "m4"
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "pass",
+        "seat": 0
+      },
+      "source": "human",
+      "reason": "玩家手动选择"
+    },
+    {
+      "action": {
+        "type": "pass",
+        "seat": 2
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "pass",
+        "seat": 3
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "draw",
+        "seat": 2
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "discard",
+        "seat": 2,
+        "tile": "m5"
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "pass",
+        "seat": 0
+      },
+      "source": "human",
+      "reason": "玩家手动选择"
+    },
+    {
+      "action": {
+        "type": "pass",
+        "seat": 1
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "pong",
+        "seat": 3
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "discard",
+        "seat": 3,
+        "tile": "s6"
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "pass",
+        "seat": 0
+      },
+      "source": "human",
+      "reason": "玩家手动选择"
+    },
+    {
+      "action": {
+        "type": "pass",
+        "seat": 1
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "pass",
+        "seat": 2
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "draw",
+        "seat": 0
+      },
+      "source": "human",
+      "reason": "玩家手动选择"
+    },
+    {
+      "action": {
+        "type": "discard",
+        "seat": 0,
+        "tile": "m2"
+      },
+      "source": "human",
+      "reason": "玩家手动选择"
+    },
+    {
+      "action": {
+        "type": "pass",
+        "seat": 1
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "pass",
+        "seat": 2
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "pass",
+        "seat": 3
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "draw",
+        "seat": 1
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "discard",
+        "seat": 1,
+        "tile": "p2"
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "pass",
+        "seat": 0
+      },
+      "source": "human",
+      "reason": "玩家手动选择"
+    },
+    {
+      "action": {
+        "type": "pong",
+        "seat": 2
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "pass",
+        "seat": 3
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "discard",
+        "seat": 2,
+        "tile": "s2"
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "pass",
+        "seat": 0
+      },
+      "source": "human",
+      "reason": "玩家手动选择"
+    },
+    {
+      "action": {
+        "type": "pass",
+        "seat": 1
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "pass",
+        "seat": 3
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "draw",
+        "seat": 3
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "discard",
+        "seat": 3,
+        "tile": "p3"
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "pass",
+        "seat": 0
+      },
+      "source": "human",
+      "reason": "玩家手动选择"
+    },
+    {
+      "action": {
+        "type": "pass",
+        "seat": 1
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "pong",
+        "seat": 2
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "discard",
+        "seat": 2,
+        "tile": "m5"
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "pass",
+        "seat": 0
+      },
+      "source": "human",
+      "reason": "玩家手动选择"
+    },
+    {
+      "action": {
+        "type": "pass",
+        "seat": 1
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "pass",
+        "seat": 3
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "draw",
+        "seat": 3
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "discard",
+        "seat": 3,
+        "tile": "p1"
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "pass",
+        "seat": 0
+      },
+      "source": "human",
+      "reason": "玩家手动选择"
+    },
+    {
+      "action": {
+        "type": "pass",
+        "seat": 1
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "pass",
+        "seat": 2
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "draw",
+        "seat": 0
+      },
+      "source": "human",
+      "reason": "玩家手动选择"
+    },
+    {
+      "action": {
+        "type": "discard",
+        "seat": 0,
+        "tile": "m6"
+      },
+      "source": "human",
+      "reason": "玩家手动选择"
+    },
+    {
+      "action": {
+        "type": "pass",
+        "seat": 1
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "pong",
+        "seat": 2
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "pass",
+        "seat": 3
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "discard",
+        "seat": 2,
+        "tile": "p6"
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "pass",
+        "seat": 0
+      },
+      "source": "human",
+      "reason": "玩家手动选择"
+    },
+    {
+      "action": {
+        "type": "pass",
+        "seat": 1
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "pass",
+        "seat": 3
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "draw",
+        "seat": 3
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "discard",
+        "seat": 3,
+        "tile": "m9"
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "pass",
+        "seat": 0
+      },
+      "source": "human",
+      "reason": "玩家手动选择"
+    },
+    {
+      "action": {
+        "type": "pass",
+        "seat": 1
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "pass",
+        "seat": 2
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "draw",
+        "seat": 0
+      },
+      "source": "human",
+      "reason": "玩家手动选择"
+    },
+    {
+      "action": {
+        "type": "discard",
+        "seat": 0,
+        "tile": "s9"
+      },
+      "source": "human",
+      "reason": "玩家手动选择"
+    },
+    {
+      "action": {
+        "type": "pass",
+        "seat": 1
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "pass",
+        "seat": 2
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "pass",
+        "seat": 3
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "draw",
+        "seat": 1
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "discard",
+        "seat": 1,
+        "tile": "p4"
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "pong",
+        "seat": 0
+      },
+      "source": "human",
+      "reason": "玩家手动选择"
+    },
+    {
+      "action": {
+        "type": "pass",
+        "seat": 2
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "pass",
+        "seat": 3
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "discard",
+        "seat": 0,
+        "tile": "p2"
+      },
+      "source": "human",
+      "reason": "玩家手动选择"
+    },
+    {
+      "action": {
+        "type": "pass",
+        "seat": 1
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "pass",
+        "seat": 2
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "pass",
+        "seat": 3
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "draw",
+        "seat": 1
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "discard",
+        "seat": 1,
+        "tile": "white"
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "pass",
+        "seat": 0
+      },
+      "source": "human",
+      "reason": "玩家手动选择"
+    },
+    {
+      "action": {
+        "type": "pass",
+        "seat": 2
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "pass",
+        "seat": 3
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "draw",
+        "seat": 2
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "discard",
+        "seat": 2,
+        "tile": "s6"
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "pass",
+        "seat": 0
+      },
+      "source": "human",
+      "reason": "玩家手动选择"
+    },
+    {
+      "action": {
+        "type": "pass",
+        "seat": 1
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "pass",
+        "seat": 3
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "draw",
+        "seat": 3
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "discard",
+        "seat": 3,
+        "tile": "s8"
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "pass",
+        "seat": 0
+      },
+      "source": "human",
+      "reason": "玩家手动选择"
+    },
+    {
+      "action": {
+        "type": "pass",
+        "seat": 1
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "pass",
+        "seat": 2
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "draw",
+        "seat": 0
+      },
+      "source": "human",
+      "reason": "玩家手动选择"
+    },
+    {
+      "action": {
+        "type": "discard",
+        "seat": 0,
+        "tile": "p3"
+      },
+      "source": "human",
+      "reason": "玩家手动选择"
+    },
+    {
+      "action": {
+        "type": "pass",
+        "seat": 1
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "pass",
+        "seat": 2
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "pass",
+        "seat": 3
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "draw",
+        "seat": 1
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "discard",
+        "seat": 1,
+        "tile": "p1"
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "pass",
+        "seat": 0
+      },
+      "source": "human",
+      "reason": "玩家手动选择"
+    },
+    {
+      "action": {
+        "type": "pass",
+        "seat": 2
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "pass",
+        "seat": 3
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "draw",
+        "seat": 2
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "discard",
+        "seat": 2,
+        "tile": "white"
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "pass",
+        "seat": 0
+      },
+      "source": "human",
+      "reason": "玩家手动选择"
+    },
+    {
+      "action": {
+        "type": "pass",
+        "seat": 1
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "pass",
+        "seat": 3
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "draw",
+        "seat": 3
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "discard",
+        "seat": 3,
+        "tile": "s8"
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "pass",
+        "seat": 0
+      },
+      "source": "human",
+      "reason": "玩家手动选择"
+    },
+    {
+      "action": {
+        "type": "pass",
+        "seat": 1
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "pass",
+        "seat": 2
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "draw",
+        "seat": 0
+      },
+      "source": "human",
+      "reason": "玩家手动选择"
+    },
+    {
+      "action": {
+        "type": "discard",
+        "seat": 0,
+        "tile": "m7"
+      },
+      "source": "human",
+      "reason": "玩家手动选择"
+    },
+    {
+      "action": {
+        "type": "declare-mouth",
+        "seat": 0
+      },
+      "source": "human",
+      "reason": "玩家手动选择"
+    },
+    {
+      "action": {
+        "type": "pass",
+        "seat": 1
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "pass",
+        "seat": 2
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "pass",
+        "seat": 3
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "draw",
+        "seat": 1
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "discard",
+        "seat": 1,
+        "tile": "p5"
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "pass",
+        "seat": 0
+      },
+      "source": "human",
+      "reason": "玩家手动选择"
+    },
+    {
+      "action": {
+        "type": "win",
+        "seat": 2
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    },
+    {
+      "action": {
+        "type": "pass",
+        "seat": 3
+      },
+      "source": "bot",
+      "reason": "E2E 固定牌谱"
+    }
+  ]
+}

@@ -13,14 +13,17 @@ const difficultyLabels: Record<AiDifficulty, string> = {
   advanced: '进阶',
 };
 
-export function LocalMode() {
+export function LocalMode({ onOpenTutorial }: { onOpenTutorial?: () => void } = {}) {
   const [historyOpen, setHistoryOpen] = useState(false);
   const [difficulty, setDifficulty] = useState<AiDifficulty>('standard');
   const [initialSeed] = useState(() => createFreshLocalSeed());
   // Nothing moves until the player explicitly starts; a saved game waits to be resumed too.
   const [started, setStarted] = useState(false);
   const game = useLocalGame(initialSeed, difficulty, { active: started });
-  const coach = useCoach(game.state, game.view, game.isReplaying, game.roundKey, difficulty);
+  const coach = useCoach(game.state, game.view, game.isReplaying, game.roundKey, difficulty, {
+    initialState: game.reviewInitialState,
+    records: game.records,
+  });
   const resumable = game.restored && game.records.length > 0;
 
   if (!started) {
@@ -54,6 +57,11 @@ export function LocalMode() {
           <button className="online-primary-button" onClick={() => setStarted(true)} type="button">
             {resumable ? '继续对局' : '开始对局'}
           </button>
+          {onOpenTutorial !== undefined && (
+            <button className="ghost-button" onClick={onOpenTutorial} type="button">
+              先学规则
+            </button>
+          )}
           {resumable && (
             <button
               className="ghost-button"

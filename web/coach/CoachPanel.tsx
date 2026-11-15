@@ -8,6 +8,9 @@ import {
 import { tileLabel } from '../../src/tiles.ts';
 import { MahjongTileFace } from '../components/MahjongTileFace';
 import type { CoachModel, CoachPanelMode } from './useCoach';
+import { CoachFeedback } from './GameReviewFeedback';
+import type { CoachGameReview } from './gameReview';
+import type { AiDifficulty } from '../../src/ai-difficulty.ts';
 
 interface CoachPanelProps {
   model: CoachModel;
@@ -199,6 +202,40 @@ function ReviewBody({ review }: { review: CoachReview }) {
   );
 }
 
+function GameReviewCompact({
+  difficulty,
+  review,
+}: {
+  difficulty: AiDifficulty;
+  review: CoachGameReview;
+}) {
+  return (
+    <div className="coach-game-review">
+      <p className="coach-game-summary">{review.summary}</p>
+      {review.top.length === 0 ? (
+        <p className="coach-empty">这一局没有明显可改进的出牌。</p>
+      ) : (
+        <ol className="coach-game-mistakes">
+          {review.top.map((item) => (
+            <li key={`${item.step}-${item.review.actual.tile}`}>
+              <span className="coach-game-step">第 {item.step} 步</span>
+              <span className="coach-compact-tiles">
+                <ReviewTile tile={item.review.actual.tile} />
+                <ReviewTile tile={item.review.coach.tile} />
+              </span>
+              <p>{item.review.summary}</p>
+            </li>
+          ))}
+        </ol>
+      )}
+      <div className="coach-game-foot">
+        <span>平均放炮风险 {formatCoachPercent(review.averageRisk)} · 只分析本家出牌</span>
+        <CoachFeedback difficulty={difficulty} review={review} />
+      </div>
+    </div>
+  );
+}
+
 export function CoachPanel({ model, compact = false }: CoachPanelProps) {
   const [open, setOpen] = useState(
     () => typeof window === 'undefined' || !window.matchMedia('(max-width: 1279px)').matches,
@@ -217,22 +254,29 @@ export function CoachPanel({ model, compact = false }: CoachPanelProps) {
       : model.mode;
 
   if (compact) {
-    if (model.review === null) return null;
+    const gameReview = model.gameReview ?? null;
+    if (model.review === null && gameReview === null) return null;
     return (
       <section className="coach-panel coach-panel--compact" aria-labelledby="coach-result-title">
         <header className="coach-panel-head">
           <div className="coach-title-group">
             <h2 id="coach-result-title">教练点评</h2>
-            <span className="coach-mode-chip coach-mode-chip--review">上一步</span>
+            <span className="coach-mode-chip coach-mode-chip--review">
+              {gameReview === null ? '上一步' : '整局'}
+            </span>
           </div>
         </header>
-        <div className="coach-compact-body">
-          <span className="coach-compact-tiles">
-            <ReviewTile tile={model.review.actual.tile} />
-            <ReviewTile tile={model.review.coach.tile} />
-          </span>
-          <p>{model.review.summary}</p>
-        </div>
+        {gameReview === null ? (
+          <div className="coach-compact-body">
+            <span className="coach-compact-tiles">
+              <ReviewTile tile={model.review!.actual.tile} />
+              <ReviewTile tile={model.review!.coach.tile} />
+            </span>
+            <p>{model.review!.summary}</p>
+          </div>
+        ) : (
+          <GameReviewCompact difficulty={model.difficulty ?? 'standard'} review={gameReview} />
+        )}
       </section>
     );
   }

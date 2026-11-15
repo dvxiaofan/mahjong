@@ -32,6 +32,7 @@ export const AUTO_VIEWER_ACTION_DELAY_MS = 120;
 
 export interface LocalGameController {
   state: GameState;
+  reviewInitialState: GameState;
   view: GameView;
   roundNumber: number;
   roundKey: string;
@@ -112,6 +113,10 @@ export function useLocalGame(
   const displayedState = useMemo(
     () => (replayStep === null ? session.state : replayLocalGameSession(session, replayStep)),
     [replayStep, session],
+  );
+  const reviewInitialState = useMemo(
+    () => replayLocalGameSession(session, 0),
+    [session.dealerSource, session.roundNumber, session.seed, session.state.dealerSeat],
   );
 
   const view = useMemo(() => {
@@ -203,6 +208,7 @@ export function useLocalGame(
 
   return {
     state: session.state,
+    reviewInitialState,
     view,
     roundNumber: session.roundNumber,
     roundKey: `${session.seed}:${session.roundNumber}`,

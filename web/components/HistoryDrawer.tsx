@@ -1,11 +1,13 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { GameView } from '../../src/types.ts';
 import type { ActionSource, RecordedAction } from '../localSession';
+import { buildReplayMarkers } from '../replayMarkers';
 import {
   eventTypeLabel,
   formatActionForViewer,
   formatEventForViewer,
   matchesEventFilter,
+  seatLabel,
   type EventFilter,
 } from '../uiModel';
 
@@ -51,6 +53,10 @@ export function HistoryDrawer({
   const visibleEvents = useMemo(
     () => view.events.filter((event) => matchesEventFilter(event, filter)),
     [filter, view.events],
+  );
+  const markers = useMemo(
+    () => buildReplayMarkers(records, view.viewerSeat),
+    [records, view.viewerSeat],
   );
 
   useEffect(() => {
@@ -136,6 +142,36 @@ export function HistoryDrawer({
             </button>
           </div>
         </section>
+
+        {markers.length > 0 && (
+          <section className="replay-markers" aria-labelledby="replay-markers-title">
+            <div className="replay-markers-heading">
+              <h3 id="replay-markers-title">关键节点</h3>
+              <span>跳到动作前后</span>
+            </div>
+            <div className="replay-marker-list">
+              {markers.map((marker) => (
+                <div className={`replay-marker replay-marker--${marker.kind}`} key={marker.key}>
+                  <span>
+                    <b>{marker.label}</b>
+                    <small>
+                      {marker.actionText} · {seatLabel(marker.seat, view.viewerSeat)} · 第{' '}
+                      {marker.step} 步
+                    </small>
+                  </span>
+                  <span className="replay-marker-actions">
+                    <button onClick={() => onReplayStep(marker.beforeStep)} type="button">
+                      前
+                    </button>
+                    <button onClick={() => onReplayStep(marker.afterStep)} type="button">
+                      后
+                    </button>
+                  </span>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
 
         <div className="history-mode-tabs" role="tablist" aria-label="记录类型">
           <button

@@ -10,6 +10,7 @@ import { SelfHand } from '../components/SelfHand';
 import { CoachPanel } from './CoachPanel';
 import { CoachToggle } from './CoachToggle';
 import type { CoachModel } from './useCoach';
+import type { CoachGameReview } from './gameReview';
 
 function riskModel(): CoachModel {
   const state = createGame({ seed: 5, dealerSeat: 0 });
@@ -80,6 +81,42 @@ describe('教练面板', () => {
     expect(html).toContain('教练点评');
     expect(html).toContain(review.summary);
     expect(html).not.toContain('本巡风险');
+  });
+
+  it('整局点评显示分类统计、最值得复盘的两手和本地反馈入口', () => {
+    const state = createGame({ seed: 3, dealerSeat: 0 });
+    state.players[1]!.fortuneCount = 1;
+    const ranked = rankStrategicDiscards(state, 0);
+    const review = createCoachReview(state, 0, ranked[0]!.tile);
+    if (review === null) throw new Error('missing review');
+    const gameReview: CoachGameReview = {
+      reviewedDiscards: 9,
+      same: 4,
+      safer: 2,
+      improvements: 2,
+      losses: 1,
+      averageRisk: 0.031,
+      summary: '整局 9 次出牌：4 次和教练一致，2 次更稳，2 次可改进，1 次放炮。',
+      top: [{ step: 12, review, severity: 100 }],
+    };
+    const html = renderToStaticMarkup(
+      <CoachPanel
+        compact
+        model={{
+          analysis: analyzeCoach(state, 0),
+          review,
+          gameReview,
+          difficulty: 'standard',
+          mode: 'review',
+          canDiscard: false,
+          notice: null,
+        }}
+      />,
+    );
+    expect(html).toContain('整局 9 次出牌');
+    expect(html).toContain('第 12 步');
+    expect(html).toContain('平均放炮风险 3%');
+    expect(html).toContain('这局点评有用吗？');
   });
 
   it('开关有明确文本和按压状态', () => {

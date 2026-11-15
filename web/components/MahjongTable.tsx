@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef, type ReactNode } from 'react';
 import { CoachPanel } from '../coach/CoachPanel';
 import type { CoachModel } from '../coach/useCoach';
 import { tileLabel } from '../../src/tiles.ts';
@@ -47,6 +47,7 @@ interface MahjongTableProps {
   resetDisabled?: boolean;
   roundSetup?: RoundSetupView;
   coach?: CoachModel | null;
+  sidePanel?: ReactNode;
   /** Per-seat online identity (display name, host, bot); absent in local play. */
   seatDecorations?: Partial<Record<Seat, SeatDecoration>> | undefined;
 }
@@ -81,6 +82,7 @@ export function MahjongTable({
   resetDisabled,
   roundSetup,
   coach = null,
+  sidePanel,
   seatDecorations,
 }: MahjongTableProps) {
   const submittedView = useRef<GameAudienceView | null>(null);
@@ -299,6 +301,7 @@ export function MahjongTable({
         </div>
 
         <aside className="table-side-rail" aria-label="牌桌侧栏">
+          {sidePanel}
           {view.viewerSeat === null && (
             <div className="table-status-strip" aria-live="polite">
               <span className="status-icon">

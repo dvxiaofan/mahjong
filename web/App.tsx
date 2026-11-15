@@ -3,8 +3,8 @@ import { LocalMode } from './LocalMode';
 import { tileFacesReady } from './components/MahjongTileFace';
 import { OnlineMode } from './online/OnlineMode';
 import { SoundToggle, TableAudioProvider } from './components/TableAudio';
-
-type AppMode = 'local' | 'online';
+import { TutorialMode } from './tutorial/TutorialMode';
+import { appModeFromSearch, type AppMode } from './appMode';
 
 export default function App() {
   return (
@@ -31,7 +31,9 @@ function useTileFacesReady(): boolean {
 }
 
 function Application() {
-  const [mode, setMode] = useState<AppMode>('local');
+  const [mode, setMode] = useState<AppMode>(() =>
+    typeof window === 'undefined' ? 'local' : appModeFromSearch(window.location.search),
+  );
   const tilesReady = useTileFacesReady();
 
   return (
@@ -63,6 +65,14 @@ function Application() {
             >
               联网对战
             </button>
+            <button
+              aria-pressed={mode === 'tutorial'}
+              className={mode === 'tutorial' ? 'is-active' : ''}
+              onClick={() => setMode('tutorial')}
+              type="button"
+            >
+              规则教程
+            </button>
           </nav>
         </div>
       </header>
@@ -73,7 +83,9 @@ function Application() {
             正在加载牌面…
           </div>
         ) : mode === 'local' ? (
-          <LocalMode />
+          <LocalMode onOpenTutorial={() => setMode('tutorial')} />
+        ) : mode === 'tutorial' ? (
+          <TutorialMode />
         ) : (
           <OnlineMode />
         )}

@@ -7,6 +7,8 @@ import type { SeatDecoration } from '../components/PlayerSeat';
 import type { RoundDealerReason } from '../components/RoundSetupPanel';
 import { randomNickname, randomRoomName } from './roomNames';
 import { useOnlineGame } from './useOnlineGame';
+import { roomIdFromSearch } from '../appMode';
+import { RoomInvitePanel } from './RoomInvitePanel';
 
 /** Map seated participants to the per-seat identity badges the table shows. */
 export function seatDecorationsFor(lobby: LobbyRoomView): Partial<Record<Seat, SeatDecoration>> {
@@ -44,7 +46,11 @@ export function getOnlineDealerReason(match: MatchView | SpectatorMatchView): Ro
 
 export function OnlineMode() {
   const online = useOnlineGame();
-  const [roomId, setRoomId] = useState(() => randomRoomName());
+  const [roomId, setRoomId] = useState(
+    () =>
+      (typeof window === 'undefined' ? null : roomIdFromSearch(window.location.search)) ??
+      randomRoomName(),
+  );
   const [displayName, setDisplayName] = useState(() => randomNickname());
   const [password, setPassword] = useState('');
   const [role, setRole] = useState<'player' | 'spectator'>('player');
@@ -333,6 +339,7 @@ export function OnlineMode() {
           </span>
         ))}
       </div>
+      <RoomInvitePanel lobby={online.lobby} />
       {!started && (
         <div className="online-waiting" role="status">
           {online.lobby.readyToStart
